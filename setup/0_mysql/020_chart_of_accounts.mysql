@@ -1,0 +1,11 @@
+-- https://strategiccfo.com/standard-chart-of-accounts/
+-- https://strategiccfo.com/problems-in-chart-of-accounts-design/
+
+-- This is the core chart of accounts across all entities.
+-- The general ledger will maintain separate accounts per entity.
+-- Account_type may be one of 'A','L','Q','R','E' - for Asset,Liability,eQuity,Revenue,Expense
+CREATE TABLE IF NOT EXISTS ac_coa (
+	account_number int not null PRIMARY KEY
+	,account_type char(1) not null
+	,account_title varchar(256) not null
+) ENGINE=InnoDB;

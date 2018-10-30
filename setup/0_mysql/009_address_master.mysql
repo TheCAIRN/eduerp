@@ -1,0 +1,14 @@
+/*
+ * Create tables associated with addresses
+ */
+CREATE TABLE IF NOT EXISTS cx_addresses (
+
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS cx_emails (
+
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS cx_phones (
+
+) ENGINE=InnoDB;
