@@ -3,12 +3,12 @@
  */
  
 CREATE TABLE IF NOT EXISTS sec_groups (
-	group_id int not null PRIMARY KEY
+	group_id int not null auto_increment PRIMARY KEY
 	,group_name varchar(256)
 )
 
 CREATE TABLE IF NOT EXISTS sec_users (
-	user_id int not null PRIMARY KEY
+	user_id int not null auto_increment PRIMARY KEY
 	,human_id int not null
 	,group_id int not null
 	,salt1 varchar(10) not null default ''
