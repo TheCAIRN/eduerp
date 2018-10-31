@@ -52,3 +52,7 @@ CREATE TABLE IF NOT EXISTS fv_freight_vendors (
 	,FOREIGN KEY (created_by) REFERENCES sec_users (user_id)
 	,FOREIGN KEY (last_update_by) REFERENCES sec_users (user_id)	
 ) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS fv_contacts (
+
+) ENGINE=InnoDB;

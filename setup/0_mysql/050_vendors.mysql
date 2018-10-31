@@ -1,0 +1,23 @@
+/*
+ * Purchasing vendors
+ */
+
+CREATE TABLE IF NOT EXISTS pur_vendors (
+	vendor_id int not null auto_increment PRIMARY KEY
+	,vendor_name varchar(128) not null
+	,primary_address int
+	,billing_address int
+	
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS pur_vendor_notes (
+
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS pur_vendor_attachments (
+
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS pur_vendor_contacts (
+
+) ENGINE=InnoDB;

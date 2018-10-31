@@ -1,0 +1,11 @@
+/*
+ * Create entities for a simulated company
+ */
+ 
+INSERT INTO cx_addresses VALUES
+()
+;
+
+INSERT INTO ent_entities VALUES
+(NULL,'HQ','Eden from the Rock HQ',1,'A','1913-01-01',NULL,NULL,'N',1,1,NOW(),1,NOW())
+;

@@ -1,0 +1,62 @@
+/*
+ * Create tables for ordering raw materials, equipment, and supplies
+ */
+
+CREATE TABLE IF NOT EXISTS pur_header (
+	purchase_order_number int not null auto_increment PRIMARY KEY
+	,vendor_id int not null
+	,order_date datetime not null
+	,purchase_order_reference varchar(64)
+	,entity_id int
+	,division_id int
+	,department_id int
+	,terms int
+	,rev_enabled char(1) not null DEFAULT 'N'
+	,rev_number int not null default 1
+	,created_by int not null
+	,creation_date datetime not null
+	,last_update_by int not null
+	,last_update_date datetime not null
+	,FOREIGN KEY (entity_id) REFERENCES ent_entities(entity_id)
+	,FOREIGN KEY (entity_id,division_id) REFERENCES ent_divisions(entity_id,division_id)
+	,FOREIGN KEY (entity_id,department_id) REFERENCES ent_departments(entity_id,department_id)
+	,FOREIGN KEY (created_by) REFERENCES sec_users (user_id)
+	,FOREIGN KEY (last_update_by) REFERENCES sec_users (user_id)	
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS pur_detail (
+	pur_detail_id int not null auto_increment PRIMARY KEY
+	,purchase_order_number int not null
+	,po_line int not null
+	,parent_line int not null default 0
+	,entity_id int not null
+	,division_id int
+	,department_id int
+	,item_id int not null
+	,quantity int not null default 1
+	,quantity_uom char(5) not null
+	,price decimal(17,5) not null
+	,rev_enabled char(1) not null DEFAULT 'N'
+	,rev_number int not null default 1
+	,created_by int not null
+	,creation_date datetime not null
+	,last_update_by int not null
+	,last_update_date datetime not null
+	,FOREIGN KEY (purchase_order_number) REFERENCES pur_header(purchase_order_number)
+	,FOREIGN KEY (quantity_uom) REFERENCES aa_uom(uom_code)
+	,FOREIGN KEY (entity_id) REFERENCES ent_entities(entity_id)
+	,FOREIGN KEY (entity_id,division_id) REFERENCES ent_divisions(entity_id,division_id)
+	,FOREIGN KEY (entity_id,department_id) REFERENCES ent_departments(entity_id,department_id)
+	,FOREIGN KEY (created_by) REFERENCES sec_users (user_id)
+	,FOREIGN KEY (last_update_by) REFERENCES sec_users (user_id)	
+	
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS pur_header_notes (
+	
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS pur_detail_notes (
+
+) ENGINE=InnoDB;
+

@@ -1,0 +1,110 @@
+/*
+ * Create various lookup tables used by multiple modules
+ */
+-- Unit of measure types
+CREATE TABLE IF NOT EXISTS aa_uom_types (
+	uom_type int not null auto_increment PRIMARY KEY
+	,uom_type_description varchar(128)
+) ENGINE=InnoDB;
+INSERT INTO aa_uom_types VALUES 
+(1,'Linear measurement')
+,(2,'Count')
+,(3,'Mass or Weight')
+,(4,'Square measurement')
+,(5,'Speed')
+,(6,'Direction')
+,(7,'Liquid measure'),
+,(8,'Cubic measurement');
+
+-- Unit of measure
+CREATE TABLE IF NOT EXISTS aa_uom (
+	uom_code char(5) not null PRIMARY KEY
+	,uom_type int not null
+	,uom_description varchar(128) not null
+	,FOREIGN KEY (uom_type) REFERENCES aa_uom_types (uom_type)
+) ENGINE=InnoDB;
+INSERT INTO aa_uom VALUES
+('EA',2,'Each')
+,('AS',2,'Assortment')
+,('CA',2,'Case')
+,('OZ',3,'Ounces')
+,('MG',3,'Milligrams')
+,('GM',3,'Grams')
+,('LBS',3,'Pounds')
+,('KG',3,'Kilograms')
+,('TON',3,'Tons')
+,('MTON',3,'Metric tons')
+,('IN',1,'Inches')
+,('CM',1,'Centimeters')
+,('FT',1,'Feet')
+,('YD',1,'Yards')
+,('M',1,'Meters')
+,('MI',1,'Miles')
+,('KM',1,'Kilometers')
+,('MM',1,'Millimeters')
+,('SQIN',4,'Square Inches')
+,('SQCM',4,'Square Centimeters')
+,('SQFT',4,'Square Feet')
+,('SQYD',4,'Square Yards')
+,('SQM',4,'Square Meters')
+,('SQMI',4,'Square Miles')
+,('SQKM',4,'Square Kilometers')
+,('SQMM',4,'Square Millimeters')
+,('ACRE',4,'Acres')
+,('HCTR',4,'Hectares')
+,('CUIN',8,'Cubic Inches')
+,('CUCM',8,'Cubic Centimeters')
+,('CUFT',8,'Cubic Feet')
+,('CUYD',8,'Cubic Yards')
+,('CUM',8,'Cubic Meters')
+,('CUMI',8,'Cubic Miles')
+,('CUKM',8,'Cubic Kilometers')
+,('CUMM',8,'Cubic Millimeters')
+,('ML',7,'Milliliters')
+,('LT',7,'Liters')
+,('OU',7,'Liquid ounces')
+,('CUP',7,'Cups')
+,('PINT',7,'Pints')
+,('QT',7,'Quarts')
+,('GAL',7,'Gallons')
+;
+
+-- Unit of measure conversion
+CREATE TABLE IF NOT EXISTS aa_uom_conversions (
+	uom_type int not null
+	,from_uom char(5) not null
+	,to_uom char(5) not null
+	,multiply_by int not null default 1
+	,divide_by int not null default 1
+	,FOREIGN KEY (uom_type) REFERENCES aa_uom_types (uom_type)
+	,FOREIGN KEY (from_uom) REFERENCES aa_uom (uom_code)
+	,FOREIGN KEY (to_uom) REFERENCES aa_uom (uom_code)
+	,UNIQUE (from_uom,to_uom)
+) ENGINE=InnoDB;
+INSERT INTO aa_uom_conversions VALUES
+(7,'ML','L',1000,1)
+,(7,'L','ML',1,1000)
+,(7,'QT','GAL',4,1)
+,(7,'GAL','QT',1,4)
+;
+
+-- Terms
+CREATE TABLE IF NOT EXISTS aa_terms (
+
+) ENGINE=InnoDB;
+
+-- Note types
+CREATE TABLE IF NOT EXISTS aa_note_types (
+
+) ENGINE=InnoDB;
+
+-- Attachment types, such as documents or images
+CREATE TABLE IF NOT EXISTS aa_attachment_types (
+
+) ENGINE=InnoDB;
+
+-- Cancellation reason codes
+CREATE TABLE IF NOT EXISTS aa_cancellation_reason_codes (
+
+) ENGINE=InnoDB;
+ 
