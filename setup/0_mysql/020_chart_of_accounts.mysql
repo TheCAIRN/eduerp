@@ -4,8 +4,18 @@
 -- This is the core chart of accounts across all entities.
 -- The general ledger will maintain separate accounts per entity.
 -- Account_type may be one of 'A','L','Q','R','E' - for Asset,Liability,eQuity,Revenue,Expense
+-- While multiple entities can reside in the same database, they must all abide by the same chart of accounts.
+-- If a different COA is needed for a particular entity, it must reside in a separate database.
 CREATE TABLE IF NOT EXISTS ac_coa (
 	account_number int not null PRIMARY KEY
 	,account_type char(1) not null
 	,account_title varchar(256) not null
+	,rev_enabled char(1) not null DEFAULT 'N'
+	,rev_number int not null default 1
+	,created_by int not null
+	,creation_date datetime not null
+	,last_update_by int not null
+	,last_update_date datetime not null
+	,FOREIGN KEY (created_by) REFERENCES sec_users (user_id)
+	,FOREIGN KEY (last_update_by) REFERENCES sec_users (user_id)	
 ) ENGINE=InnoDB;

@@ -13,7 +13,7 @@ INSERT INTO aa_uom_types VALUES
 ,(4,'Square measurement')
 ,(5,'Speed')
 ,(6,'Direction')
-,(7,'Liquid measure'),
+,(7,'Liquid measure')
 ,(8,'Cubic measurement');
 
 -- Unit of measure
@@ -82,8 +82,8 @@ CREATE TABLE IF NOT EXISTS aa_uom_conversions (
 	,UNIQUE (from_uom,to_uom)
 ) ENGINE=InnoDB;
 INSERT INTO aa_uom_conversions VALUES
-(7,'ML','L',1000,1)
-,(7,'L','ML',1,1000)
+(7,'ML','LT',1000,1)
+,(7,'LT','ML',1,1000)
 ,(7,'QT','GAL',4,1)
 ,(7,'GAL','QT',1,4)
 ;

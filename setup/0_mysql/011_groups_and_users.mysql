@@ -5,7 +5,7 @@
 CREATE TABLE IF NOT EXISTS sec_groups (
 	group_id int not null auto_increment PRIMARY KEY
 	,group_name varchar(256)
-)
+) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS sec_users (
 	user_id int not null auto_increment PRIMARY KEY
@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS sec_users (
 	,FOREIGN KEY (group_id) REFERENCES sec_groups (group_id)
 	,FOREIGN KEY (created_by) REFERENCES sec_users (user_id)
 	,FOREIGN KEY (last_update_by) REFERENCES sec_users (user_id)
-)
+) ENGINE=InnoDB;
 
 INSERT INTO sec_groups VALUES (1,'Global Admins');
 INSERT INTO sec_users VALUES (1,1,1,'','','','Y','','A',NULL,NULL,1,NOW(),1,NOW());

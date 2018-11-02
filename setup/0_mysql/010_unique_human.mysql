@@ -1,0 +1,65 @@
+/*
+ * Create table for uniquely identifying individuals, regardless of their role.
+ * Notes:
+ * - In some cultures, family name comes first and given, second.  
+ * - Though two middle names are rare in the U.S., they are not unheard of.
+ * - Alias is typically a nickname, or a "Christian" name for some cultures.
+ * - Some cultures uniquely identify an individual based on genealogy, thus the mother, father, and spouse fields.
+ * - Unique_id may be any other value that identifies an individual, including phone number, SSN, driver's license, etc.
+ * - It is preferable to include the created_by and last_update_by fields here, but they depend on tables that have 
+ *		not been created yet.
+ */
+ 
+CREATE TABLE IF NOT EXISTS cx_humans (
+	human_id int not null auto_increment PRIMARY KEY
+	,title varchar(7) default ''
+	,given_name varchar(100) default ''
+	,middle varchar(100) default ''
+	,middle_2 varchar(100) default ''
+	,family_name varchar(100) not null
+	,suffix varchar(20) default ''
+	,alias varchar(100) default ''
+	,degrees varchar(100) default ''
+	,sex char(1)
+	,birthdate datetime
+	,home_address int
+	,mother int
+	,father int
+	,spouse int
+	,unique_id varchar(40)
+	,FOREIGN KEY (home_address) REFERENCES cx_addresses (address_id)
+	,FOREIGN KEY (mother) REFERENCES cx_humans (human_id)
+	,FOREIGN KEY (father) REFERENCES cx_humans (human_id)
+	,FOREIGN KEY (spouse) REFERENCES cx_humans (human_id)	
+) ENGINE=InnoDB;
+INSERT INTO cx_humans (human_id,family_name) VALUES (1,'Root');
+
+CREATE TABLE IF NOT EXISTS cx_email_associations (
+	human_id int not null
+	,email_id int not null
+	,priority int default 1
+	,FOREIGN KEY (human_id) REFERENCES cx_humans(human_id)
+	,FOREIGN KEY (email_id) REFERENCES cx_emails(email_id)
+	,UNIQUE (human_id,email_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS cx_address_associations (
+	human_id int not null
+	,address_id int not null
+	,priority int default 1
+	,description varchar(256)
+	,FOREIGN KEY (human_id) REFERENCES cx_humans(human_id)
+	,FOREIGN KEY (address_id) REFERENCES cx_addresses(address_id)
+	,UNIQUE (human_id,address_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS cx_phone_associations (
+	human_id int not null
+	,phone_id int not null
+	,priority int default 1
+	,description varchar(256)
+	,FOREIGN KEY (human_id) REFERENCES cx_humans(human_id)
+	,FOREIGN KEY (phone_id) REFERENCES cx_phones(phone_id)
+	,UNIQUE (human_id,phone_id)
+) ENGINE=InnoDB;
+

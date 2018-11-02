@@ -5,7 +5,7 @@
 -- osm_id refers to the unique identifier for objects at Open Street Maps
 CREATE TABLE IF NOT EXISTS cx_addresses (
 	address_id int not null auto_increment PRIMARY KEY
-	,building number varchar(10) not null default ''
+	,building_number varchar(10) not null default ''
 	,street varchar(120) not null default ''
 	,attention varchar(64) not null default ''
 	,apartment varchar(10) not null default ''
@@ -25,10 +25,11 @@ CREATE TABLE IF NOT EXISTS cx_addresses (
 	,FOREIGN KEY (country) REFERENCES aa_country(iso)
 ) ENGINE=InnoDB;
 
+-- Max unique length is 767 bytes.  MySQL assumes 2 bytes per char.
 CREATE TABLE IF NOT EXISTS cx_emails (
 	email_id int not null auto_increment PRIMARY KEY
-	,email_user varchar(512)
-	,email_domain varchar(512)
+	,email_user varchar(160)
+	,email_domain varchar(160)
 	,last_validated datetime
 	,bounce_count int
 	,UNIQUE (email_user,email_domain)

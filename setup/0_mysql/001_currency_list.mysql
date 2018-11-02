@@ -123,6 +123,3 @@ INSERT INTO aa_currency (name, code, symbol) VALUES ('Bolivares Fuertes', 'VEF',
 INSERT INTO aa_currency (name, code, symbol) VALUES ('Dong', 'VND', '₫');
 INSERT INTO aa_currency (name, code, symbol) VALUES ('Rials', 'YER', '﷼');
 INSERT INTO aa_currency (name, code, symbol) VALUES ('Zimbabwe Dollars', 'ZWD', 'Z$');
-
--- Select values from table                        
-SELECT * FROM currency;
