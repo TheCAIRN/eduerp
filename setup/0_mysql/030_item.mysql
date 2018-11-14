@@ -1,0 +1,268 @@
+/*
+ * Create tables related to item setup.
+ * Items may be anything that can be purchased, manufactured, or sold.
+ */
+ 
+CREATE TABLE IF NOT EXISTS item_types (
+	item_type_code char(2) not null PRIMARY KEY
+	,item_type_description varchar(128)
+	,visible int(1) not null default 1
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS item_categories (
+	item_category_id int not null auto_increment PRIMARY KEY
+	,item_category_description varchar(128)
+	,visible int(1) not null default 1
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS item_gtin_master (
+	entity_id int not null
+	,division_id int not null
+	,department_id int not null
+	,manufacturer_id varchar(11) not null
+	,description varchar(128)
+	,first_used datetime
+	,last_used datetime
+	,last_gtin int not null default 1
+	,last_carton varchar(20) not null default '1'
+	,last_bol varchar(17) not null default '1'
+	,visible int(1) not null default 1
+	,rev_enabled char(1) not null DEFAULT 'N'
+	,rev_number int not null default 1
+	,created_by int not null
+	,creation_date datetime not null
+	,last_update_by int not null
+	,last_update_date datetime not null
+	,FOREIGN KEY (entity_id) REFERENCES ent_entities(entity_id)
+	,FOREIGN KEY (created_by) REFERENCES sec_users (user_id)
+	,FOREIGN KEY (last_update_by) REFERENCES sec_users (user_id)		
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS item_attribute_group_master (
+	attribute_group char(1) not null PRIMARY KEY
+	,attribute_group_name_short varchar(20)
+	,attribute_group_name_medium varchar(30)
+	,attribute_group_name_long varchar(60)
+	,attribute_group_name_comments varchar(1024)
+	,visible int(1) not null default 1
+	,rev_enabled char(1) not null DEFAULT 'N'
+	,rev_number int not null default 1
+	,created_by int not null
+	,creation_date datetime not null
+	,last_update_by int not null
+	,last_update_date datetime not null
+	,FOREIGN KEY (created_by) REFERENCES sec_users (user_id)
+	,FOREIGN KEY (last_update_by) REFERENCES sec_users (user_id)		
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS item_attribute_master (
+	attribute_group char(1) not null
+	,attribute_code char(10) not null
+	,attribute_description varchar(60) not null
+	,visible int(1) not null default 1
+	,rev_enabled char(1) not null DEFAULT 'N'
+	,rev_number int not null default 1
+	,created_by int not null
+	,creation_date datetime not null
+	,last_update_by int not null
+	,last_update_date datetime not null
+	,PRIMARY KEY (attribute_group,attribute_code)
+	,FOREIGN KEY (attribute_group) REFERENCES item_attribute_group_master (attribute_group)
+	,FOREIGN KEY (created_by) REFERENCES sec_users (user_id)
+	,FOREIGN KEY (last_update_by) REFERENCES sec_users (user_id)		
+) ENGINE=InnoDB;
+
+-- The current US tariff schedule can be found at https://hts.usitc.gov/current
+CREATE TABLE IF NOT EXISTS item_tariff_master (
+	harmonized_tariff_code char(12) not null
+	,tariff_name varchar(256) not null
+	,tariff_uom char(5) not null
+	,quota_number varchar(5)
+	,duty_pct_1a decimal(9,5) not null
+	,duty_pct_1b decimal(9,5) not null
+	,duty_pct_2 decimal(9,5) not null
+	,duty_flat_1a decimal(9,5) not null
+	,duty_flat_1b decimal(9,5) not null
+	,duty_flat_2 decimal(9,5) not null
+	,effective_from datetime 
+	,effective_until datetime 
+	,currency char(3) not null default 'USD'
+	,visible int(1) not null default 1
+	,rev_enabled char(1) not null DEFAULT 'Y'
+	,rev_number int not null default 1
+	,created_by int not null
+	,creation_date datetime not null
+	,last_update_by int not null
+	,last_update_date datetime not null
+	,PRIMARY KEY (harmonized_tariff_code,rev_number)
+	,FOREIGN KEY (tariff_uom) REFERENCES aa_uom (uom_code)
+	,FOREIGN KEY (created_by) REFERENCES sec_users (user_id)
+	,FOREIGN KEY (last_update_by) REFERENCES sec_users (user_id)		
+	,FOREIGN KEY (currency) REFERENCES aa_currency(code)
+) ENGINE=InnoDB;
+
+-- duty_column may be either '1b' or '2'.
+CREATE TABLE IF NOT EXISTS item_tariff_exceptions (
+	harmonized_tariff_code char(12) not null
+	,tariff_revision int not null
+	,duty_column varchar(2)
+	,country_of_origin char(2)
+	,FOREIGN KEY (harmonized_tariff_code,tariff_revision) REFERENCES item_tariff_master (harmonized_tariff_code,rev_number)
+	,FOREIGN KEY (country_of_origin) REFERENCES aa_country (iso)
+	,UNIQUE (harmonized_tariff_code,tariff_revision,country_of_origin)
+) ENGINE=InnoDB;
+
+-- Seasons contain default date values, but should not be used as a restrictive table
+CREATE TABLE IF NOT EXISTS item_seasons (
+	season_id int not null auto_increment PRIMARY KEY
+	,entity_id int not null
+	,season_code varchar(12) not null
+	,season_description varchar(512)
+	,promotion_start_date datetime
+	,promotion_end_date datetime
+	,product_launch_date datetime
+	,product_sunset_date datetime
+	,product_end_of_support_date datetime
+	,product_end_extended_support_date datetime
+	,visible int(1) not null default 1
+	,rev_enabled char(1) not null DEFAULT 'N'
+	,rev_number int not null default 1
+	,created_by int not null
+	,creation_date datetime not null
+	,last_update_by int not null
+	,last_update_date datetime not null
+	,FOREIGN KEY (entity_id) REFERENCES ent_entities(entity_id)
+	,FOREIGN KEY (created_by) REFERENCES sec_users (user_id)
+	,FOREIGN KEY (last_update_by) REFERENCES sec_users (user_id)		
+	,UNIQUE (entity_id,season_code)
+) ENGINE=InnoDB;
+
+-- Item master always represents the most atomic selling or purchasing unit possible,
+-- as represented by the first digit of the GTIN being 0.  Services may also be represented
+-- as items.
+CREATE TABLE IF NOT EXISTS item_master (
+	entity_id int not null
+	,division_id int not null
+	,department_id int not null
+	,item_type_code char(2) not null
+	,item_category_id int
+	,product_id int not null auto_increment PRIMARY KEY
+	,product_code varchar(25) not null
+	,product_description varchar(256) not null
+	,product_catalog_title varchar(25)
+	,product_uom char(5)
+	,gtin char(14)
+	,standard_cost decimal(24,5)
+	,suggested_retail decimal(24,5)
+	,wholesale_price decimal(24,5)
+	,currency char(3)
+	,length decimal(11,3)
+	,width decimal(11,3)
+	,height decimal(11,3)
+	,lwh_uom char(5)
+	,weight decimal(11,5)
+	,weight_uom char(5)
+	,harmonized_tariff_code char(12)
+	,tariff_revision int
+	,promotion_start_date datetime
+	,promotion_end_date datetime
+	,product_launch_date datetime
+	,product_sunset_date datetime
+	,product_end_of_support_date datetime
+	,product_end_extended_support_date datetime
+	,visible int(1) not null default 1
+	,rev_enabled char(1) not null DEFAULT 'N'
+	,rev_number int not null default 1
+	,created_by int not null
+	,creation_date datetime not null
+	,last_update_by int not null
+	,last_update_date datetime not null
+	,FOREIGN KEY (entity_id) REFERENCES ent_entities(entity_id)
+	,FOREIGN KEY (division_id) REFERENCES ent_division_master(division_id)
+	,FOREIGN KEY (department_id) REFERENCES ent_department_master(department_id)
+	,FOREIGN KEY (currency) REFERENCES aa_currency(code)
+	,FOREIGN KEY (lwh_uom) REFERENCES aa_uom (uom_code)
+	,FOREIGN KEY (weight_uom) REFERENCES aa_uom (uom_code)
+	,FOREIGN KEY (product_uom) REFERENCES aa_uom (uom_code)
+	,FOREIGN KEY (created_by) REFERENCES sec_users (user_id)
+	,FOREIGN KEY (last_update_by) REFERENCES sec_users (user_id)		
+	,UNIQUE (product_code)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS item_attributes (
+	product_id int not null
+	,attribute_group char(1) not null
+	,attribute_code char(10) not null
+	,rev_enabled char(1) not null DEFAULT 'N'
+	,rev_number int not null default 1
+	,created_by int not null
+	,creation_date datetime not null
+	,last_update_by int not null
+	,last_update_date datetime not null
+	,FOREIGN KEY (product_id) REFERENCES item_master (product_id)
+	,FOREIGN KEY (attribute_group,attribute_code) REFERENCES item_attribute_master (attribute_group,attribute_code)
+	,FOREIGN KEY (created_by) REFERENCES sec_users (user_id)
+	,FOREIGN KEY (last_update_by) REFERENCES sec_users (user_id)		
+	,UNIQUE (product_id,attribute_group)
+) ENGINE=InnoDB;
+
+-- An atomic selling unit may actually be a collection of smaller items, which must be produced as components
+-- before being assembled.
+CREATE TABLE IF NOT EXISTS item_components (
+	product_id int not null
+	,sub_product_id int not null
+	,quantity decimal(17,5)
+	,rev_enabled char(1) not null DEFAULT 'N'
+	,rev_number int not null default 1
+	,created_by int not null
+	,creation_date datetime not null
+	,last_update_by int not null
+	,last_update_date datetime not null
+	,FOREIGN KEY (product_id) REFERENCES item_master (product_id)
+	,FOREIGN KEY (sub_product_id) REFERENCES item_master (product_id)
+	,FOREIGN KEY (created_by) REFERENCES sec_users (user_id)
+	,FOREIGN KEY (last_update_by) REFERENCES sec_users (user_id)		
+	,UNIQUE (product_id,sub_product_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS item_families (
+	product_family_id int not null auto_increment PRIMARY KEY
+	,product_family_code varchar(25) not null
+	,product_family_catalog_title varchar(25)
+	,product_family_selection_code char(3)
+	,product_family_promotional_group varchar(50)
+	,visible int(1) not null default 1
+	,rev_enabled char(1) not null DEFAULT 'N'
+	,rev_number int not null default 1
+	,created_by int not null
+	,creation_date datetime not null
+	,last_update_by int not null
+	,last_update_date datetime not null
+	,FOREIGN KEY (created_by) REFERENCES sec_users (user_id)
+	,FOREIGN KEY (last_update_by) REFERENCES sec_users (user_id)		
+	,UNIQUE (product_family_code)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS item_family_components (
+	product_family_id int not null
+	,sub_product_family_id int 
+	,product_id int
+	,rev_enabled char(1) not null DEFAULT 'N'
+	,rev_number int not null default 1
+	,created_by int not null
+	,creation_date datetime not null
+	,last_update_by int not null
+	,last_update_date datetime not null
+	,FOREIGN KEY (product_family_id) REFERENCES item_families (product_family_id)
+	,FOREIGN KEY (sub_product_family_id) REFERENCES item_families (product_family_id)
+	,FOREIGN KEY (product_id) REFERENCES item_master (product_id)
+	,FOREIGN KEY (created_by) REFERENCES sec_users (user_id)
+	,FOREIGN KEY (last_update_by) REFERENCES sec_users (user_id)
+	,UNIQUE (product_family_id,sub_product_family_id)
+	,UNIQUE (product_family_id,product_id)
+) ENGINE=InnoDB;
+
+-- TODO:
+CREATE TABLE IF NOT EXISTS item_attachments (
+	
+) ENGINE=InnoDB;

@@ -1,0 +1,13 @@
+/*
+ * Create tables related to methods of shipping
+ */
+
+-- freight_paid_by & duty_paid_by may be V=Vendor, B=Broker, C=Customer, E=Entity
+CREATE TABLE IF NOT EXISTS fv_ship_modes (
+	ship_mode_id int not null auto_increment PRIMARY KEY
+	,ship_mode_code char(3) not null
+	,ship_mode_description varchar(256)
+	,freight_paid_by char(1) not null default 'E'
+	,duty_paid_by char(1) not null default 'E'
+	,UNIQUE (ship_mode_code)
+) ENGINE=InnoDB;

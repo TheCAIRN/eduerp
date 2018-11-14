@@ -1,0 +1,88 @@
+/*
+ * Create tables for international shipping
+ */
+ 
+CREATE TABLE fv_shipments (
+	fv_shipment_id int not null auto_increment PRIMARY KEY
+	,fv_ship_mode int not null
+	,fv_vendor_id int not null
+	,voyage varchar(64)
+	,vessel varchar(64)
+	,bol varchar(64)
+	,commercial_invoice varchar(64)
+	,fv_forwarder int
+	,from_port int
+	,to_port int
+	,country_of_origin char(2)
+	,customs_entry_number varchar(64)
+	,document_send_date datetime
+	,invoice_paid_date datetime
+	,begin_loading_date datetime
+	,finish_loading_date datetime
+	,departure_date datetime
+	,arrival_date datetime
+	,begin_unloading_date datetime
+	,finish_unloading_date datetime
+	,begin_inspection_date datetime
+	,finish_inspection_date datetime
+	,must_arrive_by datetime
+	,status char(1) not null DEFAULT 'A'
+	,rev_enabled char(1) not null DEFAULT 'N'
+	,rev_number int not null default 1
+	,created_by int not null
+	,creation_date datetime not null
+	,last_update_by int not null
+	,last_update_date datetime not null
+	,FOREIGN KEY (fv_ship_mode) REFERENCES fv_ship_modes (ship_mode_id)
+	,FOREIGN KEY (fv_vendor_id) REFERENCES fv_freight_vendors (fv_vendor_id)
+	,FOREIGN KEY (fv_forwarder) REFERENCES fv_freight_vendors (fv_vendor_id)
+	,FOREIGN KEY (from_port) REFERENCES fv_ports (fv_port_id)
+	,FOREIGN KEY (to_port) REFERENCES fv_ports (fv_port_id)
+	,FOREIGN KEY (country_of_origin) REFERENCES aa_country (iso)
+	,FOREIGN KEY (created_by) REFERENCES sec_users (user_id)
+	,FOREIGN KEY (last_update_by) REFERENCES sec_users (user_id)	
+) ENGINE=InnoDB;
+
+CREATE TABLE fv_containers (
+	fv_container_id int not null auto_increment PRIMARY KEY
+	,registration_code varchar(64)
+	,bol varchar(64)
+	,seal varchar(64)
+	,customs_release varchar(64)
+	,container_cost decimal(9,5)
+	,currency_code char(3)
+	,fv_shipment_id int
+	,length decimal(9,5)
+	,width decimal(9,5)
+	,height decimal(9,5)
+	,lwh_uom char(5)
+	,weight decimal(13,5)
+	,weight_uom char(5)
+	,fill_rate decimal(6,3)
+	,final_destination int
+	,purchase_date datetime
+	,sealed_date datetime
+	,loaded_date datetime
+	,departure_date datetime
+	,arrival_date datetime
+	,unloaded_date datetime
+	,inspection_date datetime
+	,destination_date datetime
+	,unsealed_date datetime
+	,emptied_date datetime
+	,returned_date datetime
+	,rev_enabled char(1) not null DEFAULT 'N'
+	,rev_number int not null default 1
+	,created_by int not null
+	,creation_date datetime not null
+	,last_update_by int not null
+	,last_update_date datetime not null
+	,FOREIGN KEY (fv_shipment_id) REFERENCES fv_shipments (fv_shipment_id)
+	,FOREIGN KEY (lwh_uom) REFERENCES aa_uom(uom_code)
+	,FOREIGN KEY (weight_uom) REFERENCES aa_uom(uom_code)
+	,FOREIGN KEY (final_destination) REFERENCES ent_entities(entity_id)
+	,FOREIGN KEY (currency_code) REFERENCES aa_currency (code)
+	,FOREIGN KEY (created_by) REFERENCES sec_users (user_id)
+	,FOREIGN KEY (last_update_by) REFERENCES sec_users (user_id)	
+) ENGINE=InnoDB;
+

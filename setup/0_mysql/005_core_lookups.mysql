@@ -14,7 +14,8 @@ INSERT INTO aa_uom_types VALUES
 ,(5,'Speed')
 ,(6,'Direction')
 ,(7,'Liquid measure')
-,(8,'Cubic measurement');
+,(8,'Cubic measurement')
+,(9,'Time');
 
 -- Unit of measure
 CREATE TABLE IF NOT EXISTS aa_uom (
@@ -67,6 +68,7 @@ INSERT INTO aa_uom VALUES
 ,('PINT',7,'Pints')
 ,('QT',7,'Quarts')
 ,('GAL',7,'Gallons')
+,('HR',9,'Hours')
 ;
 
 -- Unit of measure conversion
