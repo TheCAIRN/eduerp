@@ -5,19 +5,90 @@
 CREATE TABLE IF NOT EXISTS pur_vendors (
 	vendor_id int not null auto_increment PRIMARY KEY
 	,vendor_name varchar(128) not null
-	,primary_address int
-	,billing_address int
-	
+	,primary_address int not null
+	,billing_address int not null
+	,payment_address int not null
+	,gl_account_id int not null
+	,default_terms int 
+	,status char(1) not null DEFAULT 'A'
+	,rev_enabled char(1) not null DEFAULT 'N'
+	,rev_number int not null default 1
+	,created_by int not null
+	,creation_date datetime not null
+	,last_update_by int not null
+	,last_update_date datetime not null
+	,FOREIGN KEY (primary_address) REFERENCES cx_addresses (address_id)
+	,FOREIGN KEY (billing_address) REFERENCES cx_addresses (address_id)
+	,FOREIGN KEY (payment_address) REFERENCES cx_addresses (address_id)
+	,FOREIGN KEY (gl_account_id) REFERENCES acgl_accounts (gl_account_id)
+	,FOREIGN KEY (default_terms) REFERENCES aa_terms (terms_id)
+	,FOREIGN KEY (created_by) REFERENCES sec_users (user_id)
+	,FOREIGN KEY (last_update_by) REFERENCES sec_users (user_id)	
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS pur_vendor_notes (
-
+	vendor_note_id int not null auto_increment PRIMARY KEY
+	,vendor_id int not null
+	,note_type_id int not null
+	,seq int not null default 1
+	,note_text mediumtext
+	,rev_enabled char(1) not null DEFAULT 'N'
+	,rev_number int not null default 1
+	,created_by int not null
+	,creation_date datetime not null
+	,last_update_by int not null
+	,last_update_date datetime not null
+	,FOREIGN KEY (vendor_id) REFERENCES pur_vendors (vendor_id)
+	,FOREIGN KEY (note_type_id) REFERENCES aa_note_types (note_type_id)
+	,FOREIGN KEY (created_by) REFERENCES sec_users (user_id)
+	,FOREIGN KEY (last_update_by) REFERENCES sec_users (user_id)		
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS pur_vendor_attachments (
-
+	vendor_id int not null
+	,attachment_id int not null
+	,FOREIGN KEY (vendor_id) REFERENCES pur_vendors(vendor_id)
+	,FOREIGN KEY (attachment_id) REFERENCES aa_attachments(attachment_id)
+	,UNIQUE (vendor_id,attachment_id)
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS pur_vendor_contacts (
+	vendor_id int not null
+	,human_id int not null
+	,created_by int not null
+	,creation_date datetime not null
+	,last_update_by int not null
+	,last_update_date datetime not null
+	,FOREIGN KEY (vendor_id) REFERENCES pur_vendors (vendor_id)
+	,FOREIGN KEY (human_id) REFERENCES cx_humans (human_id)
+	,FOREIGN KEY (created_by) REFERENCES sec_users (user_id)
+	,FOREIGN KEY (last_update_by) REFERENCES sec_users (user_id)
+	,UNIQUE (vendor_id,human_id)
+) ENGINE=InnoDB;
 
+CREATE TABLE IF NOT EXISTS pur_vendor_catalog (
+	vendor_catalog_id int not null auto_increment PRIMARY KEY
+	,vendor_id int not null
+	,currency char(3)
+	,product_id int not null
+	,vendor_item_number varchar(32)
+	,vendor_gtin char(14)
+	,description varchar(512)
+	,catalog_price decimal(17,5)
+	,sale_price decimal(17,5)
+	,sale_until datetime
+	,discount_percent decimal(9,5)
+	,discount_until datetime
+	,status char(1) not null DEFAULT 'A'
+	,rev_enabled char(1) not null DEFAULT 'N'
+	,rev_number int not null default 1
+	,created_by int not null
+	,creation_date datetime not null
+	,last_update_by int not null
+	,last_update_date datetime not null
+	,FOREIGN KEY (vendor_id) REFERENCES pur_vendors (vendor_id)
+	,FOREIGN KEY (currency) REFERENCES aa_currency (code)
+	,FOREIGN KEY (product_id) REFERENCES item_master(product_id)
+	,FOREIGN KEY (created_by) REFERENCES sec_users (user_id)
+	,FOREIGN KEY (last_update_by) REFERENCES sec_users (user_id)
 ) ENGINE=InnoDB;

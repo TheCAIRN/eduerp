@@ -91,18 +91,59 @@ INSERT INTO aa_uom_conversions VALUES
 ;
 
 -- Terms
+/*
+ Discounts may be positive or negative
+ tier types may be 
+ 	A=If not paid by # days
+	B=due # days from the beginning of the month
+	E=due # days before the end of the month
+	N=due # days after the terms basis (use standard X12 codes)
+	P=due # days after the end of the month
+*/
 CREATE TABLE IF NOT EXISTS aa_terms (
-
+	terms_id int not null auto_increment PRIMARY KEY
+	,terms_code char(5) not null
+	,terms_name varchar(128) not null
+	,terms_type int
+	,terms_basis int
+	,discount_percent_1 decimal(9,5) not null default 0.00
+	,discount_days_1 int not null default 0
+	,discount_percent_2 decimal(9,5) not null default 0.00
+	,discount_days_2 int not null default 0
+	,discount_percent_3 decimal(9,5) not null default 0.00
+	,discount_days_3 int not null default 0
+	,tier1_type char(1) not null default 'N'
+	,tier2_type char(1) not null default 'N'
+	,tier3_type char(1) not null default 'N'
+	,status char(1) not null DEFAULT 'A'
+	,UNIQUE (terms_code)
 ) ENGINE=InnoDB;
 
 -- Note types
 CREATE TABLE IF NOT EXISTS aa_note_types (
-
+	note_type_id int not null auto_increment PRIMARY KEY
+	,note_type_code char(5) not null
+	,note_type_description varchar(128)
+	,UNIQUE (note_type_code)
 ) ENGINE=InnoDB;
 
 -- Attachment types, such as documents or images
 CREATE TABLE IF NOT EXISTS aa_attachment_types (
+	attachment_type_id int not null auto_increment PRIMARY KEY
+	,attachment_type_code char(5) not null
+	,attachment_type_description varchar(128)
+	,UNIQUE (attachment_type_code)
+) ENGINE=InnoDB;
 
+-- Attachments
+CREATE TABLE IF NOT EXISTS aa_attachments (
+	attachment_id int not null auto_increment PRIMARY KEY
+	,attachment_type_id int not null
+	,file_name varchar(256) not null
+	,uri varchar(1024) not null
+	,description varchar(4096)
+	,data longblob
+	,FOREIGN KEY (attachment_type_id) REFERENCES aa_attachment_types (attachment_type_id)
 ) ENGINE=InnoDB;
 
 -- Cancellation reason codes
