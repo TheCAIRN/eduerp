@@ -1,0 +1,40 @@
+#message {
+	font-family: Georgia, Arial, sans-serif;
+	font-size: 1.2em;
+	text-align: center;
+	width: 99%;
+	padding: 5px;
+}
+.successMessage {
+	background-color: #00FF00;
+	border-top: 6px double #00AF00;
+	border-left: 6px double #00AF00;
+	border-right: 6px double #005800;
+	border-bottom: 6px double #005800;
+	color: #000000;
+}
+.infoMessage {
+	background-color: #0000FF;
+	border-top: 6px solid #0000AF;
+	border-left: 6px solid #0000AF;
+	border-right: 6px solid #000058;
+	border-bottom: 6px solid #000058;
+	color: #FFFFFF;
+}
+.warningMessage {
+	background-color: #FFFF00;
+	border-top: 6px solid #AFAF00;
+	border-left: 6px solid #AFAF00;
+	border-right: 6px solid #585800;
+	border-bottom: 6px solid #585800;
+	color: #000000;
+}
+.errorMessage {
+	background-color: #FF0000;
+	border-top: 6px dashed #AF0000;
+	border-left: 6px dashed #AF0000;
+	border-right: 6px dashed #580000;
+	border-bottom: 6px dashed #580000;
+	color: #FFFF00;
+	font-weight: 800;
+}

@@ -1,0 +1,31 @@
+#logobar {
+	background-color: #006600;
+	min-height: 80px;
+}
+#toolbar {
+	background-color: #006600;
+	color: #FFFFFF;
+	padding: 5px;
+}
+#messagebar {
+	border: 2px solid black;
+}
+#content {
+	min-height: 500px;
+}
+#leftnav {
+	background-color: #006600;
+	color: #FFFFFF;
+	float: left;
+	width: 15%;
+	height: 500px;
+	border-right: 6px solid black;
+}
+#core {
+	float: left;
+	padding: 15px;
+}
+#footerbar {
+	background-color: #006600;
+	color: #FFFFFF;
+}

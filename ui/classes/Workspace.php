@@ -7,8 +7,9 @@ class Workspace {
 	} // construct()
 	public function render() {
 		switch ($this->currentScreen) {
-			case 0: $this->dashboard();
+			case 0: echo $this->dashboard();
 		}
+		
 	} // render()
 	public function setCurrentScreen($screen) {
 		if (!is_numeric($screen) && !ctype_digit($screen)) return;
@@ -18,7 +19,13 @@ class Workspace {
 		$this->render();
 	}
 	private function dashboard() {
-		
+		// TODO: Only display those modules the user has permissions to.
+		$module_list = ['Entities','Core Lookups','Contacts','Items','Vendors','Freight','Purchasing'];
+		$html = '';
+		foreach ($module_list as $module) {
+			$html .= '<DIV id="'.str_replace(' ','',$module).'ModuleIcon" class="DashboardIcon" onClick="selectModule(this);">'.$module."</DIV>\r\n";
+		}
+		return $html;
 	}
 } // class Workspace
 ?>
