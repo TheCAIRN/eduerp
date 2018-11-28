@@ -18,7 +18,7 @@ if (!isset($_SESSION['link'])) {
 		$_SESSION['link'] = $link;
 	}
 } else {
-	$lnk = $_SESSION['link'];
+	$link = $_SESSION['link'];
 }
 /*
  * End of setup section
@@ -45,7 +45,7 @@ function jquery() {
 		$module = $_POST['module'];
 		$modObject = null;
 		if ($module=='Entities') {
-			$modObject = new Entity();
+			$modObject = new Entity($link);
 			$_SESSION['currentScreen'] = 1;
 		} elseif ($module=='CoreLookups') {
 			
@@ -82,6 +82,9 @@ function jquery() {
 		}
 		$modObject->searchPage();
 		$_SESSION['activeModule'] = $modObject;
+	} elseif ($command=='logoff') {
+		$_SESSION['link']->close();
+		unset($_SESSION['link']);
 	} else {
 		$messagebar->addWarning("Invalid jquery option.");
 		return;

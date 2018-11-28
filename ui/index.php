@@ -16,7 +16,7 @@ if (!isset($_SESSION['link'])) {
 		$_SESSION['link'] = $link;
 	}
 } else {
-	$lnk = $_SESSION['link'];
+	$link = $_SESSION['link'];
 }
 $logobar = new Logobar();
 //$toolbar = new Toolbar();
