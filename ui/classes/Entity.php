@@ -29,9 +29,9 @@ class Entity {
 				$q = 'SELECT '.$field[1][0].','.$field[1][1].' FROM '.$field[0].';';
 				$result = $this->dbconn->query($q);
 				if ($result!==false) {
-					$html .= '<LABEL for="'.$field[1].'">'.$field[2].'</LABEL>';
-					$html .= '<SELECT id="'.$field[1].'"><OPTION value="">&nbsp;</OPTION>';
-					while ($option = $result->fetch()) {
+					$html .= '<LABEL for="'.$field[1][0].'">'.$field[2].'</LABEL>';
+					$html .= '<SELECT id="'.$field[1][0].'"><OPTION value="">&nbsp;</OPTION>';
+					while ($option = $result->fetch_row()) {
 						$html .= '<OPTION value="'.$option[0].'">'.$option[1].'</OPTION>';
 					}
 					$html .= '</SELECT>';

@@ -1,13 +1,16 @@
 <?php
 class Workspace {
 	private $currentScreen;
-	public function __construct() {
+	private $dbconn;
+	public function __construct($link=null) {
 		if (isset($_SESSION) && isset($_SESSION['currentScreen'])) $this->currentScreen = $_SESSION['currentScreen'];
 		else $this->currentScreen = 0;
+		$this->dbconn = $link;
 	} // construct()
 	public function render() {
 		switch ($this->currentScreen) {
-			case 0: echo $this->dashboard();
+			case 0: echo $this->dashboard(); break;
+			case 1: $ent = new Entity($this->dbconn); echo $ent->searchPage(); break;
 		}
 		
 	} // render()

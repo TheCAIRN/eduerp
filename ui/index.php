@@ -6,23 +6,23 @@ spl_autoload_register(function ($class) {
     include 'classes/' . $class . '.php';
 });
 $messagebar = new Messagebar();
-if (!isset($_SESSION['link'])) {
+//if (!isset($_SESSION['link'])) {
 	include('globals.php');
 	$link = new mysqli($dbhost,$dbuser,$dbpass,$dbname);
 	if ($link->connect_error) {
 		$messagebar->addError($link->connect_error);
 		unset($link);
-	} else {
-		$_SESSION['link'] = $link;
+//	} else {
+//		$_SESSION['link'] = $link;
 	}
-} else {
-	$link = $_SESSION['link'];
-}
+//} else {
+//	$link = $_SESSION['link'];
+//}
 $logobar = new Logobar();
 //$toolbar = new Toolbar();
 //$navbar = new Navbar();
 //$footerbar = new Footerbar();
-$workspace = new Workspace();
+$workspace = new Workspace($link);
 ?>
 <!DOCTYPE HTML>
 <HTML>
@@ -42,6 +42,13 @@ var currentScreen = 0;
 function updateDiv(whichDiv) {
 	
 } // updateDiv()
+function mainMenu() {
+	$.post('jq.php',{jquery:'mainMenu'},function(data) {
+		if (data.length > 0) $("#core").html(data);
+		updateDiv('messagebar');
+		updateDiv('toolbar');
+	});
+} // mainMenu()
 function selectModule(whichModule) {
 	var moduleName = whichModule.id.replace('ModuleIcon','');
 	$.post('jq.php',{jquery:'moduleSearchSpace',module:moduleName},function (data) {
@@ -49,12 +56,35 @@ function selectModule(whichModule) {
 		updateDiv('messagebar');
 		updateDiv('toolbar');
 	});
-}
+} // selectModule()
 function clearMessages() {
 	$.post('jq.php',{jquery:'clearMessages'},function (data) {
 		$("#messagebar").html("");
 	});
-}
+} // clearMessages()
+function executeSearch(whichModule) {
+	var kvp = [];
+	$(".selectPage").children().each(function (index) {
+		if ($(this).is("label")) return;
+		if ($(this).is("input:text") && $(this).val()!="") {
+			kvp[$(this).id] = $(this).val();
+		}
+		if ($(this).is("select")) {
+			var key = $(this).id;
+			$(this).find("option:selected").each(function (opt_index) {
+				if ($(this).val()=="") return;
+				if (kvp[key]=="undefined") kvp[key] = $(this).val();
+				else if (typeof kvp[key]=="string") kvp[key] = [kvp[key],$(this).val()];
+				else kvp[key].push($(this).val());
+			});
+		}
+	});
+	$.post('jq.php',{jquery:'executeSearch',module:whichModule,searchParameters:kvp},function (data) {
+		if (data.length > 0) $("#core").html(data);
+		updateDiv('messagebar');
+		updateDiv('toolbar');
+	});
+} // executeSearch()
 </SCRIPT>
 </HEAD>
 <BODY>
@@ -68,3 +98,6 @@ function clearMessages() {
 <DIV id="footerbar">FOOTERBAR<?php /*$fotterbar->render();*/ ?></DIV>
 </BODY>
 </HTML>
+<?php
+$link->close();
+?>

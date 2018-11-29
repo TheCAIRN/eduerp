@@ -17,3 +17,10 @@
 	margin: 5px;
 	cursor: pointer;
 }
+.searchPage input,label,select,button {
+	padding: 5px;
+}
+.searchPage {
+	background-color: #006600;
+	color: #FFFFFF;
+}
