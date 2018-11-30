@@ -88,8 +88,10 @@ function jquery() {
 	} elseif ($command=='logoff') {
 		$_SESSION['link']->close();
 		unset($_SESSION['link']);
+	} elseif ($command=='clearMessages') {
+		$messagebar->clear();
 	} else {
-		$messagebar->addWarning("Invalid jquery option.");
+		$messagebar->addWarning("Invalid jquery option: ".$command);
 		$link->close();
 		return;
 	}
