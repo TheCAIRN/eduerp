@@ -85,6 +85,36 @@ function jquery() {
 		}
 		$modObject->searchPage();
 		$_SESSION['activeModule'] = $modObject;
+	} elseif ($command=='executeSearch') {
+		if (!isset($_POST['module'])) {
+			$messagebar->addError("The selected module has not been installed in this system.");
+			$link->close();
+			return;
+		}
+		$module = $_POST['module'];
+		$modObject = null;
+		$searchParameters = array();
+		if (isset($_POST['searchParameters']) && is_array($_POST['searchParameters'])) {
+			$searchParameters = $_POST['searchParameters'];
+		}
+		if ($module=='Entities') {
+			if (isset($_SESSION['activeModule']) && $_SESSION['activeModule'] instanceof Entity) 
+				$modObject = $_SESSION['activeModule'];
+			else {
+				$modObject = new Entity($link);
+				$_SESSION['activeModule'] = $modObject;
+			}
+		} else {
+			$messagebar->addError("The selected module has not been installed in this system.");
+			$link->close();
+			return;			
+		}
+		if (is_null($modObject)) {
+			$messagebar->addError("The selected module is not available at the moment.  Please wait a few minutes and try again.");
+			$link->close();
+			return;
+		}
+		$modObject->executeSearch($searchParameters);
 	} elseif ($command=='logoff') {
 		$_SESSION['link']->close();
 		unset($_SESSION['link']);
