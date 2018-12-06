@@ -97,7 +97,7 @@ function jquery() {
 		if (isset($_POST['searchParameters']) && is_array($_POST['searchParameters'])) {
 			$searchParameters = $_POST['searchParameters'];
 		}
-		if ($module=='Entities') {
+		if ($module=='EntitySearch') {
 			if (isset($_SESSION['activeModule']) && $_SESSION['activeModule'] instanceof Entity) 
 				$modObject = $_SESSION['activeModule'];
 			else {

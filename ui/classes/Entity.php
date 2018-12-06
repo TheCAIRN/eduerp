@@ -20,7 +20,28 @@ class Entity {
 		$this->dbconn = $link;
 	} // function setDbConn()
 	public function listRecords() {
-	
+		$mb = new MessageBar();
+		if (count($this->recordSet)==0) {
+			$mb->addWarning('No records found.');
+			$this->searchPage();
+		} else {
+			$mb->addInfo(count($this->recordSet).' record'.(count($this->recordSet)==1?'':'s').' found.');
+			$html = '<TABLE id="searchResultsList" class="recordList">';
+			$recordNumber = 0;
+			foreach ($this->recordSet as $id=>$data) {
+				if ($recordNumber==0) {
+					$headers = array_keys($data);
+					$html .= '<TR><TH>ID</TH>';
+					foreach ($headers as $cname) $html .= '<TH>'.$cname.'</TH>';
+					$html .= '</TR>';
+				}
+				$html .= '<TR><TD><BUTTON class="idButton" onClick="viewEntityRecord('.$id.');">'.$id.'</BUTTON></TD>';
+				foreach ($data as $field) $html .= '<TD>'.$field.'</TD>';
+				$html .= '</TR>';
+				$recordNumber++;
+			}
+			$html .= '</TABLE>';
+		}
 	} // function listRecords()
 	public function searchPage() {
 		$html = '<FIELDSET class="searchPage" id="EntitySearch">';
@@ -55,6 +76,26 @@ class Entity {
 		$html .= '</FIELDSET>';
 		echo $html;
 	} // function searchPage()
+	public function executeSearch($criteria) {
+		$q = "SELECT entity_id,entity_name,entity_type_description,entity_class_description,entity_status,city,spc_abbrev,country ".
+			"FROM ent_entities e ".
+			"LEFT OUTER JOIN cx_addresses a ON a.address_id=e.primary_address ".
+			"LEFT OUTER JOIN ent_entity_types t ON e.entity_type=t.entity_type ".
+			"LEFT OUTER JOIN ent_classes c ON c.entity_class_id=e.entity_class_id ";
+		// TODO: Add $criteria
+		// TODO: Convert to prepared statements
+		$result = $this->dbconn->query($q);
+		if ($result!==false) {
+			$this->recordSet = array();
+			while ($row=$result->fetch_assoc()) {
+				$this->recordSet[$row['entity_id']] = array('name'=>$row['entity_name'],'type'=>$row['entity_type_description'],
+					'class'=>$row['entity_class_description'],'status'=>$row['entity_status'],'city'=>$row['city'],
+					'spc'=>$row['spc_abbrev'],'country'=>$row['country']);
+			} // while rows
+		} // if query succeeded
+		$this->listRecords();
+		$_SESSION['currentScreen'] = 102;
+	} // executeSearch()
 	public function display() {
 	
 	} // function display()
