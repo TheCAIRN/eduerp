@@ -26,7 +26,7 @@ class Entity {
 			$this->searchPage();
 		} else {
 			$mb->addInfo(count($this->recordSet).' record'.(count($this->recordSet)==1?'':'s').' found.');
-			$html = '<TABLE id="searchResultsList" class="recordList">';
+			$html = '<DIV id="searchResultsDiv"><TABLE id="searchResultsList" class="recordList">';
 			$recordNumber = 0;
 			foreach ($this->recordSet as $id=>$data) {
 				if ($recordNumber==0) {
@@ -40,7 +40,8 @@ class Entity {
 				$html .= '</TR>';
 				$recordNumber++;
 			}
-			$html .= '</TABLE>';
+			$html .= '</TABLE></DIV>';
+			echo $html;
 		}
 	} // function listRecords()
 	public function searchPage() {
