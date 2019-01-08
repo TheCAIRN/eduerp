@@ -115,6 +115,38 @@ function jquery() {
 			return;
 		}
 		$modObject->executeSearch($searchParameters);
+	} elseif ($command=='viewRecord') {
+		if (!isset($_POST['module'])) {
+			$messagebar->addError("The selected module has not been installed in this system.");
+			$link->close();
+			return;
+		}
+		if (!isset($_POST['id'])) {
+			$messagebar->addError("No record has been selected to display.");
+			$link->close();
+			return;
+		}
+		$module = $_POST['module'];
+		$id = $_POST['id'];
+		$modObject = null;
+		if ($module=='Entity') {
+			$modObject = new Entity($link);
+		} else {
+			$messagebar->addError("The selected module has not been installed in this system.");
+			$link->close();
+			return;			
+		}
+		if (is_null($modObject)) {
+			$messagebar->addError("The selected module is not available at the moment.  Please wait a few minutes and try again.");
+			$link->close();
+			return;
+		}
+		if (!($modObject->isIDValid($id))) {
+			$messagebar->addError("The selected record ID is not valid for this module.");
+			$link->close();
+			return;
+		}
+		$modObject->display($id);
 	} elseif ($command=='logoff') {
 		$_SESSION['link']->close();
 		unset($_SESSION['link']);

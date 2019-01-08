@@ -11,6 +11,8 @@ class Workspace {
 		switch ($this->currentScreen) {
 			case 0: echo $this->dashboard(); break;
 			case 1: $ent = new Entity($this->dbconn); echo $ent->searchPage(); break;
+			case 102: $ent = new Entity($this->dbconn); $ent->listRecords(); break;
+			case 202: $ent = new Entity($this->dbconn); $ent->display($_SESSION['currentID']); break;
 		}
 		
 	} // render()

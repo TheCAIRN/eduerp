@@ -19,7 +19,7 @@ $messagebar = new Messagebar();
 //	$link = $_SESSION['link'];
 //}
 $logobar = new Logobar();
-//$toolbar = new Toolbar();
+$toolbar = new Toolbar();
 //$navbar = new Navbar();
 //$footerbar = new Footerbar();
 $workspace = new Workspace($link);
@@ -40,7 +40,9 @@ $workspace = new Workspace($link);
 <SCRIPT type="text/javascript">
 var currentScreen = 0;
 function updateDiv(whichDiv) {
-	
+	$.post('barstatus.php',{jquery:whichDiv},function(data) {
+		if (data!='0') $('#'+whichDiv).html(data);
+	});
 } // updateDiv()
 function mainMenu() {
 	$.post('jq.php',{jquery:'mainMenu'},function(data) {
@@ -85,11 +87,18 @@ function executeSearch(whichModule) {
 		updateDiv('toolbar');
 	});
 } // executeSearch()
+function viewRecord(whichModule,id) {
+	$.post('jq.php',{jquery:'viewRecord',module:whichModule,id:id},function(data) {
+		if (data.length > 0) $("#core").html(data);
+		updateDiv('messagebar');
+		updateDiv('toolbar');
+	});
+}
 </SCRIPT>
 </HEAD>
 <BODY>
 <DIV id="logobar"><?php $logobar->render(); ?></DIV>
-<DIV id="toolbar">TOOLBAR<?php /*$toolbar->render();*/ ?></DIV>
+<DIV id="toolbar"><?php $toolbar->render(); ?></DIV>
 <DIV id="messagebar"><?php $messagebar->render(); ?></DIV>
 <DIV id="content">
 <DIV id="leftnav">HOME<BR /><?php /*$navbar->render(); */?></DIV>
