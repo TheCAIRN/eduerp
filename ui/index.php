@@ -53,11 +53,19 @@ function mainMenu() {
 } // mainMenu()
 function selectModule(whichModule) {
 	var moduleName = whichModule.id.replace('ModuleIcon','');
-	$.post('jq.php',{jquery:'moduleSearchSpace',module:moduleName},function (data) {
-		if (data.length > 0) $("#core").html(data);
-		updateDiv('messagebar');
-		updateDiv('toolbar');
-	});
+	if (whichModule=="CoreLookups" || whichModule=="Items") {
+		$.post('jq.php',{jquery:'moduleSubMenu',module:moduleName},function (data) {
+			if (data.length > 0) $("#core").html(data);
+			updateDiv('messagebar');
+			updateDiv('toolbar');
+		});
+	} else {
+		$.post('jq.php',{jquery:'moduleSearchSpace',module:moduleName},function (data) {
+			if (data.length > 0) $("#core").html(data);
+			updateDiv('messagebar');
+			updateDiv('toolbar');
+		});
+	}
 } // selectModule()
 function clearMessages() {
 	$.post('jq.php',{jquery:'clearMessages'},function (data) {

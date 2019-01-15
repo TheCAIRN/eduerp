@@ -4,13 +4,15 @@ class Toolbar {
 		
 	} // __construct()
 	public function render() {
-		$html = '<BUTTON class="toolbarButton" id="homeButton" title="Home">H</BUTTON>';
+		$html = '<BUTTON class="toolbarButton" id="homeButton" title="Home" onClick="mainMenu();">H</BUTTON>';
 		if (isset($_SESSION['currentScreen'])) {
 			$cs = $_SESSION['currentScreen'];
 			if ($cs >= 1 && $cs < 100) {
 				// Submenu or search
+				$mod = '';
+				if ($cs==1) $mod="'EntitySearch'";
 				$html .= '<BUTTON class="toolbarButton" id="clearButton" title="Clear">C</BUTTON>';
-				$html .= '<BUTTON class="toolbarButton" id="executeButton" title="Execute">X</BUTTON>';
+				$html .= '<BUTTON class="toolbarButton" id="executeButton" title="Execute" onClick="executeSearch('.$mod.');">X</BUTTON>';
 			}
 			if ($cs >= 100 && $cs < 200) {
 				// Search results list
@@ -18,10 +20,14 @@ class Toolbar {
 			}
 			if ($cs >= 200 && $cs < 300) {
 				// View record
-				$html .= '<BUTTON class="toolbarButton" id="firstButton" title="First">&lt;&lt;</BUTTON>';
-				$html .= '<BUTTON class="toolbarButton" id="prevButton" title="Previous">&lt;</BUTTON>';
-				$html .= '<BUTTON class="toolbarButton" id="nextButton" title="Next">&gt;</BUTTON>';
-				$html .= '<BUTTON class="toolbarButton" id="lastButton" title="Last">&gt;&gt;</BUTTON>';
+				$mod = '';
+				if ($cs==202) $mod="'Entity'";
+				if (!isset($_SESSION['idarray']) || count($_SESSION['idarray'])<5) $_SESSION['idarray'] = array(0,0,0,0,0);
+				$html .= '<BUTTON class="toolbarButton" id="firstButton" title="First" onClick="viewRecord('.$mod.','.$_SESSION['idarray'][0].');">&lt;&lt;</BUTTON>';
+				$html .= '<BUTTON class="toolbarButton" id="prevButton" title="Previous" onClick="viewRecord('.$mod.','.$_SESSION['idarray'][1].');">&lt;</BUTTON>';
+				$html .= '<LABEL class="toolbarLabel" id="currentRecordNumber">'.$_SESSION['idarray'][2].'</LABEL>';
+				$html .= '<BUTTON class="toolbarButton" id="nextButton" title="Next" onClick="viewRecord('.$mod.','.$_SESSION['idarray'][3].');">&gt;</BUTTON>';
+				$html .= '<BUTTON class="toolbarButton" id="lastButton" title="Last" onClick="viewRecord('.$mod.','.$_SESSION['idarray'][4].');">&gt;&gt;</BUTTON>';
 			}
 		}
 		echo $html;

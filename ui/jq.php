@@ -36,6 +36,17 @@ function jquery() {
 		$_SESSION['currentScreen'] = 0;
 		$ws = new Workspace();
 		$ws->render();
+	} elseif ($command=='moduleSubMenu') {
+		if (!isset($_POST['module'])) {
+			$messagebar->addError("The selected module has not been installed in this system.");
+			$link->close();
+			return;
+		}
+		$module = $_POST['module'];
+		$modObject = null;
+		if ($mule=='Items') {
+			
+		}
 	} elseif ($command=='moduleSearchSpace') {
 		// present the search screen for the selected module.
 		if (!isset($_POST['module'])) {

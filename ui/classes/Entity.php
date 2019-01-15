@@ -107,8 +107,12 @@ class Entity {
 		$this->listRecords();
 		$_SESSION['currentScreen'] = 102;
 		$_SESSION['lastCriteria'] = $criteria;
+		if (!isset($_SESSION['searchResults'])) $_SESSION['searchResults'] = array();
+		$_SESSION['searchResults']['Entity'] = array_keys($this->recordSet);
 	} // executeSearch()
 	public function isIDValid($id) {
+		// TODO: Validate that the ID is actually a record in the database
+		if ($id<1) return false;
 		if (is_integer($id)) return true;
 		if (ctype_digit($id)) return true;
 		return false;
@@ -178,7 +182,16 @@ class Entity {
 		$stmt->close();
 		echo $html;
 		$_SESSION['currentScreen'] = 202;
-		$_SESSION['currentID'] = $id;
+		if (!isset($_SESSION['searchResults']) && !isset($_SESSION['searchResults']['Entity']))
+			$_SESSION['idarray'] = array(0,0,$id,0,0);
+		else {
+			$idloc = array_search($id,$_SESSION['searchResults']['Entity'],false);
+			$f = $_SESSION['searchResults']['Entity'][0];
+			$l = $_SESSION['searchResults']['Entity'][] = array_pop($_SESSION['searchResults']['Entity']); // https://stackoverflow.com/questions/3687358/whats-the-best-way-to-get-the-last-element-of-an-array-without-deleting-it#comment63556865_3687358
+			if ($idloc > 0) $p = $_SESSION['searchResults']['Entity'][$idloc-1]; else $p = $f;
+			if ($l != $id) $n = $_SESSION['searchResults']['Entity'][$idloc+1]; else $n = $l;
+			$_SESSION['idarray'] = array($f,$p,$id,$n,$l);
+		}
 	} // function display()
 } // class Entity
 ?>

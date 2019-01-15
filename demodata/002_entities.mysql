@@ -130,3 +130,15 @@ VALUES
 ,(48,'BUS',5,'Eden Produce Santiago 1',NULL,'A','1913-01-01',NULL,NULL,'N',1,1,NOW(),1,NOW())
 ,(49,'BUS',8,'Eden Fish Abidijan 1',NULL,'A','1913-01-01',NULL,NULL,'N',1,1,NOW(),1,NOW())
 ;
+
+INSERT INTO ent_division_master (division_id,division_code,division_name,created_by,creation_date,last_update_by,last_update_date) VALUES
+(1,'FARM ','Farming division',1,NOW(),1,NOW())
+,(2,'FISH ','Fishing division',1,NOW(),1,NOW())
+,(3,'REST ','Restaurant division',1,NOW(),1,NOW())
+,(4,'MKT  ','Market division',1,NOW(),1,NOW())
+;
+
+INSERT INTO ent_department_master (department_id,department_code,department_name,created_by,creation_date,last_update_by,last_update_date) VALUES
+(1,'PNN  ','Product Names and Numbers',1,NOW(),1,NOW())
+;
+
