@@ -18,24 +18,17 @@ function jquery() {
 	if (!ctype_alnum($command)) return; // No special characters, including whitespace or punctuation, are allowed in these jquery commands
 
 	$messagebar = new Messagebar();
-	//if (!isset($_SESSION['link'])) {
-		include('globals.php');
-		$link = new mysqli($dbhost,$dbuser,$dbpass,$dbname);
-		if ($link->connect_error) {
-			$messagebar->addError($link->connect_error);
-			unset($link);
-	//	} else {
-	//		$_SESSION['link'] = $link;
-		}
-	//} else {
-	//	$link = $_SESSION['link'];
-	//}
+	include('globals.php');
+	$link = new mysqli($dbhost,$dbuser,$dbpass,$dbname);
+	if ($link->connect_error) {
+		$messagebar->addError($link->connect_error);
+		unset($link);
+	}
+	$ws = new Workspace($link);
 	
 	if ($command=='mainMenu') {
 		unset($_SESSION['activeModule']);
-		$_SESSION['currentScreen'] = 0;
-		$ws = new Workspace();
-		$ws->render();
+		$ws->setCurrentScreen(0);
 	} elseif ($command=='moduleSubMenu') {
 		if (!isset($_POST['module'])) {
 			$messagebar->addError("The selected module has not been installed in this system.");
@@ -43,10 +36,12 @@ function jquery() {
 			return;
 		}
 		$module = $_POST['module'];
-		$modObject = null;
-		if ($mule=='Items') {
-			
+		if ($mule=='Contacts') {
+			$ws->setCurrentScreen(3);
+		} elseif ($mule=='Items') {
+			$ws->setCurrentScreen(4);
 		}
+		// Workspace::setCurrentScreen renders immediately.
 	} elseif ($command=='moduleSearchSpace') {
 		// present the search screen for the selected module.
 		if (!isset($_POST['module'])) {
@@ -55,47 +50,33 @@ function jquery() {
 			return;
 		}
 		$module = $_POST['module'];
-		$modObject = null;
 		if ($module=='Entities') {
-			$modObject = new Entity($link);
-			$_SESSION['currentScreen'] = 1;
+			$ws->setCurrentScreen(1);
 		} elseif ($module=='CoreLookups') {
-			
-			$_SESSION['currentScreen'] = 2;
+			$ws->setCurrentScreen(2);
 		} elseif ($module=='Contacts') {
 			// Generate sub-menu for People and Addresses
-			
-			$_SESSION['currentScreen'] = 3;
+			$ws->setCurrentScreen(3);
 		} elseif ($module=='Items') {
-			
-			$_SESSION['currentScreen'] = 4;
+			// Generate various sub-menus for Item setup and inventory
+			$ws->setCurrentScreen(4);
 		} elseif ($module=='Vendors') {
-			
-			$_SESSION['currentScreen'] = 5;
+			$ws->setCurrentScreen(5);
 		} elseif ($module=='Freight') {
-			
-			$_SESSION['currentScreen'] = 6;
+			$ws->setCurrentScreen(6);
 		} elseif ($module=='Purchasing') {
-			
-			$_SESSION['currentScreen'] = 7;
-		} elseif ($module=='Humans') {
-			
-			$_SESSION['currentScreen'] = 8;
+			$ws->setCurrentScreen(7);
+		} elseif ($module=='People') {
+			$ws->setCurrentScreen(8);
 		} elseif ($module=='Addresses') {
-			
-			$_SESSION['currentScreen'] = 9;
+			$ws->setCurrentScreen(9);
+		} elseif ($module=='ItemSetup') {
+			$ws->setCurrentScreen(10);
 		} else {
 			$messagebar->addError("The selected module has not been installed in this system.");
 			$link->close();
 			return;
 		}
-		if (is_null($modObject)) {
-			$messagebar->addError("The selected module is not available at the moment.  Please wait a few minutes and try again.");
-			$link->close();
-			return;
-		}
-		$modObject->searchPage();
-		$_SESSION['activeModule'] = $modObject;
 	} elseif ($command=='executeSearch') {
 		if (!isset($_POST['module'])) {
 			$messagebar->addError("The selected module has not been installed in this system.");
