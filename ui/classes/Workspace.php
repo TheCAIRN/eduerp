@@ -21,6 +21,7 @@ class Workspace {
 			case 9: /* TO DO Addresses */ break;
 			case 10: $item = new ItemManager($this->dbconn); echo $item->searchPage(); break;
 			case 102: $ent = new Entity($this->dbconn); $ent->listRecords(); break;
+			case 110: $item = new ItemManager($this->dbconn); $item->listRecords(); break;
 			case 202: $ent = new Entity($this->dbconn); $ent->display($_SESSION['currentID']); break;
 		}
 		

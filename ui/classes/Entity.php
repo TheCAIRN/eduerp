@@ -20,29 +20,7 @@ class Entity extends ERPBase {
 		return $html;
 	} // function statusSelect
 	public function listRecords() {
-		$mb = new MessageBar();
-		if (count($this->recordSet)==0) {
-			$mb->addWarning('No records found.');
-			$this->searchPage();
-		} else {
-			$mb->addInfo(count($this->recordSet).' record'.(count($this->recordSet)==1?'':'s').' found.');
-			$html = '<DIV id="searchResultsDiv"><TABLE id="searchResultsList" class="recordList">';
-			$recordNumber = 0;
-			foreach ($this->recordSet as $id=>$data) {
-				if ($recordNumber==0) {
-					$headers = array_keys($data);
-					$html .= '<TR><TH>ID</TH>';
-					foreach ($headers as $cname) $html .= '<TH>'.$cname.'</TH>';
-					$html .= '</TR>';
-				}
-				$html .= "<TR><TD><BUTTON class=\"idButton\" onClick=\"viewRecord('Entity',$id);\">$id</BUTTON></TD>";
-				foreach ($data as $field) $html .= '<TD>'.$field.'</TD>';
-				$html .= '</TR>';
-				$recordNumber++;
-			}
-			$html .= '</TABLE></DIV>';
-			echo $html;
-		}
+		parent::abstractListRecords('Entity');
 	} // function listRecords()
 	public function searchPage() {
 		parent::abstractSearchPage('EntitySearch');

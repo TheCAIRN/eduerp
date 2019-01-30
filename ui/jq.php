@@ -96,6 +96,13 @@ function jquery() {
 				$modObject = new Entity($link);
 				$_SESSION['activeModule'] = $modObject;
 			}
+		} elseif ($module=='ItemSearch') {
+			if (isset($_SESSION['activeModule']) && $_SESSION['activeModule'] instanceof ItemManager) 
+				$modObject = $_SESSION['activeModule'];
+			else {
+				$modObject = new ItemManager($link);
+				$_SESSION['activeModule'] = $modObject;
+			}
 		} else {
 			$messagebar->addError("The selected module has not been installed in this system.");
 			$link->close();

@@ -30,3 +30,8 @@
 	background-color: #006600;
 	color: #FFFFFF;
 }
+.labeldiv {
+	display: inline;
+	float: left;
+	text-align: right;
+}
