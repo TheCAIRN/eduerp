@@ -9,7 +9,52 @@ class Entity extends ERPBase {
 		$this->searchFields[] = array('ent_entities','status','Active Flag','dropdown',array(array('A','Active'),array('B','Bankrupt'),array('D','Defunct'),
 			array('I','Temporarily Inactive'),array('S','Seasonally Inactive')));
 	} // function __construct()
-	private function statusSelect($status,$readonly) {
+	public function entitySelect($id=0,$readonly=false) {
+		$html = '<LABEL for="entitySelect">Entity:</LABEL><SELECT id="entitySelect">';
+		$q = 'SELECT entity_id,entity_name FROM ent_entities ORDER BY entity_name;';
+		$result = $this->dbconn->query($q);
+		if ($result!==false) while ($row = $result->fetch_assoc()) {
+			if ($row['entity_id']==$id || !$readonly) 
+				$html .= '<OPTION value="'.$row['entity_id'].'"'.($id==$row['entity_id']?' selected="selected">':'>').$row['entity_name'].'</OPTION>';
+		} else {
+			$html .= '<OPTION>'.$this->dbconn->error.'</OPTION>';
+		}
+		$html .= '</SELECT>';
+		return $html;
+	} // function entitySelect()
+	public function divisionSelect($id=0,$readonly=false,$entity=0) {
+		$html = '<LABEL for="divisionSelect">Division:</LABEL><SELECT id="divisionSelect">';
+		$q = 'SELECT division_id,division_name FROM ent_division_master ORDER BY division_name';
+		if ($entity!=0 && (is_integer($entity) || ctype_digit($entity))) 
+			$q .= ' m INNER JOIN ent_divisions d ON m.division_id=d.division_id AND d.entity_id='.$entity.';';
+		else $q .= ';';
+		$result = $this->dbconn->query($q);
+		if ($result!==false) while ($row = $result->fetch_assoc()) {
+			if ($row['division_id']==$id || !$readonly) 
+				$html .= '<OPTION value="'.$row['division_id'].'"'.($id==$row['division_id']?' selected="selected">':'>').$row['division_name'].'</OPTION>';
+		} else {
+			$html .= '<OPTION>'.$this->dbconn->error.'</OPTION>';
+		}
+		$html .= '</SELECT>';
+		return $html;
+	} // function divisionSelect()
+	public function departmentSelect($id=0,$readonly=false,$entity=0) {
+		$html = '<LABEL for="departmentSelect">Department:</LABEL><SELECT id="departmentSelect">';
+		$q = 'SELECT department_id,department_name FROM ent_department_master ORDER BY department_name';
+		if ($entity!=0 && (is_integer($entity) || ctype_digit($entity))) 
+			$q .= ' m INNER JOIN ent_departments d ON m.department_id=d.department_id AND d.entity_id='.$entity.';';
+		else $q .= ';';
+		$result = $this->dbconn->query($q);
+		if ($result!==false) while ($row = $result->fetch_assoc()) {
+			if ($row['department_id']==$id || !$readonly) 
+				$html .= '<OPTION value="'.$row['department_id'].'"'.($id==$row['department_id']?' selected="selected">':'>').$row['department_name'].'</OPTION>';
+		} else {
+			$html .= '<OPTION>'.$this->dbconn->error.'</OPTION>';
+		}
+		$html .= '</SELECT>';
+		return $html;
+	} // function departmentSelect()
+	public function statusSelect($status='',$readonly=false) {
 		$html = '<LABEL for="entityStatus">Status:</LABEL><SELECT id="entityStatus">';
 		if ($status=='A' || !$readonly) $html .= '<OPTION value="A"'.($status=='A'?' selected="selected">':'>').'Active</OPTION>';
 		if ($status=='B' || !$readonly) $html .= '<OPTION value="B"'.($status=='B'?' selected="selected">':'>').'Bankrupt</OPTION>';
@@ -33,6 +78,7 @@ class Entity extends ERPBase {
 			"LEFT OUTER JOIN ent_classes c ON c.entity_class_id=e.entity_class_id ";
 		// TODO: Add $criteria
 		// TODO: Convert to prepared statements
+		$q .= " ORDER BY entity_id";
 		$result = $this->dbconn->query($q);
 		if ($result!==false) {
 			$this->recordSet = array();

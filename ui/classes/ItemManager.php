@@ -24,9 +24,10 @@ class ItemManager extends ERPBase {
 		$q = "SELECT product_id,product_code,product_description,gtin,item_type_description,item_category_description,product_catalog_title,i.visible 
 			FROM item_master i
 			LEFT OUTER JOIN item_types t ON i.item_type_code=t.item_type_code
-			LEFT OUTER JOIN item_categories c ON i.item_category_id=c.item_category_id";
+			LEFT OUTER JOIN item_categories c ON i.item_category_id=c.item_category_id ";
 		// TODO: Add $criteria
 		// TODO: Convert to prepared statements
+		$q .= " ORDER BY product_id";
 		$result = $this->dbconn->query($q);
 		if ($result!==false) {
 			$this->recordSet = array();
@@ -61,7 +62,7 @@ class ItemManager extends ERPBase {
 		i.product_end_extended_support_date, 
 		t.item_type_description,c.item_category_description,
 		i.visible, i.rev_enabled, i.rev_number, i.created_by, i.creation_date, i.last_update_by, i.last_update_date 
-		FROM inv_master i
+		FROM item_master i
 		LEFT OUTER JOIN item_types t ON i.item_type_code=t.item_type_code
 		LEFT OUTER JOIN item_categories c ON i.item_category_id=c.item_category_id
 		WHERE i.product_id=?";
@@ -72,18 +73,62 @@ class ItemManager extends ERPBase {
 		}
 		$stmt->bind_param('i',$productid);
 		$productid = $id;
-		$result = $stmt->execute($entid,$divid,$deptid,$typecode,$categoryid,$productcode,$description,$catalog,$productuom,
+		$result = $stmt->execute();
+		if ($result!==false) {
+			$stmt->store_result();
+			$stmt->bind_result($entid,$divid,$deptid,$typecode,$categoryid,$productcode,$description,$catalog,$productuom,
 			$gtin,$stdcost,$msrp,$wholesale,$currency,$length,$width,$height,$lwhuom,$weight,$weightuom,$htc,$tariffrevision,
 			$promotion_start_date,$promotion_end_date,$product_launch_date,$product_sunset_date,$product_end_of_support_date,
 			$product_end_extended_support_date,$typedescription,$categorydescription,
 			$visible,$revyn,$revnum,$createdby,$createddate,$updateby,$updatedate);
-		if ($result!==false) {
-			$stmt->bind_result();
 			$stmt->fetch();
 			if ($readonly) $cls = 'RecordView'; else $cls = 'RecordEdit';
 			if ($readonly) $inputtextro = ' readonly="readonly"'; else $inputtextro = '';
+			$ent = new Entity($this->dbconn);
 			$html .= '<FIELDSET id="ItemRecord" class="'.$cls.'">';
-			
+			$html .= '<DIV class="labeldiv"><LABEL for="productID">Product ID:</LABEL><B id="productID">'.$id.'</B></DIV>';
+			$html .= $ent->entitySelect($entid,$readonly);
+			$html .= $ent->divisionSelect($divid,$readonly);
+			$html .= $ent->departmentSelect($deptid,$readonly);
+			// TODO: Convert type and category to dropdowns.
+			$html .= '<DIV class="labeldiv"><LABEL for="itemType">Type:</LABEL><INPUT type="text" id="itemType" value="'.$typecode.'"'.$inputtextro.' /></DIV>';
+			$html .= '<DIV class="labeldiv"><LABEL for="itemCategory">Category:</LABEL><INPUT type="text" id="itemCategory" value="'.$categoryid.'"'.$inputtextro.' /></DIV>';
+			$html .= '<DIV class="labeldiv"><LABEL for="productCode">Product Code:</LABEL><INPUT type="text" id="productCode" value="'.$productcode.'"'.$inputtextro.' /></DIV>';
+			$html .= '<BR /><DIV class="labeldiv" style="display: block; width: 25em; height: 4em;"><LABEL for="itemDescription">Description:</LABEL><TEXTAREA id="itemDescription"'.$inputtextro.'>'.$description.'</TEXTAREA></DIV>';
+			$html .= '<DIV class="labeldiv"><LABEL for="itemCatalog">Catalog:</LABEL><INPUT type="text" id="itemCatalog" value="'.$catalog.'"'.$inputtextro.' /></DIV>';
+			// TODO: Convert all UOM boxes to dropdowns.
+			$html .= '<DIV class="labeldiv"><LABEL for="productUOM">Product UOM:</LABEL><INPUT type="text" id="productUOM" value="'.$productuom.'"'.$inputtextro.' /></DIV>';
+			$html .= '<DIV class="labeldiv"><LABEL for="itemGTIN">GTIN:</LABEL><INPUT type="text" id="itemGTIN" value="'.$gtin.'"'.$inputtextro.' />';
+			if (!$readonly) $html .= "<BUTTON onClick=\"gtinCheck()\">CHECK</BUTTON><BUTTON onClick=\"gtinAssign()\">ASSIGN</BUTTON>"; // in "item.js"
+			$html .= '</DIV>';
+			// TODO: Convert currency to dropdown.
+			$html .= '<DIV class="labeldiv"><LABEL for="currency">Currency:</LABEL><INPUT type="text" id="currency" value="'.$currency.'"'.$inputtextro.' /></DIV>';
+			$html .= '<DIV class="labeldiv"><LABEL for="standardCost">Standard Cost:</LABEL><INPUT type="number" step="any" id="standardCost" value="'.$stdcost.'"'.$inputtextro.' /></DIV>';
+			$html .= '<DIV class="labeldiv"><LABEL for="retailPrice">MSRP:</LABEL><INPUT type="number" step="any" id="retailPrice" value="'.$msrp.'"'.$inputtextro.' /></DIV>';
+			$html .= '<DIV class="labeldiv"><LABEL for="wholesalePrice">Wholesale Price:</LABEL><INPUT type="number" step="any" id="wholesalePrice" value="'.$wholesale.'"'.$inputtextro.' /></DIV>';
+			$html .= '<DIV class="labeldiv"><LABEL for="length">Length:</LABEL><INPUT type="number" step="any" id="length" value="'.$length.'"'.$inputtextro.' /></DIV>';
+			$html .= '<DIV class="labeldiv"><LABEL for="width">Width:</LABEL><INPUT type="number" step="any" id="width" value="'.$width.'"'.$inputtextro.' /></DIV>';
+			$html .= '<DIV class="labeldiv"><LABEL for="height">Height:</LABEL><INPUT type="number" step="any" id="height" value="'.$height.'"'.$inputtextro.' /></DIV>';
+			$html .= '<DIV class="labeldiv"><LABEL for="lwhUOM">L/W/H UOM:</LABEL><INPUT type="text" id="lwhUOM" value="'.$lwhuom.'"'.$inputtextro.' /></DIV>';
+			$html .= '<DIV class="labeldiv"><LABEL for="weight">Weight:</LABEL><INPUT type="number" step="any" id="weight" value="'.$weight.'"'.$inputtextro.' /></DIV>';
+			$html .= '<DIV class="labeldiv"><LABEL for="weightUOM">Weight UOM:</LABEL><INPUT type="text" id="weightUOM" value="'.$weightuom.'"'.$inputtextro.' /></DIV>';
+			$html .= '<DIV class="labeldiv"><LABEL for="htc">HTC:</LABEL><INPUT type="text" id="htc" placeholder="####.##.####" value="'.$htc.'"'.$inputtextro.' /></DIV>';
+			$html .= '<DIV class="labeldiv"><LABEL for="tariffRevision">HTC Revision:</LABEL><INPUT type="number" step="1" min="1" id="tariffRevision" value="'.$tariffrevision.'"'.$inputtextro.' /></DIV>';
+			$html .= '<DIV class="labeldiv"><LABEL for="promoStart">Promotion Start Date:</LABEL><INPUT type="date" id="promoStart" value="'.$promotion_start_date.'"'.$inputtextro.' /></DIV>';
+			$html .= '<DIV class="labeldiv"><LABEL for="promoEnd">Promotion End Date:</LABEL><INPUT type="date" id="promoEnd" value="'.$promotion_end_date.'"'.$inputtextro.' /></DIV>';
+			$html .= '<DIV class="labeldiv"><LABEL for="prodLaunch">Product Launch Date:</LABEL><INPUT type="date" id="prodLaunch" value="'.$product_launch_date.'"'.$inputtextro.' /></DIV>';
+			$html .= '<DIV class="labeldiv"><LABEL for="prodSunset">Product Sunset Date:</LABEL><INPUT type="date" id="prodSunset" value="'.$product_sunset_date.'"'.$inputtextro.' /></DIV>';
+			$html .= '<DIV class="labeldiv"><LABEL for="prodEOS">Product End of Support Date:</LABEL><INPUT type="date" id="prodEOS" value="'.$product_end_of_support_date.'"'.$inputtextro.' /></DIV>';
+			$html .= '<DIV class="labeldiv"><LABEL for="promEOES">Product End of Extended Support Date:</LABEL><INPUT type="date" id="prodEOES" value="'.$product_end_extended_support_date.'"'.$inputtextro.' /></DIV>';
+			$html .= '<DIV id="RecordAudit">';
+			$html .= '<DIV class="labeldiv"><LABEL for="visible">Is product visible?<INPUT type="checkbox" id="visible"'.$inputtextro.' '.($visible==1?'checked="checked" />':'/>').'</DIV>';
+			$html .= '<DIV class="labeldiv"><LABEL for="revenabled">Revision Enabled:</LABEL><INPUT type="checkbox" id="revenabled" '.$inputtextro.' '.($revyn=='Y'?'checked="checked" />':'/>').'</DIV>';
+			$html .= '<DIV class="labeldiv"><LABEL for="revnumber">Revision Number:</LABEL><INPUT type="number" id="revnumber" value="'.$revnum.'"'.$inputtextro.' /></DIV>';
+			$html .= '<DIV class="labeldiv"><LABEL for="createdby">Created By:</LABEL><INPUT type="text" id="createdby" value="'.$createdby.'" readonly="readonly" /></DIV>';	// These 4 fields can only ever be modified by the system
+			$html .= '<DIV class="labeldiv"><LABEL for="createdon">Created On:</LABEL><INPUT type="date" id="createdon" value="'.$createddate.'" readonly="readonly" /></DIV>';
+			$html .= '<DIV class="labeldiv"><LABEL for="modifiedby">Modified By:</LABEL><INPUT type="text" id="modifiedby" value="'.$updateby.'" readonly="readonly" /></DIV>';
+			$html .= '<DIV class="labeldiv"><LABEL for="modifiedon">Modified On:</LABEL><INPUT type="date" id="modifiedon" value="'.$updatedate.'" readonly="readonly" /></DIV>';			
+			$html .= '</DIV>';
 			$html .= '</FIELDSET>';
 		}
 		$stmt->close();

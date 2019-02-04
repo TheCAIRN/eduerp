@@ -30,8 +30,20 @@
 	background-color: #006600;
 	color: #FFFFFF;
 }
+/* Display / Edit / Add Records */
+.RecordView {
+	background-color: #BBBBFF;
+}
+.RecordEdit {
+	background-color: #FFFF99;
+}
 .labeldiv {
 	display: inline;
 	float: left;
 	text-align: right;
+	height: 1.2em;
+	margin-bottom: 5px;
+}
+#RecordAudit {
+	display: block;
 }

@@ -22,6 +22,7 @@ class Toolbar {
 				// View record
 				$mod = '';
 				if ($cs==202) $mod="'Entity'";
+				if ($cs==210) $mod="'ItemManager'";
 				if (!isset($_SESSION['idarray']) || count($_SESSION['idarray'])<5) $_SESSION['idarray'] = array(0,0,0,0,0);
 				$html .= '<BUTTON class="toolbarButton" id="firstButton" title="First" onClick="viewRecord('.$mod.','.$_SESSION['idarray'][0].');">&lt;&lt;</BUTTON>';
 				$html .= '<BUTTON class="toolbarButton" id="prevButton" title="Previous" onClick="viewRecord('.$mod.','.$_SESSION['idarray'][1].');">&lt;</BUTTON>';

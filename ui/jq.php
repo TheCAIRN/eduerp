@@ -130,6 +130,8 @@ function jquery() {
 		$modObject = null;
 		if ($module=='Entity') {
 			$modObject = new Entity($link);
+		} elseif ($module=='ItemManager') {
+			$modObject = new ItemManager($link);
 		} else {
 			$messagebar->addError("The selected module has not been installed in this system.");
 			$link->close();
