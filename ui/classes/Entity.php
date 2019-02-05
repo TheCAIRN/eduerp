@@ -130,8 +130,9 @@ class Entity extends ERPBase {
 			if ($readonly) $inputtextro = ' readonly="readonly"'; else $inputtextro = '';
 			$html .= '<FIELDSET id="EntityRecord" class="'.$cls.'">';
 			$html .= '<LABEL for="entityid">Entity ID:</LABEL><B id="entityid">'.$id.'</B>';
+			$html .= '<LABEL for="entityname">Name:</LABEL><INPUT type="text" id="entityname" value="'.$ename.'"'.$inputtextro.' />';
 			$html .= '<LABEL for="entitytype">Entity Type:</LABEL><SELECT id="entitytype"><OPTION>'.$etype.'</OPTION></SELECT>';
-			$html .= '<LABEL for="entityclass">Entity Type:</LABEL><SELECT id="entityclass"><OPTION>'.$eclass.'</OPTION></SELECT>';
+			$html .= '<LABEL for="entityclass">Entity Class:</LABEL><SELECT id="entityclass"><OPTION>'.$eclass.'</OPTION></SELECT>';
 			$html .= $this->statusSelect($estatus,$readonly);
 			$html .= '<LABEL for="activefrom">Active From:</LABEL><INPUT type="date" id="activefrom" value="'.$edate_activefrom.'"'.$inputtextro.' />';
 			$html .= '<LABEL for="activeuntil">Active Until:</LABEL><INPUT type="date" id="activeuntil" value="'.$edate_activeuntil.'"'.$inputtextro.' />';

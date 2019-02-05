@@ -14,15 +14,18 @@ class Workspace {
 			case 2: echo $this->coreSubmenu(); break;
 			case 3: echo $this->contactSubmenu(); break;
 			case 4: echo $this->itemSubmenu(); break;
-			case 5: $vend = new Vendors($this->dbconn); echo $vend->searchPage(); break;
+			case 5: $vend = new Vendor($this->dbconn); echo $vend->searchPage(); break;
 			case 6: $freight = new Freight($this->dbconn); echo $freight->searchPage(); break;
 			case 7: $purch = new Purchasing($this->dbconn); echo $purch->searchPage(); break;
 			case 8: /* TO DO People */ break;
 			case 9: /* TO DO Addresses */ break;
 			case 10: $item = new ItemManager($this->dbconn); echo $item->searchPage(); break;
 			case 102: $ent = new Entity($this->dbconn); $ent->listRecords(); break;
+			case 105: $vend = new Vendor($this->dbconn); $vend->listRecords(); break;
 			case 110: $item = new ItemManager($this->dbconn); $item->listRecords(); break;
 			case 202: $ent = new Entity($this->dbconn); $ent->display($_SESSION['currentID']); break;
+			case 205: $vend = new Vendor($this->dbconn); $vend->display($_SESSION['currentID']); break;
+			case 210: $item = new ItemManager($this->dbconn); $item->display($_SESSION['currentID']); break;
 		}
 		
 	} // render()
@@ -57,7 +60,7 @@ class Workspace {
 	}
 	private function itemSubmenu() {
 		// TODO: Only display those modules the user has permissions to.
-		$module_list = ['Item Setup','Item Attributes','Item Categories','Item Types','GTIN Master','Inventory Lookup'];
+		$module_list = ['Item Setup','Item Attributes','Item Categories','Item Types','GTIN Master','Inventory Lookup','Bill of Materials'];
 		$html = '';
 		foreach ($module_list as $module) {
 			$html .= '<DIV id="'.str_replace(' ','',$module).'ModuleIcon" class="DashboardIcon" onClick="selectModule(this);">'.$module."</DIV>\r\n";
