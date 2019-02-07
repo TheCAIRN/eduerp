@@ -103,6 +103,13 @@ function jquery() {
 				$modObject = new ItemManager($link);
 				$_SESSION['activeModule'] = $modObject;
 			}
+		} elseif ($module=='VendorSearch') {
+			if (isset($_SESSION['activeModule']) && $_SESSION['activeModule'] instanceof Vendor) 
+				$modObject = $_SESSION['activeModule'];
+			else {
+				$modObject = new Vendor($link);
+				$_SESSION['activeModule'] = $modObject;
+			}
 		} else {
 			$messagebar->addError("The selected module has not been installed in this system.");
 			$link->close();
@@ -132,6 +139,8 @@ function jquery() {
 			$modObject = new Entity($link);
 		} elseif ($module=='ItemManager') {
 			$modObject = new ItemManager($link);
+		} elseif ($module=='Vendor') {
+			$modObject = new Vendor($link);
 		} else {
 			$messagebar->addError("The selected module has not been installed in this system.");
 			$link->close();

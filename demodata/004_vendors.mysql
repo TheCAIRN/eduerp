@@ -1,0 +1,19 @@
+/* Create Vendor Addresses */
+INSERT INTO cx_addresses VALUES
+(501,'76','Quarry Road','','','','','','Wolcott','VT','05680','','US',NULL,NULL,NULL,NULL,NOW())
+
+;
+
+INSERT INTO acgl_accounts (gl_account_id,account_number,entity_id,division_id,department_id,sub_account_number,gl_account_string,
+gl_account_name,gl_account_balance,currency_code,rev_enabled,rev_number,created_by,creation_date,last_update_by,last_update_date)
+VALUES
+(501,54001,1,NULL,NULL,501,'54001.00501','High Mowing Seeds',0.00,'USD','N',1,1,NOW(),1,NOW())
+
+;
+
+INSERT INTO pur_vendors (vendor_id,vendor_name,primary_address,billing_address,payment_address,gl_account_id,default_terms,
+status,rev_enabled,rev_number,created_by,creation_date,last_update_by,last_update_date)
+VALUES
+(1,'High Mowing Seeds',501,501,501,501,NULL,'A','N',1,1,NOW(),1,NOW())
+
+;
