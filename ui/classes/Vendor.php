@@ -27,10 +27,10 @@ class Vendor extends ERPBase {
 	public function executeSearch($criteria) {
 		$q = "SELECT vendor_id,vendor_name,gl_account_id,default_terms,status,city,spc_abbrev,country 
 			FROM pur_vendors v
-			LEFT OUTER JOIN cx_addresses a ON a.address_id=v.primary_address;";
+			LEFT OUTER JOIN cx_addresses a ON a.address_id=v.primary_address";
 		// TODO: Add $criteria
 		// TODO: Convert to prepared statements
-		$q .= " ORDER BY vendor_id";
+		$q .= " ORDER BY vendor_id;";
 		$result = $this->dbconn->query($q);
 		if ($result!==false) {
 			$this->recordSet = array();
@@ -97,6 +97,7 @@ class Vendor extends ERPBase {
 			$html .= '</DIV>';
 			$html .= '</FIELDSET>';
 			$html .= '<FIELDSET id="PrimaryAddressRecord" class="'.$cls.'">';
+			$html .= '<LEGEND onClick="$(this).siblings().toggle();">Primary Address</LEGEND>';
 			$html .= '<LABEL for="addr_attn">Attn:</LABEL><INPUT type="text" id="addr_attn" value="'.$aattn.'"'.$inputtextro.' /><BR />';
 			$html .= '<LABEL for="addr_pobox">PO Box:</LABEL><INPUT type="text" id="addr_pobox" value="'.$apobox.'"'.$inputtextro.' /><BR />';
 			$html .= '<INPUT id="addr_number" value="'.$anumber.'"'.$inputtextro.' /><INPUT id="addr_street" value="'.$astreet.'"'.$inputtextro.' /><BR />';
@@ -112,6 +113,7 @@ class Vendor extends ERPBase {
 				'<INPUT type="date" id="addr_lastval" value="'.$alastvalidated.'" /><BR />';
 			$html .= '</FIELDSET>';
 			$html .= '<FIELDSET id="BillingAddressRecord" class="'.$cls.'">';
+			$html .= '<LEGEND onClick="$(this).siblings().toggle();">Billing Address</LEGEND>';
 			$html .= '<LABEL for="addr_attn">Attn:</LABEL><INPUT type="text" id="addr_attn" value="'.$battn.'"'.$inputtextro.' /><BR />';
 			$html .= '<LABEL for="addr_pobox">PO Box:</LABEL><INPUT type="text" id="addr_pobox" value="'.$bpobox.'"'.$inputtextro.' /><BR />';
 			$html .= '<INPUT id="addr_number" value="'.$bnumber.'"'.$inputtextro.' /><INPUT id="addr_street" value="'.$bstreet.'"'.$inputtextro.' /><BR />';
@@ -127,6 +129,7 @@ class Vendor extends ERPBase {
 				'<INPUT type="date" id="addr_lastval" value="'.$blastvalidated.'" /><BR />';
 			$html .= '</FIELDSET>';
 			$html .= '<FIELDSET id="PaymentAddressRecord" class="'.$cls.'">';
+			$html .= '<LEGEND onClick="$(this).siblings().toggle();">Payment Address</LEGEND>';
 			$html .= '<LABEL for="addr_attn">Attn:</LABEL><INPUT type="text" id="addr_attn" value="'.$pattn.'"'.$inputtextro.' /><BR />';
 			$html .= '<LABEL for="addr_pobox">PO Box:</LABEL><INPUT type="text" id="addr_pobox" value="'.$ppobox.'"'.$inputtextro.' /><BR />';
 			$html .= '<INPUT id="addr_number" value="'.$pnumber.'"'.$inputtextro.' /><INPUT id="addr_street" value="'.$pstreet.'"'.$inputtextro.' /><BR />';
@@ -141,6 +144,7 @@ class Vendor extends ERPBase {
 			$html .= '<LABEL for="addr_osm">Open Street Map ID:</LABEL><INPUT id="addr_osm" value="'.$posm.'"'.$inputtextro.' /><LABEL for="addr_lastval">Last validated:</LABEL>'.
 				'<INPUT type="date" id="addr_lastval" value="'.$plastvalidated.'" /><BR />';
 			$html .= '</FIELDSET>';
+			$html .= '<SCRIPT>$("#PrimaryAddressRecord legend").siblings().hide(); $("#BillingAddressRecord legend").siblings().hide(); $("#PaymentAddressRecord legend").siblings().hide(); </SCRIPT>';
 		}
 		$stmt->close();			
 		echo $html;

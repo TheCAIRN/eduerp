@@ -23,9 +23,9 @@ class Workspace {
 			case 102: $ent = new Entity($this->dbconn); $ent->listRecords(); break;
 			case 105: $vend = new Vendor($this->dbconn); $vend->listRecords(); break;
 			case 110: $item = new ItemManager($this->dbconn); $item->listRecords(); break;
-			case 202: $ent = new Entity($this->dbconn); $ent->display($_SESSION['currentID']); break;
-			case 205: $vend = new Vendor($this->dbconn); $vend->display($_SESSION['currentID']); break;
-			case 210: $item = new ItemManager($this->dbconn); $item->display($_SESSION['currentID']); break;
+			case 202: $ent = new Entity($this->dbconn); $ent->display($_SESSION['idarray'][2]); break;
+			case 205: $vend = new Vendor($this->dbconn); $vend->display($_SESSION['idarray'][2]); break;
+			case 210: $item = new ItemManager($this->dbconn); $item->display($_SESSION['idarray'][2]); break;
 		}
 		
 	} // render()

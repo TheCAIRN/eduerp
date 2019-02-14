@@ -37,6 +37,10 @@
 .RecordEdit {
 	background-color: #FFFF99;
 }
+legend {
+	background-color: #006600;
+	color: #FFFFFF;
+}
 .labeldiv {
 	display: inline;
 	float: left;
