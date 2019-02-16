@@ -2,29 +2,38 @@
 INSERT INTO cx_addresses (address_id,building_number,street,attention,apartment,postal_box,
 line2,line3,city,spc_abbrev,postal_code,country,county,maidenhead,latitude,longitude,osm_id,last_validated)
 VALUES
-(501,'76','Quarry Road','','','','','','Wolcott','VT','05680','US','',NULL,NULL,NULL,NULL,NOW())
+(500,'','*** ONLINE ONLY ***','','','','','','','','','US','',NULL,NULL,NULL,NULL,NOW())
+,(501,'76','Quarry Road','','','','','','Wolcott','VT','05680','US','',NULL,NULL,NULL,NULL,NOW())
 ,(502,'W3731','State Road 23','','','','','','Montello','WI','53949','US','',NULL,NULL,NULL,NULL,NOW())
 ,(503,'900','Rockhill Dr.','','','','','','Trevose','PA','19020','US','Bucks',NULL,NULL,NULL,NULL,NOW())
 ,(504,'3421','Horizon Blvd.','','','','','','Trevose','PA','19020','US','Bucks',NULL,NULL,NULL,NULL,NOW())
 ,(505,'600','E. Route 130','','','','','','Burlington','NJ','08016','US','',NULL,NULL,NULL,NULL,NOW())
+,(506,'1611','Ulster Ave.','','','','','','Lake Katrine','NY','12449','US','',NULL,NULL,NULL,NULL,NOW())
+,(507,'1','Kerr Rd.','','','','','','Rhinebeck','NY','12572','US','',NULL,NULL,NULL,NULL,NOW())
 ;
 
 INSERT INTO acgl_accounts (gl_account_id,account_number,entity_id,division_id,department_id,sub_account_number,gl_account_string,
 gl_account_name,gl_account_balance,currency_code,rev_enabled,rev_number,created_by,creation_date,last_update_by,last_update_date)
 VALUES
-(501,54001,1,NULL,NULL,501,'54001.00501','High Mowing Seeds',0.00,'USD','N',1,1,NOW(),1,NOW())
-,(502,54001,1,NULL,NULL,502,'54001.00502','Nelson Pade',0.00,'USD','N',1,1,NOW(),1,NOW())
+(501,54001,1,1,NULL,501,'54001.00501','High Mowing Seeds',0.00,'USD','N',1,1,NOW(),1,NOW())
+,(502,54001,1,1,NULL,502,'54001.00502','Nelson Pade',0.00,'USD','N',1,1,NOW(),1,NOW())
 ,(503,54001,1,NULL,NULL,503,'54001.00503','The Home Depot - Trevose',0.00,'USD','N',1,1,NOW(),1,NOW())
 ,(504,54001,1,NULL,NULL,504,'54001.00504','Lowe''s Garden Center - Trevose',0.00,'USD','N',1,1,NOW(),1,NOW())
-,(505,54001,1,NULL,NULL,505,'54001.00505','Agway - Burlington NJ',0.00,'USD','N',1,1,NOW(),1,NOW())
+,(505,54001,1,1,NULL,505,'54001.00505','Agway - Burlington NJ',0.00,'USD','N',1,1,NOW(),1,NOW())
+,(506,54001,8,1,NULL,506,'54001.00506','Tractor Supply - Ulster',0.00,'USD','N',1,1,NOW(),1,NOW())
+,(507,54001,8,1,NULL,507,'54001.00507','Northeastern Aquatics, Inc.',0.00,'USD','N',1,1,NOW(),1,NOW())
+,(508,54001,1,1,NULL,508,'54001.00508','PremiumFishFood.com',0.00,'USD','N',1,1,NOW(),1,NOW())
 ;
 
-INSERT INTO pur_vendors (vendor_id,vendor_name,primary_address,billing_address,payment_address,gl_account_id,default_terms,
+INSERT INTO pur_vendors (vendor_id,vendor_name,url,primary_address,billing_address,payment_address,gl_account_id,default_terms,
 status,rev_enabled,rev_number,created_by,creation_date,last_update_by,last_update_date)
 VALUES
-(1,'High Mowing Seeds',501,501,501,501,NULL,'A','N',1,1,NOW(),1,NOW())
-,(2,'Nelson Pade Aquaponics',502,502,502,502,NULL,'A','N',1,1,NOW(),1,NOW())
-,(3,'The Home Depot - Trevose',503,503,503,503,NULL,'A','N',1,1,NOW(),1,NOW())
-,(4,'Lowe''s Garden Center - Trevose',504,504,504,504,NULL,'A','N',1,1,NOW(),1,NOW())
-,(5,'Agway - Burlington NJ',505,505,505,505,NULL,'A','N',1,1,NOW(),1,NOW())
+(1,'High Mowing Seeds','https://www.highmowingseeds.com/',501,501,501,501,NULL,'A','N',1,1,NOW(),1,NOW())
+,(2,'Nelson Pade Aquaponics','https://aquaponics.com/',502,502,502,502,NULL,'A','N',1,1,NOW(),1,NOW())
+,(3,'The Home Depot - Trevose','',503,503,503,503,NULL,'A','N',1,1,NOW(),1,NOW())
+,(4,'Lowe''s Garden Center - Trevose','',504,504,504,504,NULL,'A','N',1,1,NOW(),1,NOW())
+,(5,'Agway - Burlington NJ','',505,505,505,505,NULL,'A','N',1,1,NOW(),1,NOW())
+,(6,'Tractor Supply - Ulster','',506,506,506,506,NULL,'A','N',1,1,NOW(),1,NOW())
+,(7,'Northeastern Aquatics, Inc.','',507,507,507,507,NULL,'A','N',1,1,NOW(),1,NOW())
+,(8,'PremiumFishFood.com','https://premiumfishfood.com',500,500,500,508,NULL,'A','N',1,1,NOW(),1,NOW())
 ;

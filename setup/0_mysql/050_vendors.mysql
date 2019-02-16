@@ -5,6 +5,7 @@
 CREATE TABLE IF NOT EXISTS pur_vendors (
 	vendor_id int not null auto_increment PRIMARY KEY
 	,vendor_name varchar(128) not null
+	,url varchar(1024)
 	,primary_address int not null
 	,billing_address int not null
 	,payment_address int not null
@@ -79,6 +80,7 @@ CREATE TABLE IF NOT EXISTS pur_vendor_catalog (
 	,sale_until datetime
 	,discount_percent decimal(9,5)
 	,discount_until datetime
+	,product_url varchar(1024)
 	,status char(1) not null DEFAULT 'A'
 	,rev_enabled char(1) not null DEFAULT 'N'
 	,rev_number int not null default 1

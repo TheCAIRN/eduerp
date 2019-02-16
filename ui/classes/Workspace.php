@@ -60,7 +60,7 @@ class Workspace {
 	}
 	private function itemSubmenu() {
 		// TODO: Only display those modules the user has permissions to.
-		$module_list = ['Item Setup','Item Attributes','Item Categories','Item Types','GTIN Master','Inventory Lookup','Bill of Materials'];
+		$module_list = ['Item Setup','Item Attributes','Item Categories','Item Types','GTIN Master','Inventory Lookup','Bill of Materials','Vendor Catalog'];
 		$html = '';
 		foreach ($module_list as $module) {
 			$html .= '<DIV id="'.str_replace(' ','',$module).'ModuleIcon" class="DashboardIcon" onClick="selectModule(this);">'.$module."</DIV>\r\n";

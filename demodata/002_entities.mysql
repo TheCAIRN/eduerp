@@ -142,3 +142,7 @@ INSERT INTO ent_department_master (department_id,department_code,department_name
 (1,'PNN  ','Product Names and Numbers',1,NOW(),1,NOW())
 ;
 
+INSERT INTO ent_divisions (entity_id,division_id,currency,created_by,creation_date,last_update_by,last_update_date) VALUES
+(1,1,'USD',1,NOW(),1,NOW())
+,(8,1,'USD',1,NOW(),1,NOW())
+;
