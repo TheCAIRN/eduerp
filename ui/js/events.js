@@ -61,3 +61,10 @@ function viewRecord(whichModule,id) {
 		updateDiv('toolbar');
 	});
 }
+function returnToResultsList() {
+	$.post('jq.php',{jquery:'listResultsAgain'},function(data) {
+		if (data.length > 0) $("#core").html(data);
+		updateDiv('messagebar');
+		updateDiv('toolbar');
+	});
+}

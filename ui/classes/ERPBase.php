@@ -57,7 +57,7 @@ class ERPBase {
 		$html .= "<BUTTON id=\"executeSearchButton\" onClick=\"executeSearch('$module');\">Search</BUTTON>";
 		$html .= '</FIELDSET>';
 		echo $html;
-	}
+	} // function abstractSearchPage
 	protected function abstractListRecords($module) {
 		$mb = new MessageBar();
 		if (count($this->recordSet)==0) {
@@ -82,6 +82,35 @@ class ERPBase {
 			$html .= '</TABLE></DIV>';
 			echo $html;
 		}		
+	} // function abstractListRecords
+	protected function abstractSelect($id=0,$readonly=false,$table='',$idfield='',$idnamefield='',$idlabel='') {
+		$table = str_replace(array("'",";","/","\\","-"),"",$table);
+		$idfield = str_replace(array("'",";","/","\\","-"),"",$idfield);
+		$idnamefield = str_replace(array("'",";","/","\\","-"),"",$idnamefield);
+		$idlabel = str_replace(array("'",";","/","\\","-"),"",$idlabel);
+		$html = '<LABEL for="'.$idlabel.'Select">'.ucwords($idlabel).':</LABEL><SELECT id="'.$idlabel.'Select">';
+		$q = "SELECT $idfield,$idnamefield FROM $table ORDER BY $idnamefield;";
+		$result = $this->dbconn->query($q);
+		if ($result!==false) while ($row = $result->fetch_assoc()) {
+			if ($row[$idfield]==$id || !$readonly) 
+				$html .= '<OPTION value="'.$row[$idfield].'"'.($id==$row[$idfield]?' selected="selected">':'>').$row[$idnamefield].'</OPTION>';
+		} else {
+			$html .= '<OPTION>'.$this->dbconn->error.'</OPTION>';
+		}
+		$html .= '</SELECT>';
+		return $html;		
+	} // function abstractSelect
+	protected function displayRecordAudit($inputtextro,$revyn,$revnumber,$user_creation,$date_creation,$user_modify,$date_modify) {
+		$html = '';
+		$html .= '<DIV id="RecordAudit">';
+		$html .= '<LABEL for="revenabled">Revision Enabled:</LABEL><INPUT type="checkbox" id="revenabled" '.$inputtextro.' '.($revyn=='Y'?'checked="checked" />':'/>');
+		$html .= '<LABEL for="revnumber">Revision Number:</LABEL><INPUT type="number" id="revnumber" value="'.$revnumber.'"'.$inputtextro.' />';
+		$html .= '<LABEL for="createdby">Created By:</LABEL><INPUT type="text" id="createdby" value="'.$user_creation.'" readonly="readonly" />';	// These 4 fields can only ever be modified by the system
+		$html .= '<LABEL for="createdon">Created On:</LABEL><INPUT type="datetime-local" id="createdon" value="'.$date_creation.'" readonly="readonly" />';
+		$html .= '<LABEL for="modifiedby">Modified By:</LABEL><INPUT type="text" id="modifiedby" value="'.$user_modify.'" readonly="readonly" />';
+		$html .= '<LABEL for="modifiedon">Modified On:</LABEL><INPUT type="datetime-local" id="modifiedon" value="'.$date_modify.'" readonly="readonly" />';			
+		$html .= '</DIV>';
+		return $html;
 	}
 } // class ERPBase
 ?>

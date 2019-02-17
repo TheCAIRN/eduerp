@@ -50,32 +50,19 @@ function jquery() {
 			return;
 		}
 		$module = $_POST['module'];
-		if ($module=='Entities') {
-			$ws->setCurrentScreen(1);
-		} elseif ($module=='CoreLookups') {
-			$ws->setCurrentScreen(2);
-		} elseif ($module=='Contacts') {
-			// Generate sub-menu for People and Addresses
-			$ws->setCurrentScreen(3);
-		} elseif ($module=='Items') {
-			// Generate various sub-menus for Item setup and inventory
-			$ws->setCurrentScreen(4);
-		} elseif ($module=='Vendors') {
-			$ws->setCurrentScreen(5);
-		} elseif ($module=='Freight') {
-			$ws->setCurrentScreen(6);
-		} elseif ($module=='Purchasing') {
-			$ws->setCurrentScreen(7);
-		} elseif ($module=='People') {
-			$ws->setCurrentScreen(8);
-		} elseif ($module=='Addresses') {
-			$ws->setCurrentScreen(9);
-		} elseif ($module=='ItemSetup') {
-			$ws->setCurrentScreen(10);
-		} else {
+		$cs = array('Dashboard','Entities','CoreLookups','Contacts','Items','Vendors','Freight','Purchasing','Production','Customers','Sales',
+			'People','Addresses','ItemSetup','ItemAttributes','ItemCategories','ItemTypes','GTINMaster','InventoryLookup','BillOfMaterials','VendorCatalog'
+			);
+		$setcs = array_search($module,$cs); // Set the current screen to the index # of the $cs array.
+		if (is_integer($setcs)) $ws->setCurrentScreen($setcs);
+		else {
 			$messagebar->addError("The selected module has not been installed in this system.");
 			$link->close();
 			return;
+		}
+	} elseif ($command=='listResultsAgain') {
+		if (isset($_SESSION['currentScreen']) && ($_SESSION['currentScreen']>=200 && $_SESSION['currentScreen']<300)) {
+			$ws->setCurrentScreen($_SESSION['currentScreen']-100);
 		}
 	} elseif ($command=='executeSearch') {
 		if (!isset($_POST['module'])) {
@@ -110,6 +97,13 @@ function jquery() {
 				$modObject = new Vendor($link);
 				$_SESSION['activeModule'] = $modObject;
 			}
+		} elseif ($module=='VendorCatalogSearch') {
+			if (isset($_SESSION['activeModule']) && $_SESSION['activeModule'] instanceof VendorCatalog) 
+				$modObject = $_SESSION['activeModule'];
+			else {
+				$modObject = new VendorCatalog($link);
+				$_SESSION['activeModule'] = $modObject;
+			}
 		} else {
 			$messagebar->addError("The selected module has not been installed in this system.");
 			$link->close();
@@ -141,6 +135,8 @@ function jquery() {
 			$modObject = new ItemManager($link);
 		} elseif ($module=='Vendor') {
 			$modObject = new Vendor($link);
+		} elseif ($module=='VendorCatalog') {
+			$modObject = new VendorCatalog($link);
 		} else {
 			$messagebar->addError("The selected module has not been installed in this system.");
 			$link->close();

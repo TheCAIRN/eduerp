@@ -8,6 +8,22 @@ class Vendor extends ERPBase {
 			array('I','Temporarily Inactive'),array('S','Seasonally Inactive')));
 		// TO DO: Search by address
 	} // function __construct
+	public function vendorSelect($id=0,$readonly=false) {
+		/*
+		$html = '<LABEL for="vendorSelect">Vendor:</LABEL><SELECT id="vendorSelect">';
+		$q = 'SELECT vendor_id,vendor_name FROM pur_vendors ORDER BY vendor_name;';
+		$result = $this->dbconn->query($q);
+		if ($result!==false) while ($row = $result->fetch_assoc()) {
+			if ($row['vendor_id']==$id || !$readonly) 
+				$html .= '<OPTION value="'.$row['vendor_id'].'"'.($id==$row['vendor_id']?' selected="selected">':'>').$row['vendor_name'].'</OPTION>';
+		} else {
+			$html .= '<OPTION>'.$this->dbconn->error.'</OPTION>';
+		}
+		$html .= '</SELECT>';
+		return $html;
+		*/
+		return parent::abstractSelect($id,$readonly,'pur_vendors','vendor_id','vendor_name','vendor');
+	} // function vendorSelect
 	public function statusSelect($status='',$readonly=false) {
 		$html = '<LABEL for="vendorStatus">Status:</LABEL><SELECT id="vendorStatus">';
 		if ($status=='A' || !$readonly) $html .= '<OPTION value="A"'.($status=='A'?' selected="selected">':'>').'Active</OPTION>';
@@ -84,9 +100,13 @@ class Vendor extends ERPBase {
 			if ($readonly) $cls = 'RecordView'; else $cls = 'RecordEdit';
 			if ($readonly) $inputtextro = ' readonly="readonly"'; else $inputtextro = '';
 			$html .= '<FIELDSET id="VendorRecord" class="'.$cls.'">';
-			$html .= '<LABEL for="vendorid">Entity ID:</LABEL><B id="vendorid">'.$id.'</B>';
+			$html .= '<LABEL for="vendorid">Vendor ID:</LABEL><B id="vendorid">'.$id.'</B>';
 			$html .= '<LABEL for="vendorname">Name:</LABEL><INPUT type="text" id="vendorname" value="'.$vname.'"'.$inputtextro.' />';
+			$html .= '<LABEL for="vendorglacct">GL Account:</LABEL><INPUT type="text" id="vendorglacct" value="'.$vglacct.'"'.$inputtextro.' />';
+			$html .= '<LABEL for="vendorterms">Terms:</LABEL><INPUT type="text" id="vendorterms" value="'.$vterms.'"'.$inputtextro.' />';
 			$html .= $this->statusSelect($vstatus,$readonly);
+			$html .= parent::displayRecordAudit($inputtextro,$vrevyn,$vrevnumber,$vuser_creation,$vdate_creation,$vuser_modify,$vdate_modify);
+			/*
 			$html .= '<DIV id="RecordAudit">';
 			$html .= '<LABEL for="revenabled">Revision Enabled:</LABEL><INPUT type="checkbox" id="revenabled" '.$inputtextro.' '.($vrevyn=='Y'?'checked="checked" />':'/>');
 			$html .= '<LABEL for="revnumber">Revision Number:</LABEL><INPUT type="number" id="revnumber" value="'.$vrevnumber.'"'.$inputtextro.' />';
@@ -95,6 +115,7 @@ class Vendor extends ERPBase {
 			$html .= '<LABEL for="modifiedby">Modified By:</LABEL><INPUT type="text" id="modifiedby" value="'.$vuser_modify.'" readonly="readonly" />';
 			$html .= '<LABEL for="modifiedon">Modified On:</LABEL><INPUT type="date" id="modifiedon" value="'.$vdate_modify.'" readonly="readonly" />';			
 			$html .= '</DIV>';
+			*/
 			$html .= '</FIELDSET>';
 			$html .= '<FIELDSET id="PrimaryAddressRecord" class="'.$cls.'">';
 			$html .= '<LEGEND onClick="$(this).siblings().toggle();">Primary Address</LEGEND>';

@@ -14,6 +14,9 @@ class ItemManager extends ERPBase {
 		$this->searchFields[] = array('item_master','product_catalog_title','Catalog','textbox');
 		$this->searchFields[] = array('item_master','visible','Visible','yn');
 	} // constructor
+	public function itemSelect($id=0,$readonly=false) {
+		return parent::abstractSelect($id,$readonly,'item_master','product_id','product_code','item');
+	} // function itemSelect
 	public function searchPage() {
 		parent::abstractSearchPage('ItemSearch');
 	} // function searchPage()
@@ -38,7 +41,7 @@ class ItemManager extends ERPBase {
 			} // while rows
 		} // if query succeeded
 		$this->listRecords();
-		$_SESSION['currentScreen'] = 110;
+		$_SESSION['currentScreen'] = 113;
 		$_SESSION['lastCriteria'] = $criteria;
 		if (!isset($_SESSION['searchResults'])) $_SESSION['searchResults'] = array();
 		$_SESSION['searchResults']['Item'] = array_keys($this->recordSet);
@@ -94,8 +97,8 @@ class ItemManager extends ERPBase {
 			$html .= '<DIV class="labeldiv"><LABEL for="itemType">Type:</LABEL><INPUT type="text" id="itemType" value="'.$typecode.'"'.$inputtextro.' /></DIV>';
 			$html .= '<DIV class="labeldiv"><LABEL for="itemCategory">Category:</LABEL><INPUT type="text" id="itemCategory" value="'.$categoryid.'"'.$inputtextro.' /></DIV>';
 			$html .= '<DIV class="labeldiv"><LABEL for="productCode">Product Code:</LABEL><INPUT type="text" id="productCode" value="'.$productcode.'"'.$inputtextro.' /></DIV>';
-			$html .= '<BR /><DIV class="labeldiv" style="display: block; width: 25em; height: 4em;"><LABEL for="itemDescription">Description:</LABEL><TEXTAREA id="itemDescription"'.$inputtextro.'>'.$description.'</TEXTAREA></DIV>';
 			$html .= '<DIV class="labeldiv"><LABEL for="itemCatalog">Catalog:</LABEL><INPUT type="text" id="itemCatalog" value="'.$catalog.'"'.$inputtextro.' /></DIV>';
+			$html .= '<BR /><DIV style="display:block;"><LABEL for="itemDescription">Description:</LABEL><TEXTAREA id="itemDescription"'.$inputtextro.'>'.$description.'</TEXTAREA></DIV>';
 			// TODO: Convert all UOM boxes to dropdowns.
 			$html .= '<DIV class="labeldiv"><LABEL for="productUOM">Product UOM:</LABEL><INPUT type="text" id="productUOM" value="'.$productuom.'"'.$inputtextro.' /></DIV>';
 			$html .= '<DIV class="labeldiv"><LABEL for="itemGTIN">GTIN:</LABEL><INPUT type="text" id="itemGTIN" value="'.$gtin.'"'.$inputtextro.' />';
@@ -133,7 +136,7 @@ class ItemManager extends ERPBase {
 		}
 		$stmt->close();
 		echo $html;
-		$_SESSION['currentScreen'] = 210;
+		$_SESSION['currentScreen'] = 213;
 		if (!isset($_SESSION['searchResults']) && !isset($_SESSION['searchResults']['Item']))
 			$_SESSION['idarray'] = array(0,0,$id,0,0);
 		else {

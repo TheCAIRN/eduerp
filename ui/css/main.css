@@ -34,8 +34,20 @@
 .RecordView {
 	background-color: #BBBBFF;
 }
+.RecordView textarea {
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+	width: 80%;
+}
 .RecordEdit {
 	background-color: #FFFF99;
+}
+.RecordEdit textarea {
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+	width: 80%;
 }
 legend {
 	background-color: #006600;

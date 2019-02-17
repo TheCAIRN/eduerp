@@ -24,7 +24,8 @@ class Toolbar {
 				switch ($cs) {
 					case 202: $mod="'Entity'"; break;
 					case 205: $mod="'Vendor'"; break;
-					case 210: $mod="'ItemManager'"; break;
+					case 213: $mod="'ItemManager'"; break;
+					case 220: $mod="'VendorCatalog'"; break;
 				}
 				if (!isset($_SESSION['idarray']) || count($_SESSION['idarray'])<5) $_SESSION['idarray'] = array(0,0,0,0,0);
 				$html .= '<BUTTON class="toolbarButton" id="firstButton" title="First" onClick="viewRecord('.$mod.','.$_SESSION['idarray'][0].');">&lt;&lt;</BUTTON>';
@@ -32,6 +33,7 @@ class Toolbar {
 				$html .= '<LABEL class="toolbarLabel" id="currentRecordNumber">'.$_SESSION['idarray'][2].'</LABEL>';
 				$html .= '<BUTTON class="toolbarButton" id="nextButton" title="Next" onClick="viewRecord('.$mod.','.$_SESSION['idarray'][3].');">&gt;</BUTTON>';
 				$html .= '<BUTTON class="toolbarButton" id="lastButton" title="Last" onClick="viewRecord('.$mod.','.$_SESSION['idarray'][4].');">&gt;&gt;</BUTTON>';
+				// ** TODO: $html .= '<BUTTON class="toolbarButton" id="listResults" title="Results" onClick="returnToResultsList();">L</BUTTON>';
 			}
 		}
 		echo $html;

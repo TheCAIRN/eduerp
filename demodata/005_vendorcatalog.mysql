@@ -1,12 +1,21 @@
+-- Add additional items from catalog, not previously created.
+INSERT INTO item_master (entity_id,division_id,department_id,item_type_code,item_category_id,product_code,product_description,gtin,currency,lwh_uom,weight_uom,created_by,creation_date,last_update_by,last_update_date) VALUES
+(1,1,1,'PI',6,'FFDTALFR','Tilapia Fry Powder','','USD','IN','LBS',1,NOW(),1,NOW())
+,(1,1,1,'PI',6,'FFDTALFI','Tilapia Fingerling Crumble','','USD','IN','LBS',1,NOW(),1,NOW())
+,(1,1,1,'PI',6,'FFDTALFM','Tilapia Fingerling Pellet','','USD','IN','LBS',1,NOW(),1,NOW())
+,(1,1,1,'PI',6,'FFDTALIN','Tilapia Intermediate Pellet','','USD','IN','LBS',1,NOW(),1,NOW())
+,(1,1,1,'PI',6,'FFDTALLG','Tilapia Growout Pellet','','USD','IN','LBS',1,NOW(),1,NOW())
+;
+
 -- Vendor Catalog
 INSERT INTO pur_vendor_catalog (vendor_catalog_id,vendor_id,currency,product_id,
 vendor_item_number,vendor_gtin,description,catalog_price,product_url,status,created_by,
 creation_date,last_update_by,last_update_date) VALUES
 (1,1,'USD',(SELECT product_id FROM item_master WHERE product_code='SEED3151'),'3080-A','','Mountain Princess Tomato 1/10g ~35 seeds',2.95,'https://www.highmowingseeds.com/organic-non-gmo-mountain-princess-tomato-a.html','A',1,NOW(),1,NOW())
-,(2,8,'USD',NULL,'FD-PSP50','','Tilapia PowerStart Fry Powder 50 lbs',99.00,'https://premiumfishfood.com/aquaculture-and-aquaponics-fish-food/tilapia-fish-food/tilapia-powerstart-fry-powder-20-lbs-clone/','A',1,NOW(),1,NOW())
-,(3,8,'USD',NULL,'FD-PSFC50','','Tilapia PowerStart Fingerling Crumble 50 lbs',99.00,'https://premiumfishfood.com/aquaculture-and-aquaponics-fish-food/tilapia-fish-food/tilapia-powerstart-fingerling-crumble-50-lb/','A',1,NOW(),1,NOW())
-,(4,8,'USD',NULL,'FD-PSFP50','','Tilapia Fingerling Pellet 50 lbs',64.95,'https://premiumfishfood.com/aquaculture-and-aquaponics-fish-food/tilapia-fish-food/tilapia-fingerling-pellet-50-lbs/','A',1,NOW(),1,NOW())
-,(5,8,'USD',NULL,'FD-IP50','','Tilapia Intermediate Pellet 50 lbs',64.95,'https://premiumfishfood.com/aquaculture-and-aquaponics-fish-food/tilapia-fish-food/tilapia-intermediate-pellet-50-lbs/','A',1,NOW(),1,NOW())
-,(6,8,'USD',NULL,'FD-UGP50','','Tilapia Ultimate Growout Pellet 50 lbs',54.95,'https://premiumfishfood.com/aquaculture-and-aquaponics-fish-food/tilapia-fish-food/tilapia-ultimate-growout-pellet-50-lbs/','A',1,NOW(),1,NOW())
+,(2,8,'USD',(SELECT product_id FROM item_master WHERE product_code='FFDTALFR'),'FD-PSP50','','Tilapia PowerStart Fry Powder 50 lbs',99.00,'https://premiumfishfood.com/aquaculture-and-aquaponics-fish-food/tilapia-fish-food/tilapia-powerstart-fry-powder-20-lbs-clone/','A',1,NOW(),1,NOW())
+,(3,8,'USD',(SELECT product_id FROM item_master WHERE product_code='FFDTALFI'),'FD-PSFC50','','Tilapia PowerStart Fingerling Crumble 50 lbs',99.00,'https://premiumfishfood.com/aquaculture-and-aquaponics-fish-food/tilapia-fish-food/tilapia-powerstart-fingerling-crumble-50-lb/','A',1,NOW(),1,NOW())
+,(4,8,'USD',(SELECT product_id FROM item_master WHERE product_code='FFDTALFM'),'FD-PSFP50','','Tilapia Fingerling Pellet 50 lbs',64.95,'https://premiumfishfood.com/aquaculture-and-aquaponics-fish-food/tilapia-fish-food/tilapia-fingerling-pellet-50-lbs/','A',1,NOW(),1,NOW())
+,(5,8,'USD',(SELECT product_id FROM item_master WHERE product_code='FFDTALIN'),'FD-IP50','','Tilapia Intermediate Pellet 50 lbs',64.95,'https://premiumfishfood.com/aquaculture-and-aquaponics-fish-food/tilapia-fish-food/tilapia-intermediate-pellet-50-lbs/','A',1,NOW(),1,NOW())
+,(6,8,'USD',(SELECT product_id FROM item_master WHERE product_code='FFDTALLG'),'FD-UGP50','','Tilapia Ultimate Growout Pellet 50 lbs',54.95,'https://premiumfishfood.com/aquaculture-and-aquaponics-fish-food/tilapia-fish-food/tilapia-ultimate-growout-pellet-50-lbs/','A',1,NOW(),1,NOW())
 
 ;
