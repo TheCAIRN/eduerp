@@ -68,3 +68,10 @@ function returnToResultsList() {
 		updateDiv('toolbar');
 	});
 }
+function newRecord() {
+	$.post('jq.php',{jquery:'newRecord'},function(data) {
+		if (data.length > 0) $("#core").html(data);
+		updateDiv('messagebar');
+		updateDiv('toolbar');
+	}
+}

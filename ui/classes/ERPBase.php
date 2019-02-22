@@ -58,6 +58,41 @@ class ERPBase {
 		$html .= '</FIELDSET>';
 		echo $html;
 	} // function abstractSearchPage
+	protected function abstractNewRecord($module) {
+		// TODO: Make sure the user has the rights to create a new record for this module.
+		$html = '';
+		foreach ($this->entryFields as $field) {
+			if (count($field)>=4) {
+				if ($field[3]=='fieldset') {
+					$html .= '<FIELDSET class="RecordEdit" id="'.$field[0].'_edit">';
+					$html .= '<LEGEND onClick="$(this).siblings().toggle();">'.$field[2].'</LEGEND>';
+				} elseif ($field[3]=='endfieldset') {
+					$html .= '</FIELDSET>';
+				} elseif ($field[3]=='fieldtable') {
+					
+				
+				} elseif ($field[3]=='dropdown' && count($field)>=6 && is_array($field[5])) {
+					$q = 'SELECT '.$field[5][0].','.$field[5][1].' FROM '.$field[4].';';
+					$result = $this->dbconn->query($q);
+					if ($result!==false) {
+						$html .= '<DIV class="labeldiv">';
+						$html .= '<LABEL for="'.$field[1].'">'.$field[2].'</LABEL>';
+						$html .= '<SELECT id="'.$field[1].'"><OPTION value="">&nbsp;</OPTION>';
+						while ($option = $result->fetch_row()) {
+							$html .= '<OPTION value="'.$option[0].'">'.$option[1].'</OPTION>';
+						}
+						$html .= '</SELECT>';
+						$html .= '</DIV>';
+					}
+					$result->free();
+				}
+				if ($field[3]=='textbox') $html .= '<INPUT type="text" id="'.$field[1].'" />';
+				if ($field[3]=='integer') $html .= '<INPUT type="number" id="'.$field[1].'" min="0" step="1" />';
+				if ($field[3]=='checkbox') $html .= '<INPUT type="checkbox" id="'.$field[1].'" indeterminate="true" />';
+			} // else, if there are fewer than 4 entries for the field, it is malformed.
+		}
+		return $html;  // This one is returning instead of echoing, because the calling function may need to add some module-specific scripting.
+	} // function abstractNewRecord()
 	protected function abstractListRecords($module) {
 		$mb = new MessageBar();
 		if (count($this->recordSet)==0) {
