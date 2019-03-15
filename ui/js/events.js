@@ -73,5 +73,15 @@ function newRecord() {
 		if (data.length > 0) $("#core").html(data);
 		updateDiv('messagebar');
 		updateDiv('toolbar');
+	});
+}
+function saveRecord(whichModule) {
+	if (whichModule=="Purchasing") {
+		savePurchasingHeader();
+	}
+}
+function addDetailRow(whichModule) {
+	if (whichModule=="Purchasing") {
+		
 	}
 }

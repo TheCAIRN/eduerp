@@ -153,6 +153,35 @@ function jquery() {
 			return;
 		}
 		$modObject->display($id);
+	} elseif ($command=='newRecord') {
+		if (!isset($_SESSION['currentScreen'])) {
+			$messagebar->addError("Please select a module first.");
+			$link->close();
+			return;
+		}
+		if ($_SESSION['currentScreen']%100==7) {
+			$modObject = new Purchasing($link);
+		}
+		if (is_null($modObject)) {
+			$messagebar->addError("The selected module is not available at the moment.  Please wait a few minutes and try again.");
+			$link->close();
+			return;
+		}
+		$modObject->newRecord();
+	} elseif ($command=='insertRecord' || $command=='updateRecord') {
+		$modObject = null;
+		if (!isset($_POST['module'])) {
+			$messagebar->addError("Please select a module first.");
+			$link->close();
+			return;
+		}
+		if ($_POST['module']=='purchasing') {
+			$modObject = new Purchasing($link);
+		}
+		if ($command=='insertRecord')
+			$modObject->insertRecord();
+		else 
+			$modObject->updateRecord();
 	} elseif ($command=='logoff') {
 		$_SESSION['link']->close();
 		unset($_SESSION['link']);
@@ -165,5 +194,7 @@ function jquery() {
 	}
 	$link->close();
 }
+// TODO: This line is only temporary until a true login system is implemented.
+if (!isset($_SESSION['dbuserid'])) $_SESSION['dbuserid'] = 1;
 jquery();
 ?>

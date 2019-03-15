@@ -23,6 +23,8 @@ $toolbar = new Toolbar();
 //$navbar = new Navbar();
 //$footerbar = new Footerbar();
 $workspace = new Workspace($link);
+/* TODO: Add security module */
+$_SESSION['dbuserid'] = 1;
 ?>
 <!DOCTYPE HTML>
 <HTML>
@@ -39,6 +41,7 @@ $workspace = new Workspace($link);
 <SCRIPT type="text/javascript" src="js/jquery-ui.min.js"></SCRIPT>
 <SCRIPT type="text/javascript" src="js/events.js"></SCRIPT>
 <SCRIPT type="text/javascript" src="js/item.js"></SCRIPT>
+<SCRIPT type="text/javascript" src="js/purchasing.js"></SCRIPT>
 <SCRIPT type="text/javascript">
 var currentScreen = 0;
 </SCRIPT>

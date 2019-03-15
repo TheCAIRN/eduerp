@@ -38,6 +38,7 @@ class Workspace {
 			case 205: $vend = new Vendor($this->dbconn); $vend->display($_SESSION['idarray'][2]); break;
 			case 213: $item = new ItemManager($this->dbconn); $item->display($_SESSION['idarray'][2]); break;
 			case 220: $vc = new VendorCatalog($this->dbconn); $vc->display($_SESSION['idarray'][2]); break;
+			case 307: $purch = new Purchasing($this->dbconn); $purch->newRecord(); break;
 		}
 		
 	} // render()

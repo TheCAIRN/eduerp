@@ -5,12 +5,14 @@ class ERPBase {
 	protected $recordSet;
 	protected $searchFields;
 	protected $entryFields;
+	protected $mb;
 	public function __construct($link=null) {
 		$this->dbconn = $link;
 		$this->currentRecord = -1;
 		$this->recordSet = array();
 		$this->searchFields = array();
 		$this->entryFields = array();
+		$this->mb = new MessageBar();
 	} // constructor
 	public function setDbConn($link) {
 		$this->dbconn = $link;
@@ -40,6 +42,7 @@ class ERPBase {
 				if ($field[3]=='textbox') $html .= '<INPUT type="text" id="'.$field[1].'" />';
 				if ($field[3]=='integer') $html .= '<INPUT type="number" id="'.$field[1].'" min="0" step="1" />';
 				if ($field[3]=='checkbox') $html .= '<INPUT type="checkbox" id="'.$field[1].'" indeterminate="true" />';
+				if ($field[3]=='datetime') $html .= '<INPUT type="date" id="'.$field[1].'-date" /><INPUT type="time" id="'.$field[1].'-time" />';
 				if ($field[3]=='dropdown') {
 					$html .= '<SELECT id="'.$field[1].'"><OPTION value="">&nbsp;</OPTION>';
 					foreach ($field[4] as $option) {
@@ -84,7 +87,7 @@ class ERPBase {
 					$tableentry = "";
 				} elseif ($field[3]=='endfieldtable') {
 					$html .= '<TR>'.$tableheader.'</TR>';
-					$html .= '<TR id="row'+$tablerow+'">'.$tableentry.'</TR>';
+					$html .= '<TR id="row'.$tablerow.'">'.$tableentry.'</TR>';
 					$html .= '</TABLE></FIELDSET>';
 					$intable = false;
 					$tablerow++;
@@ -105,42 +108,71 @@ class ERPBase {
 							$tableheader .= '<TH>'.$field[2].'</TH>';
 							$tableentry .= '<TD id="row'.$tablerow.'-'.$field[1].'"><SELECT id="'.$field[1].'"><OPTION value="">&nbsp;</OPTION>';
 							while ($option = $result->fetch_row()) {
-								$html .= '<OPTION value="'.$option[0].'">'.$option[1].'</OPTION>';
+								$tableentry .= '<OPTION value="'.$option[0].'">'.$option[1].'</OPTION>';
 							}
-							$tableentry .= '</SELECT><TD>';
+							$tableentry .= '</SELECT></TD>';
 						}
 					}
 					$result->free();
+				} elseif (!$intable) {
+					$html .= '<DIV class="labeldiv">';
+					$html .= '<LABEL for="'.$field[1].'">'.$field[2].'</LABEL>';
+				} else {
+					$tableheader .= '<TH>'.$field[2].'</TH>';
 				}
 				if ($field[3]=='textbox') 
 					if (!$intable) $html .= '<INPUT type="text" id="'.$field[1].'" />';
 					else {
-						$tableheader .= '<TH>'.$field[2].'</TH>';
 						$tableentry .= '<TD id="row'.$tablerow.'-'.$field[1].'"><INPUT type="text" id="'.$field[1].'" /></TD>';
+					}
+				if ($field[3]=='integerid') 
+					if (!$intable) $html .= '<INPUT type="number" id="'.$field[1].'" min="0" step="1" readonly="readonly" />';
+					else {
+						$tableentry .= '<TD id="row'.$tablerow.'-'.$field[1].'"><INPUT type="number" id="'.$field[1].'" min="0" step="1" readonly="readonly"/></TD>';
 					}
 				if ($field[3]=='integer') 
 					if (!$intable) $html .= '<INPUT type="number" id="'.$field[1].'" min="0" step="1" />';
 					else {
-						$tableheader .= '<TH>'.$field[2].'</TH>';
 						$tableentry .= '<TD id="row'.$tablerow.'-'.$field[1].'"><INPUT type="number" id="'.$field[1].'" min="0" step="1" /></TD>';
 					}
+				if ($field[3]=='decimal') {
+					$places = 5;
+					$decimals = 2;
+					if (count($field)>5) {
+						$places = $field[4];
+						$decimals = $field[5];
+					}
+					$step = 1 / (pow(10,$decimals));
+					$max = pow(10,$places-($decimals+1))-$step;
+					if (!$intable) $html .= '<INPUT type="number" id="'.$field[1].'" min="0" max="'.$max.'" step="'.$step.'" />';
+					else {
+						$tableentry .= '<TD id="row'.$tablerow.'-'.$field[1].'"><INPUT type="number" id="'.$field[1].'" min="0" max="'.$max.'" step="'.$step.'" /></TD>';
+					}
+				}
 				if ($field[3]=='checkbox') 
 					if (!$intable) $html .= '<INPUT type="checkbox" id="'.$field[1].'" indeterminate="true" />';
 					else {
-						$tableheader .= '<TH>'.$field[2].'</TH>';
 						$tableentry .= '<TD id="row'.$tablerow.'-'.$field[1].'"><INPUT type="checkbox" id="'.$field[1].'" indeterminate="true" /></TD>';
 					}
+				if ($field[3]=='datetime') 
+					if (!$intable) {
+						$html .= '<INPUT type="date" id="'.$field[1].'-date" /><INPUT type="time" id="'.$field[1].'-time" />';
+					} else {
+						$tableentry .= '<TD id="row'.$tablerow.'-'.$field[1].'"><INPUT type="date" id="'.$field[1].'-date" /><INPUT type="time" id="'.$field[1].'-time" /></TD>';
+					}
+				if (!$intable) {
+					$html .= '</DIV>';
+				}
 			} // else, if there are fewer than 4 entries for the field, it is malformed.
 		}
 		return $html;  // This one is returning instead of echoing, because the calling function may need to add some module-specific scripting.
 	} // function abstractNewRecord()
 	protected function abstractListRecords($module) {
-		$mb = new MessageBar();
 		if (count($this->recordSet)==0) {
-			$mb->addWarning('No records found.');
+			$this->mb->addWarning('No records found.');
 			$this->searchPage();
 		} else {
-			$mb->addInfo(count($this->recordSet).' record'.(count($this->recordSet)==1?'':'s').' found.');
+			$this->mb->addInfo(count($this->recordSet).' record'.(count($this->recordSet)==1?'':'s').' found.');
 			$html = '<DIV id="searchResultsDiv"><TABLE id="searchResultsList" class="recordList">';
 			$recordNumber = 0;
 			foreach ($this->recordSet as $id=>$data) {

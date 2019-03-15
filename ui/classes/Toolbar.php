@@ -14,11 +14,16 @@ class Toolbar {
 				case 7: $mod="'PurchasingSearch'"; break;
 				case 13: $mod="'ItemSearch'"; break;
 				case 20: $mod="'VendorCatalogSearch'"; break;
-				case 202: $mod="'Entity'"; break;
-				case 205: $mod="'Vendor'"; break;
-				case 207: $mod="'Purchasing'"; break;
-				case 213: $mod="'ItemManager'"; break;
-				case 220: $mod="'VendorCatalog'"; break;
+				case 202: 
+				case 302: $mod="'Entity'"; break;
+				case 205: 
+				case 305: $mod="'Vendor'"; break;
+				case 207: 
+				case 307: $mod="'Purchasing'"; break;
+				case 213: 
+				case 313: $mod="'ItemManager'"; break;
+				case 220: 
+				case 320: $mod="'VendorCatalog'"; break;
 			}
 			if ($cs >= 1 && $cs < 100) {
 				// Submenu or search
@@ -43,7 +48,8 @@ class Toolbar {
 				$html .= '<BUTTON class="toolbarButton" id="newRecordButton" title="New Record" onClick="newRecord();">N</BUTTON>';
 			if ($cs >= 300 && $cs < 400) {
 				// Edit record
-				
+				$html .= '&nbsp;';
+				$html .= '<BUTTON class="toolbarButton" id="saveButton" title="Save" onClick="saveRecord('.$mod.');">S</BUTTON>';
 			}
 		}
 		echo $html;
