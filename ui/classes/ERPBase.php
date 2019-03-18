@@ -114,6 +114,32 @@ class ERPBase {
 						}
 					}
 					$result->free();
+				} elseif ($field[3]=='dropdown' && count($field)>=5 && is_array($field[4])) {
+					if (!$intable) {
+						$html .= '<DIV class="labeldiv">';
+						$html .= '<LABEL for="'.$field[1].'">'.$field[2].'</LABEL>';						
+						$html .= '<SELECT id="'.$field[1].'"><OPTION value="">&nbsp;</OPTION>';
+						foreach ($field[4] as $option) {
+							$html .= '<OPTION value="'.$option[0].'">'.$option[1].'</OPTION>';
+						}
+						$html .= '</SELECT></DIV>';
+					} else {
+						$tableheader .= '<TH>'.$field[2].'</TH>';
+						$tableentry .= '<TD id="row'.$tablerow.'-'.$field[1].'"><SELECT id="'.$field[1].'"><OPTION value="">&nbsp;</OPTION>';
+						foreach ($field[4] as $option) {
+							$tableentry .= '<OPTION value="'.$option[0].'">'.$option[1].'</OPTION>';
+						}
+						$tableentry .= '</SELECT></TD>';
+					}
+				} elseif ($field[3]=='textarea') {
+					if (!$intable) {
+						$html .= '<DIV class="labeldiv" id="'.$field[1].'-div" style="height: 4em;">';
+						$html .= '<LABEL for="'.$field[1].'">'.$field[2].'</LABEL>';						
+						$html .= "<TEXTAREA id=\"{$field[1]}\" onMouseUp=\"document.getElementById('{$field[1]}-div').height=this.height;\">&nbsp;</TEXTAREA></DIV>";
+					} else {
+						$tableheader .= '<TH>'.$field[2].'</TH>';
+						$tableentry .= '<TD id="row'.$tablerow.'-'.$field[1].'"><TEXTAREA id="'.$field[1].'">&nbsp;</TEXTAREA></TD>';
+					}
 				} elseif (!$intable) {
 					$html .= '<DIV class="labeldiv">';
 					$html .= '<LABEL for="'.$field[1].'">'.$field[2].'</LABEL>';
@@ -159,6 +185,14 @@ class ERPBase {
 						$html .= '<INPUT type="date" id="'.$field[1].'-date" /><INPUT type="time" id="'.$field[1].'-time" />';
 					} else {
 						$tableentry .= '<TD id="row'.$tablerow.'-'.$field[1].'"><INPUT type="date" id="'.$field[1].'-date" /><INPUT type="time" id="'.$field[1].'-time" /></TD>';
+					}
+				if ($field[3]=='newlinebutton')
+					if (!$intable) {
+						$html .= '<BUTTON id="newlinebutton"'.((count($field)>=5)?' onClick="'.$field[4].'"':'').'>'.$field[2].'</BUTTON>';
+					} else {
+						$tableentry .= '<TD id="row'.$tablerow.'-'.$field[1].'">';
+						$tableentry .= '<BUTTON id="newlinebutton"'.((count($field)>=5)?' onClick="'.$field[4].'"':'').'>'.$field[2].'</BUTTON>';
+						$tableentry .= '</TD>';
 					}
 				if (!$intable) {
 					$html .= '</DIV>';

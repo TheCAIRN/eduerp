@@ -43,12 +43,6 @@
 .RecordEdit {
 	background-color: #FFFF99;
 }
-.RecordEdit textarea {
-	-webkit-box-sizing: border-box;
-	-moz-box-sizing: border-box;
-	box-sizing: border-box;
-	width: 80%;
-}
 legend {
 	background-color: #006600;
 	color: #FFFFFF;
@@ -57,9 +51,12 @@ legend {
 	display: inline;
 	float: left;
 	text-align: right;
-	height: 1.2em;
+	height: 1.5em;
 	margin-bottom: 5px;
 }
 #RecordAudit {
 	display: block;
+}
+#bom_header_edit {
+	min-height: 5em;
 }

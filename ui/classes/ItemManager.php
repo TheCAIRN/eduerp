@@ -24,13 +24,39 @@ class ItemManager extends ERPBase {
 		parent::abstractListRecords('ItemManager');
 	} // function listRecords()
 	public function executeSearch($criteria) {
+		$searchParameters = array();
+		if (isset($_POST['searchParameters']) && is_array($_POST['searchParameters'])) $searchParameters = $_POST['searchParameters'];
 		$q = "SELECT product_id,product_code,product_description,gtin,item_type_description,item_category_description,product_catalog_title,i.visible 
 			FROM item_master i
 			LEFT OUTER JOIN item_types t ON i.item_type_code=t.item_type_code
 			LEFT OUTER JOIN item_categories c ON i.item_category_id=c.item_category_id ";
-		// TODO: Add $criteria
+		// Add $criteria
+		$criteria = array();
+		foreach($searchParameters as $sp) {
+			if (!is_array($sp) || count($sp)<2) continue;
+			$field = $sp[0];
+			$value = $sp[1];
+			$op = '=';
+			if (in_array($field,array('product_id','product_code','product_description','gtin','entity_id','division_id','department_id','item_type_code','item_category_id','product_catalog_title','visible'))) {
+				// TODO: Add support for lists
+				// TODO: Add support for ranges
+				// TODO: Add support for complex expressions
+				if (strpos($value,'*')!==false || strpos($value,'?')!==false || strpos($value,'%')!==false || strpos($value,'_')!==false) {
+					$op = 'LIKE';
+					$criteria[] = "$field $op '".$this->dbconn->real_escape_string(str_replace('?','_',str_replace('*','%',$value)))."'";
+					continue;
+				} elseif (substr($value,0,2)=='<>' || substr($value,0,2)=='!=') $op='<>';
+				elseif (substr($value,0,1)=='<' || substr($value,0,2)=='>') $op=substr($value,0,1);
+				$criteria[] = "$field $op '".$this->dbconn->real_escape_string($value)."'";
+			}
+		}
+		if (count($criteria)>0) $q .= 'WHERE';
+		for ($i=0;$i<count($criteria);$i++) {
+			$q .= ($i>0?' AND ':' ').$criteria[$i];
+		}
 		// TODO: Convert to prepared statements
 		$q .= " ORDER BY product_id";
+		// For Testing: $this->mb->addInfo($q);
 		$result = $this->dbconn->query($q);
 		if ($result!==false) {
 			$this->recordSet = array();

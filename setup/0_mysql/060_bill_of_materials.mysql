@@ -1,0 +1,66 @@
+/* 
+   BOM stands for Bill of Materials, and is a critical part of the production process.
+   BOM differs from item_components in that the item_components table deals with packaging of sets or packs,
+   where BOM deals with the manufacturing or production process itself.  Think of a BOM as a recipe.
+ */
+
+CREATE TABLE IF NOT EXISTS bom_steps (
+	bom_step_id int not null auto_increment PRIMARY KEY
+	,bom_step_name varchar(40) not null
+	,description varchar(4096)
+	,rev_enabled char(1) not null DEFAULT 'N'
+	,rev_number int not null default 1
+	,created_by int not null
+	,creation_date datetime not null
+	,last_update_by int not null
+	,last_update_date datetime not null
+	,FOREIGN KEY (created_by) REFERENCES sec_users (user_id)
+	,FOREIGN KEY (last_update_by) REFERENCES sec_users (user_id)		
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS bom_header (
+	bom_id int not null auto_increment PRIMARY KEY
+	,resulting_product_id int not null
+	,description varchar(4096)
+	,rev_enabled char(1) not null DEFAULT 'N'
+	,rev_number int not null default 1
+	,created_by int not null
+	,creation_date datetime not null
+	,last_update_by int not null
+	,last_update_date datetime not null
+	,FOREIGN KEY (resulting_product_id) REFERENCES item_master (product_id)
+	,FOREIGN KEY (created_by) REFERENCES sec_users (user_id)
+	,FOREIGN KEY (last_update_by) REFERENCES sec_users (user_id)		
+) ENGINE=InnoDB;
+
+/* 
+   Step type may be either C, where a component is consumed, or P, where a process is performed.
+   C will reference a component_product_id, 
+   P will reference a process from bom_steps,
+   B will reference a sub-BOM (for example, I may have multiple versions of the same product, each as extensions on the previous.
+		The first step in product B would be the BOM for product A.)
+ */
+CREATE TABLE IF NOT EXISTS bom_detail (
+	bom_detail_id int not null auto_increment PRIMARY KEY
+	,bom_id int not null
+	,step_number int not null
+	,step_type char(1) not null
+	,component_product_id int
+	,component_quantity_used decimal(11,5)
+	,bom_step_id int
+	,seconds_to_process decimal(17,3)
+	,sub_bom_id int
+	,description varchar(4096)
+	,rev_enabled char(1) not null DEFAULT 'N'
+	,rev_number int not null default 1
+	,created_by int not null
+	,creation_date datetime not null
+	,last_update_by int not null
+	,last_update_date datetime not null
+	,FOREIGN KEY (bom_id) REFERENCES bom_header (bom_id)
+	,FOREIGN KEY (component_product_id) REFERENCES item_master (product_id)
+	,FOREIGN KEY (bom_step_id) REFERENCES bom_steps (bom_step_id)
+	,FOREIGN KEY (sub_bom_id) REFERENCES bom_header (bom_id)
+	,FOREIGN KEY (created_by) REFERENCES sec_users (user_id)
+	,FOREIGN KEY (last_update_by) REFERENCES sec_users (user_id)		
+) ENGINE=InnoDB;

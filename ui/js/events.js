@@ -33,21 +33,28 @@ function clearMessages() {
 } // clearMessages()
 function executeSearch(whichModule) {
 	var kvp = [];
-	$(".selectPage").children().each(function (index) {
-		if ($(this).is("label")) return;
-		if ($(this).is("input:text") && $(this).val()!="") {
-			kvp[$(this).id] = $(this).val();
+	$(".searchPage").children().each(function (index) {
+		var obj = $(this);
+		if (obj.is("div")) obj = obj.children().eq(1);
+		if (obj.is("label")) return true;
+		if (obj.is("input:text") && obj.val()!="") {
+			//kvp[obj.attr('id')] = obj.val();
+			kvp.push([obj.attr('id'),obj.val()]);
+			console.log(obj.attr('id')+": "+obj.val());
 		}
-		if ($(this).is("select")) {
-			var key = $(this).id;
-			$(this).find("option:selected").each(function (opt_index) {
-				if ($(this).val()=="") return;
+		if (obj.is("select")) {
+			var key = obj.id;
+			obj.find("option:selected").each(function (opt_index) {
+				if ($(this).val()=="") return false;
 				if (kvp[key]=="undefined") kvp[key] = $(this).val();
 				else if (typeof kvp[key]=="string") kvp[key] = [kvp[key],$(this).val()];
 				else kvp[key].push($(this).val());
+				return true;
 			});
 		}
+		return true;
 	});
+	console.log(kvp);
 	$.post('jq.php',{jquery:'executeSearch',module:whichModule,searchParameters:kvp},function (data) {
 		if (data.length > 0) $("#core").html(data);
 		updateDiv('messagebar');

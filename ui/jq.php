@@ -51,7 +51,7 @@ function jquery() {
 		}
 		$module = $_POST['module'];
 		$cs = array('Dashboard','Entities','CoreLookups','Contacts','Items','Vendors','Freight','Purchasing','Production','Customers','Sales',
-			'People','Addresses','ItemSetup','ItemAttributes','ItemCategories','ItemTypes','GTINMaster','InventoryLookup','BillOfMaterials','VendorCatalog'
+			'People','Addresses','ItemSetup','ItemAttributes','ItemCategories','ItemTypes','GTINMaster','InventoryLookup','BillofMaterials','VendorCatalog'
 			);
 		$setcs = array_search($module,$cs); // Set the current screen to the index # of the $cs array.
 		if (is_integer($setcs)) $ws->setCurrentScreen($setcs);
@@ -104,6 +104,13 @@ function jquery() {
 				$modObject = new VendorCatalog($link);
 				$_SESSION['activeModule'] = $modObject;
 			}
+		} elseif ($module=='BOMSearch') {
+			if (isset($_SESSION['activeModule']) && $_SESSION['activeModule'] instanceof BOM) 
+				$modObject = $_SESSION['activeModule'];
+			else {
+				$modObject = new BOM($link);
+				$_SESSION['activeModule'] = $modObject;
+			}
 		} else {
 			$messagebar->addError("The selected module has not been installed in this system.");
 			$link->close();
@@ -137,6 +144,8 @@ function jquery() {
 			$modObject = new Vendor($link);
 		} elseif ($module=='VendorCatalog') {
 			$modObject = new VendorCatalog($link);
+		} elseif ($module=='BOM') {
+			$modObject = new BOM($link);
 		} else {
 			$messagebar->addError("The selected module has not been installed in this system.");
 			$link->close();
@@ -161,6 +170,8 @@ function jquery() {
 		}
 		if ($_SESSION['currentScreen']%100==7) {
 			$modObject = new Purchasing($link);
+		} elseif ($_SESSION['currentScreen']%100==19) {
+			$modObject = new BOM($link);
 		}
 		if (is_null($modObject)) {
 			$messagebar->addError("The selected module is not available at the moment.  Please wait a few minutes and try again.");

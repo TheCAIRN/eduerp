@@ -5,6 +5,13 @@ INSERT INTO item_master (entity_id,division_id,department_id,item_type_code,item
 ,(1,1,1,'PI',6,'FFDTALFM','Tilapia Fingerling Pellet','','USD','IN','LBS',1,NOW(),1,NOW())
 ,(1,1,1,'PI',6,'FFDTALIN','Tilapia Intermediate Pellet','','USD','IN','LBS',1,NOW(),1,NOW())
 ,(1,1,1,'PI',6,'FFDTALLG','Tilapia Growout Pellet','','USD','IN','LBS',1,NOW(),1,NOW())
+,(1,1,1,'SI',6,'FISHTAL0','Tilapia Egg','','USD','IN','LBS',1,NOW(),1,NOW())
+,(1,1,1,'SI',6,'FISHTAL1','Tilapia Fry','','USD','IN','LBS',1,NOW(),1,NOW())
+,(1,1,1,'SI',6,'FISHTAL2','Tilapia Fingerling','','USD','IN','LBS',1,NOW(),1,NOW())
+,(1,1,1,'SI',6,'FISHTAL3','Tilapia Intermediate','','USD','IN','LBS',1,NOW(),1,NOW())
+,(1,1,1,'SI',6,'FISHTAL4','Tilapia Nearly Grown','','USD','IN','LBS',1,NOW(),1,NOW())
+,(1,1,1,'SI',6,'FISHTAL5','Tilapia Full Grown','','USD','IN','LBS',1,NOW(),1,NOW())
+,(1,1,1,'SI',6,'FISHTAL6','Tilapia Breeder','','USD','IN','LBS',1,NOW(),1,NOW())
 ;
 
 -- Vendor Catalog

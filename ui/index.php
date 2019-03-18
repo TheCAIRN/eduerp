@@ -51,7 +51,25 @@ var currentScreen = 0;
 <DIV id="toolbar"><?php $toolbar->render(); ?></DIV>
 <DIV id="messagebar"><?php $messagebar->render(); ?></DIV>
 <DIV id="content">
-<DIV id="leftnav">HOME<BR /><?php /*$navbar->render(); */?></DIV>
+<DIV id="leftnav">Project Roadmap<BR /><?php /*$navbar->render(); */?>
+<UL>
+<LI>&#x2714; Lookup entities</LI>
+<LI>&#x2714; Lookup items</LI>
+<LI>&#x2714; Lookup vendors</LI>
+<LI>&#x2714; Lookup vendor catalog</LI>
+<LI>&#x2714; Create new purchase order</LI>
+<LI>Create new bill of materials</LI>
+<LI>Popup item search</LI>
+<LI>Create new production</LI>
+<LI>Add functionality to Entities: <UL><LI>production capacity</LI><LI>create new entity</LI><LI>Modify entity</LI></UL></LI>
+<LI>Lookup customers</LI>
+<LI>Create sales orders</LI>
+<LI>Update sales orders for shipping</LI>
+<LI>Create shipment</LI>
+<LI>Create invoice</LI>
+<LI>Update purchase order with tracking and receiving</LI>
+</UL>
+</DIV>
 <DIV id="core"><?php $workspace->render(); ?></DIV>
 </DIV>
 <DIV id="footerbar">FOOTERBAR<?php /*$fotterbar->render();*/ ?></DIV>

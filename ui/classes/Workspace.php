@@ -39,6 +39,7 @@ class Workspace {
 			case 213: $item = new ItemManager($this->dbconn); $item->display($_SESSION['idarray'][2]); break;
 			case 220: $vc = new VendorCatalog($this->dbconn); $vc->display($_SESSION['idarray'][2]); break;
 			case 307: $purch = new Purchasing($this->dbconn); $purch->newRecord(); break;
+			case 319: $bom = new BOM($this->dbconn); $bom->newRecord(); break;
 		}
 		
 	} // render()
@@ -59,7 +60,15 @@ class Workspace {
 		return $html;
 	}
 	private function coreSubmenu() {
-		
+		// TODO: Only display those modules the user has permissions to.
+		$module_list = ['Currency','Country','Language','State','UOM Types','UOM','UOM Conversions','Terms','Note Types','Attachment Types','Cancellation Reason Codes',
+			'BOM Steps'];
+		$html = '';
+		foreach ($module_list as $module) {
+			$html .= '<DIV id="'.str_replace(' ','',$module).'ModuleIcon" class="DashboardIcon" onClick="selectModule(this);">'.$module."</DIV>\r\n";
+		}
+		$this->currentScreen = 2;
+		return $html;		
 	}
 	private function contactSubmenu() {
 		// TODO: Only display those modules the user has permissions to.
