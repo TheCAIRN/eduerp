@@ -8,6 +8,7 @@ class BOM extends ERPBase {
 		$this->entryFields[] = array('bom_header','','Bill of Materials','fieldset');
 		$this->entryFields[] = array('bom_header','bom_id','BOM ID','integerid');
 		$this->entryFields[] = array('bom_header','resulting_product_id','Resulting Product','dropdown','item_master',array('product_id','product_code'));
+		$this->entryFields[] = array('bom_header','resulting_quantity','Quantity','decimal',11,5);
 		$this->entryFields[] = array('bom_header','description','Description','textarea');
 		$this->entryFields[] = array('bom_header','rev_enabled','Enable Revision Tracking','checkbox','rev_number');
 		$this->entryFields[] = array('bom_header','rev_number','Revision number','integer');

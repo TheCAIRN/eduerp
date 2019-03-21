@@ -35,6 +35,7 @@ function savePurchasingHeader() {
 			}
 		}
 		if (fields[1]=="updated") {
+			$("#messagebar").html('<DIV class="successMessage">Data saved.</DIV>');
 			pur_orderkey = orderkey;
 		}
 		savePurchasingDetail();

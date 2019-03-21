@@ -42,6 +42,7 @@ $_SESSION['dbuserid'] = 1;
 <SCRIPT type="text/javascript" src="js/events.js"></SCRIPT>
 <SCRIPT type="text/javascript" src="js/item.js"></SCRIPT>
 <SCRIPT type="text/javascript" src="js/purchasing.js"></SCRIPT>
+<SCRIPT type="text/javascript" src="js/BOM.js"></SCRIPT>
 <SCRIPT type="text/javascript">
 var currentScreen = 0;
 </SCRIPT>
