@@ -1,5 +1,25 @@
 <?php
 class BOM extends ERPBase {
+	private $bom_id;
+	private $resulting_product;
+	private $resulting_product_qty;
+	private $bom_description;
+	private $rev_enabled;
+	private $rev_number;
+	
+	private $bom_detail_id;
+	private $step_number;
+	private $step_type;
+	private $component_product_id;
+	private $component_quantity_used;
+	private $bom_step_id;
+	private $seconds_to_process;
+	private $sub_bom_id;
+	private $detail_description;
+	private $detail_rev_enabled;
+	private $detail_rev_number;
+	private $detail_array();
+	
 	public function __construct($link=null) {
 		parent::__construct($link);
 		$this->searchFields[] = array('bom_header','bom_id','BOM ID','integer');
@@ -30,10 +50,26 @@ class BOM extends ERPBase {
 		$this->entryFields[] = array('bom_detail','','','endfieldtable');
 	}
 	public function resetHeader() {
-	
+		$this->bom_id = 0;
+		$this->resulting_product = 0; // product_id
+		$this->resulting_product_qty = 0.00;
+		$this->bom_description = '';
+		$this->rev_enabled = false;
+		$this->rev_number = 1;
+		$this->detail_array() = array();
 	}
 	public function resetDetail() {
-	
+		$this->bom_detail_id = 0;
+		$this->step_number = 0;
+		$this->step_type = '';	// C = Component, P = Process, B = Sub-BOM
+		$this->component_product_id = 0;
+		$this->component_quantity_used = 0.00;
+		$this->bom_step_id = 0;
+		$this->seconds_to_process = 0;
+		$this->sub_bom_id = 0;
+		$this->detail_description = '';
+		$this->detail_rev_enabled = false;
+		$this->detail_rev_number = 1;
 	}
 	public function listRecords() {
 		parent::abstractListRecords('BOM');
@@ -90,11 +126,45 @@ class BOM extends ERPBase {
 	private function insertHeader() {
 		$this->resetHeader();
 		$this->resetDetail();
-	
+		$this->bom_id = isset($_POST['bomid'])?$_POST['bomid']:0;
+		$this->resulting_product = isset($_POST['resultingproductid'])?$_POST['resultingproductid']:0;
+		$this->resulting_product_qty = isset($_POST['resultingquantity'])?$_POST['resultingquantity']:1.00;
+		$this->description = isset($_POST['description'])?$_POST['description']:'';
+		$this->rev_enabled = isset($_POST['rev_enabled'])?$_POST['rev_enabled']:false;
+		$this->rev_number = isset($_POST['rev_number'])?$_POST['rev_number']:1;
+		$q = "INSERT INTO bom_header (resulting_product_id,resulting_quantity,description,rev_enabled,
+			rev_number,created_by,creation_date,last_update_by,last_update_date) VALUES (?,?,?,?,?,?,NOW(),?,NOW());";
+		$stmt = $this->dbconn->prepare($q);
+		$stmt->bind_param('iissiii',$p1,$p2,$p3,$p4,$p5,$p6,$p8);
+		if ($this->resulting_product < 1) {
+			$this->mb->addError("A Bill of Materials must result in a product.");
+			$stmt->close();
+			return;
+		}
+		$p1 = $this->resulting_product;
+		$p2 = $this->resulting_product_qty;
+		$p3 = $this->description;
+		$p4 = ($this->rev_enabled=='true')?'Y':'N';
+		if ($this->rev_number < 1) $this->rev_number = 1;
+		$p5 = $this->rev_number;
+		$p6 = $_SESSION['dbuserid'];
+		$p8 = $_SESSION['dbuserid'];
+		$result = $stmt->execute();
+		if ($result!==false) {
+			$this->bom_id = $this->dbconn->insert_id;
+			echo 'inserted|'.$this->bom_id;
+		} else {
+			echo 'fail|'.$this->dbconn->error;
+			$this->mb->addError($this->dbconn->error);
+		}
+		$stmt->close();		
 	}
 	private function insertDetail() {
 		$this->resetDetail();
-	
+		$this->bom_id = isset($_POST['bomid'])?$_POST['bomid']:0;
+		$this->bom_detail_id = isset($_POST['bomdetailid'])?$_POST['bomdetailid']:0;
+		$this->step_number = isset($_POST['stepnumber'])?$_POST['stepnumber']:0;
+		
 	}
 	private function updateHeader() {
 		$this->resetHeader();
