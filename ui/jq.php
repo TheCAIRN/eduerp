@@ -188,6 +188,8 @@ function jquery() {
 		}
 		if ($_POST['module']=='purchasing') {
 			$modObject = new Purchasing($link);
+		} elseif ($_POST['module']=='BOM') {
+			$modObject = new BOM($link);
 		}
 		if ($command=='insertRecord')
 			$modObject->insertRecord();

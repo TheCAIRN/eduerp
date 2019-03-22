@@ -18,7 +18,7 @@ class BOM extends ERPBase {
 	private $detail_description;
 	private $detail_rev_enabled;
 	private $detail_rev_number;
-	private $detail_array();
+	private $detail_array;
 	
 	public function __construct($link=null) {
 		parent::__construct($link);
@@ -56,7 +56,7 @@ class BOM extends ERPBase {
 		$this->bom_description = '';
 		$this->rev_enabled = false;
 		$this->rev_number = 1;
-		$this->detail_array() = array();
+		$this->detail_array = array();
 	}
 	public function resetDetail() {
 		$this->bom_detail_id = 0;
@@ -164,7 +164,84 @@ class BOM extends ERPBase {
 		$this->bom_id = isset($_POST['bomid'])?$_POST['bomid']:0;
 		$this->bom_detail_id = isset($_POST['bomdetailid'])?$_POST['bomdetailid']:0;
 		$this->step_number = isset($_POST['stepnumber'])?$_POST['stepnumber']:0;
-		
+		$this->step_type = isset($_POST['steptype'])?$_POST['steptype']:'';
+		$this->component_product_id = isset($_POST['component'])?$_POST['component']:null;
+		$this->component_quantity_used = isset($_POST['componentqty'])?$_POST['componentqty']:null;
+		$this->bom_step_id = isset($_POST['bom_step_id'])?$_POST['bom_step_id']:null;
+		$this->seconds_to_process = isset($_POST['processtime'])?$_POST['processtime']:null;
+		$this->sub_bom_id = isset($_POST['sub_bom_id'])?$_POST['sub_bom_id']:null;
+		$this->detail_description = isset($_POST['description'])?$_POST['description']:'';
+		$this->detail_rev_enabled = isset($_POST['rev_enabled'])?$_POST['rev_enabled']:false;
+		$this->detail_rev_number = isset($_POST['rev_number'])?$_POST['rev_number']:1;
+		$q = "INSERT INTO bom_detail (bom_id,step_number,step_type,component_product_id,component_quantity_used,bom_step_id,seconds_to_process,
+			sub_bom_id,description,rev_enabled,rev_number,created_by,creation_date,last_update_by,last_update_date) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,NOW(),?,NOW());";
+		$stmt = $this->dbconn->prepare($q);
+		$stmt->bind_param('iisidiiissiii',$p1,$p3,$p4,$p5,$p6,$p7,$p8,$p9,$p10,$p11,$p12,$p13,$p15);
+		if ($this->bom_id==0) {
+			$this->mb->addError("Details cannot be inserted when the BOM ID is zero.");
+			$stmt->close();
+			return;
+		}
+		$p1 = $this->bom_id;
+		// For update: $p2 = $this->bom_detail_id;
+		$p3 = $this->step_number;
+		if (strpos($this->step_type,'CcPpBb')===false) {
+			$this->mb->addError("Please select a step type: Component, Process, or Sub-BOM.");
+			$stmt->close();
+			return;
+		}
+		$p4 = $this->step_type;
+		if ($this->step_type=='C') {
+			if (is_null($this->component_product_id) || is_null($this->component_quantity_used)) {
+				$this->mb->addError("When implementing a component step, both a component product id and a quantity are required.");
+				$stmt->close();
+				return;
+			}
+			$p5 = $this->component_product_id;
+			$p6 = $this->component_quantity_used;
+			$p7 = null;
+			$p8 = null;
+			$p9 = null;
+		}
+		if ($this->step_type=='P') {
+			if (is_null($this->bom_step_id) || is_null($this->seconds_to_process)) {
+				$this->mb->addError("When implementing a process step, both a process type and time are required.");
+				$stmt->close();
+				return;
+			}
+			$p5 = null;
+			$p6 = null;
+			$p7 = $this->bom_step_id;
+			$p8 = $this->seconds_to_process;
+			$p9 = null;
+		}
+		if ($this->step_type=='B') {
+			if (is_null($this->sub_bom_id)) {
+				$this->mb->addError("When implementing a Sub-BOM, the ID of the link is required.");
+				$stmt->close();
+				return;
+			}
+			$p5 = null;
+			$p6 = null;
+			$p7 = null;
+			$p8 = null;
+			$p9 = $this->sub_bom_id;
+		}
+		$p10 = $this->detail_description;
+		$p11 = ($this->detail_rev_enabled=='true')?'Y':'N';
+		if ($this->detail_rev_number < 1) $this->detail_rev_number = 1;
+		$p12 = $this->detail_rev_number;
+		$p13 = $_SESSION['dbuserid'];
+		$p15 = $_SESSION['dbuserid'];
+		$result = $stmt->execute();
+		if ($result!==false) {
+			$this->bom_detail_id = $this->dbconn->insert_id;
+			echo 'inserted|'.$this->bom_detail_id;
+		} else {
+			echo 'fail|'.$this->dbconn->error;
+			$this->mb->addError($this->dbconn->error);
+		}
+		$stmt->close();				
 	}
 	private function updateHeader() {
 		$this->resetHeader();
