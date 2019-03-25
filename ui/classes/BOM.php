@@ -185,7 +185,7 @@ class BOM extends ERPBase {
 		$p1 = $this->bom_id;
 		// For update: $p2 = $this->bom_detail_id;
 		$p3 = $this->step_number;
-		if (strpos($this->step_type,'CcPpBb')===false) {
+		if (strpos('CcPpBb',$this->step_type)===false) {
 			$this->mb->addError("Please select a step type: Component, Process, or Sub-BOM.");
 			$stmt->close();
 			return;
@@ -242,6 +242,7 @@ class BOM extends ERPBase {
 			$this->mb->addError($this->dbconn->error);
 		}
 		$stmt->close();				
+		// TODO: Update all detail records where step_number >= $this->step_number to +1.
 	}
 	private function updateHeader() {
 		$this->resetHeader();
@@ -254,6 +255,7 @@ class BOM extends ERPBase {
 	}
 	public function insertRecord() {
 		// Assumes values are stored in $_POST
+		$this->mb->addInfo("Inserting ".$_POST['level']);
 		if (isset($_POST['level']) && $_POST['level']=='header') $this->insertHeader();
 		if (isset($_POST['level']) && $_POST['level']=='detail') $this->insertDetail();
 	}

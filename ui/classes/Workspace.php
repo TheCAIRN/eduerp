@@ -33,10 +33,12 @@ class Workspace {
 			case 102: $ent = new Entity($this->dbconn); $ent->listRecords(); break;
 			case 105: $vend = new Vendor($this->dbconn); $vend->listRecords(); break;
 			case 113: $item = new ItemManager($this->dbconn); $item->listRecords(); break;
+			case 119: $bom = new BOM($this->dbconn); $bom->listRecords(); break;
 			case 120: $vc = new VendorCatalog($this->dbconn); $vc->listRecords(); break;
 			case 202: $ent = new Entity($this->dbconn); $ent->display($_SESSION['idarray'][2]); break;
 			case 205: $vend = new Vendor($this->dbconn); $vend->display($_SESSION['idarray'][2]); break;
 			case 213: $item = new ItemManager($this->dbconn); $item->display($_SESSION['idarray'][2]); break;
+			case 219: $bom = new BOM($this->dbconn); $bom->display($_SESSION['idarray'][2]); break;
 			case 220: $vc = new VendorCatalog($this->dbconn); $vc->display($_SESSION['idarray'][2]); break;
 			case 307: $purch = new Purchasing($this->dbconn); $purch->newRecord(); break;
 			case 319: $bom = new BOM($this->dbconn); $bom->newRecord(); break;

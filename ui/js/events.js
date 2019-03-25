@@ -86,9 +86,15 @@ function saveRecord(whichModule) {
 	if (whichModule=="Purchasing") {
 		savePurchasingHeader();
 	}
+	if (whichModule=="BOM") {
+		saveBOMHeader();
+	}
 }
 function addDetailRow(whichModule) {
 	if (whichModule=="Purchasing") {
 		
+	}
+	if (whichModule=="BOM") {
+		newBOMDetailRow();
 	}
 }

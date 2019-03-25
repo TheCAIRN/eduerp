@@ -25,6 +25,7 @@ function saveBOMHeader() {
 			$("#messagebar").html('<DIV class="successMessage">Data saved.</DIV>');
 			currentBOM = orderkey;
 		}
+		updateDiv('messagebar');
 		saveBOMDetail();
 	})
 	.fail(function() {
@@ -32,7 +33,7 @@ function saveBOMHeader() {
 	});	
 }
 function saveBOMDetail() {
-	var row = $("#pur_detail_table tr:last").attr("id");
+	var row = $("#bom_detail_table tr:last").attr("id");
 	var bomid = $("#bom_id").val();
 	var bomdetail = $("#bom_detail_id").val();
 	var stepnumber = $("#step_number").val();
@@ -64,8 +65,14 @@ function saveBOMDetail() {
 			$("#bom_detail_id").val(fields[1]);
 			$("#messagebar").html('<DIV class="successMessage">Data saved.</DIV>');
 			// Create new detail line
-			
+			var oldtr = $("#pur_detail_table tr:last");
+			var newtr = $("#pur_detail_table tbody:last").append("<tr />");
+			var newrow = "row"+(Number(row.substr(3))+1);
+			newtr.id=newrow;
+			newtr.append("<td />",{id:newrow+"-bom_detail_id"});
+			$("#"+row+"-bom_detail_id:first-child").appendTo("#"+newrow+"-bom_detail_id");
 		}
+		updateDiv('messagebar');
 	})
 	.fail(function() {
 		$("#messagebar").html('<DIV class="errorMessage">I could not contact the database. Your data has <B>NOT</B> been saved.</DIV>');
@@ -73,7 +80,7 @@ function saveBOMDetail() {
 }
 function newBOMDetailRow() {
 	var bomid = $("#bom_id").val();
-	if (bomid<1) {
+	if (bomid<1 || bomid=="") {
 		saveBOMHeader();
 	} else {
 		saveBOMDetail();

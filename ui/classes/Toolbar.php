@@ -22,6 +22,8 @@ class Toolbar {
 				case 307: $mod="'Purchasing'"; break;
 				case 213: 
 				case 313: $mod="'ItemManager'"; break;
+				case 219:
+				case 319: $mod="'BOM'"; break;
 				case 220: 
 				case 320: $mod="'VendorCatalog'"; break;
 			}

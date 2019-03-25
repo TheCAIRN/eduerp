@@ -180,6 +180,7 @@ function jquery() {
 		}
 		$modObject->newRecord();
 	} elseif ($command=='insertRecord' || $command=='updateRecord') {
+		// NOTE: all text in $_POST['module'] will be lower case!
 		$modObject = null;
 		if (!isset($_POST['module'])) {
 			$messagebar->addError("Please select a module first.");
@@ -188,7 +189,7 @@ function jquery() {
 		}
 		if ($_POST['module']=='purchasing') {
 			$modObject = new Purchasing($link);
-		} elseif ($_POST['module']=='BOM') {
+		} elseif ($_POST['module']=='bom') {
 			$modObject = new BOM($link);
 		}
 		if ($command=='insertRecord')
