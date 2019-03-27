@@ -65,12 +65,56 @@ function saveBOMDetail() {
 			$("#bom_detail_id").val(fields[1]);
 			$("#messagebar").html('<DIV class="successMessage">Data saved.</DIV>');
 			// Create new detail line
-			var oldtr = $("#pur_detail_table tr:last");
-			var newtr = $("#pur_detail_table tbody:last").append("<tr />");
+			var detailtable = document.getElementById("bom_detail_table");
+			var oldtr = $("#bom_detail_table tr:last");
+			var newtr = detailtable.insertRow(1);
 			var newrow = "row"+(Number(row.substr(3))+1);
 			newtr.id=newrow;
-			newtr.append("<td />",{id:newrow+"-bom_detail_id"});
-			$("#"+row+"-bom_detail_id:first-child").appendTo("#"+newrow+"-bom_detail_id");
+			var newcell = newtr.insertCell(0);
+			newcell.id = newrow+"-bom_detail_id";
+			newcell.innerText = bomdetailid;
+			$("#bom_detail_id").val("");
+			newcell = newtr.insertCell(1);
+			newcell.id = newrow+"-step_number";
+			newcell.innerText = stepnumber;
+			$("#step_number").val("");
+			newcell = newtr.insertCell(2);
+			newcell.id = newrow+"-step_type";
+			newcell.innerText = $("#step_type option:selected").text();
+			$("#step_type").val("");
+			newcell = newtr.insertCell(3);
+			newcell.id = newrow+"-component_product_id";
+			newcell.innerText = $("#component_product_id option:selected").text();
+			$("#component_product_id").val("");
+			newcell = newtr.insertCell(4);
+			newcell.id = newrow+"-component_quantity_used";
+			newcell.innerText = componentqty;
+			$("#component_quantity_used").val("");
+			newcell = newtr.insertCell(5);
+			newcell.id = newrow+"-bom_step_id";
+			newcell.innerText = $("#bom_step_id option:selected").text();
+			$("#bom_step_id").val("");
+			newcell = newtr.insertCell(6);
+			newcell.id = newrow+"-seconds_to_process";
+			newcell.innerText = processtime;
+			$("#seconds_to_process").val("");
+			newcell = newtr.insertCell(7);
+			newcell.id = newrow+"-sub_bom_id";
+			newcell.innerText = $("#sub_bom_id option:selected").text();
+			$("#sub_bom_id").val("");
+			newcell = newtr.insertCell(8);
+			newcell.id = newrow+"-description";
+			newcell.innerText = instructions;
+			$("#description").val("");
+			newcell = newtr.insertCell(9);
+			newcell.id = newrow+"-rev_enabled";
+			if (rev_enabled) newcell.innerText = "Yes"; else newcell.innerText = "No";
+			newcell = newtr.insertCell(10);
+			newcell.id = newrow+"-rev_number";
+			newcell.innerText = rev_number;
+			$("#"+row+"-rev_number:first-child").val("");
+			newcell = newtr.insertCell(11);
+			newcell.innerHTML = "<BUTTON onClick=\"editBOMDetailRow("+newrow+");\">Edit</BUTTON>";
 		}
 		updateDiv('messagebar');
 	})
@@ -85,4 +129,7 @@ function newBOMDetailRow() {
 	} else {
 		saveBOMDetail();
 	}
+}
+function editBOMDetailRow(rownum) {
+	
 }
