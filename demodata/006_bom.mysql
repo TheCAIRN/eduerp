@@ -1,0 +1,5 @@
+INSERT INTO bom_steps (bom_step_id,bom_step_name,description,rev_enabled,rev_number,created_by,creation_date,last_update_by,last_update_date) VALUES
+(1, 'Do nothing','Some steps require things to be just left alone, to allow nature to take its course.','N',1,1,NOW(),1,NOW())
+,(2, 'Apply heat','','N',1,1,NOW(),1,NOW())
+,(3, 'Chill','','N',1,1,NOW(),1,NOW())
+,(4, 'Freeze','','N',1,1,NOW(),1,NOW())

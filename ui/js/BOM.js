@@ -43,9 +43,9 @@ function saveBOMDetail() {
 	var process = $("#bom_step_id").val();
 	var processtime = $("#seconds_to_process").val();
 	var subbom = $("#sub_bom_id option:selected").val();
-	var instructions = $("#"+row+"-description:first-child").val();
+	var instructions = $("#"+row+"-description").children("#description").val();
 	var rev_enabled = $("#"+row+"-rev_enabled:first-child").is(":checked");
-	var rev_number = $("#"+row+"-rev_number:first-child").val();
+	var rev_number = $("#"+row+"-rev_number").children("#rev_number").val();
 	// Perform Validation
 	if (rev_number < 0) rev_number = 1;
 	if (bomid=="" || bomid<0) bomid=currentBOM;
@@ -62,17 +62,23 @@ function saveBOMDetail() {
 		processtime:processtime,sub_bom_id:subbom,description:instructions,rev_enabled:rev_enabled,rev_number:rev_number},function(data) {
 		var fields = data.split("|");
 		if (fields[0]=="inserted") {
+			$("#bom_detail_edit td:nth-child(4), #bom_detail_edit th:nth-child(4)").show();
+			$("#bom_detail_edit td:nth-child(5), #bom_detail_edit th:nth-child(5)").show();
+			$("#bom_detail_edit td:nth-child(6), #bom_detail_edit th:nth-child(6)").show();
+			$("#bom_detail_edit td:nth-child(7), #bom_detail_edit th:nth-child(7)").show();
+			$("#bom_detail_edit td:nth-child(8), #bom_detail_edit th:nth-child(8)").show();
 			$("#bom_detail_id").val(fields[1]);
 			$("#messagebar").html('<DIV class="successMessage">Data saved.</DIV>');
 			// Create new detail line
 			var detailtable = document.getElementById("bom_detail_table");
 			var oldtr = $("#bom_detail_table tr:last");
 			var newtr = detailtable.insertRow(1);
-			var newrow = "row"+(Number(row.substr(3))+1);
+			var lastrow = $("#bom_detail_table tr").eq(1).attr("id");
+			var newrow = "row"+(Number(lastrow.substr(3))+1);
 			newtr.id=newrow;
 			var newcell = newtr.insertCell(0);
 			newcell.id = newrow+"-bom_detail_id";
-			newcell.innerText = bomdetailid;
+			newcell.innerText = fields[1];
 			$("#bom_detail_id").val("");
 			newcell = newtr.insertCell(1);
 			newcell.id = newrow+"-step_number";
@@ -115,6 +121,11 @@ function saveBOMDetail() {
 			$("#"+row+"-rev_number:first-child").val("");
 			newcell = newtr.insertCell(11);
 			newcell.innerHTML = "<BUTTON onClick=\"editBOMDetailRow("+newrow+");\">Edit</BUTTON>";
+			$("#bom_detail_edit td:nth-child(4), #bom_detail_edit th:nth-child(4)").hide();
+			$("#bom_detail_edit td:nth-child(5), #bom_detail_edit th:nth-child(5)").hide();
+			$("#bom_detail_edit td:nth-child(6), #bom_detail_edit th:nth-child(6)").hide();
+			$("#bom_detail_edit td:nth-child(7), #bom_detail_edit th:nth-child(7)").hide();
+			$("#bom_detail_edit td:nth-child(8), #bom_detail_edit th:nth-child(8)").hide();
 		}
 		updateDiv('messagebar');
 	})
