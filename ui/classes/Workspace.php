@@ -30,18 +30,22 @@ class Workspace {
 			case 18: $item = new InventoryManager($this->dbconn); echo $item->searchPage(); break;
 			case 19: $bom = new BOM($this->dbconn); echo $bom->searchPage(); break;
 			case 20: $vc = new VendorCatalog($this->dbconn); echo $vc->searchPage(); break;
+			case 21: $entres = new EntityResource($this->dbconn); echo $entres->searchPage(); break;
 			case 102: $ent = new Entity($this->dbconn); $ent->listRecords(); break;
 			case 105: $vend = new Vendor($this->dbconn); $vend->listRecords(); break;
 			case 113: $item = new ItemManager($this->dbconn); $item->listRecords(); break;
 			case 119: $bom = new BOM($this->dbconn); $bom->listRecords(); break;
 			case 120: $vc = new VendorCatalog($this->dbconn); $vc->listRecords(); break;
+			case 121: $entres = new EntityResource($this->dbconn); $entres->listRecords(); break;
 			case 202: $ent = new Entity($this->dbconn); $ent->display($_SESSION['idarray'][2]); break;
 			case 205: $vend = new Vendor($this->dbconn); $vend->display($_SESSION['idarray'][2]); break;
 			case 213: $item = new ItemManager($this->dbconn); $item->display($_SESSION['idarray'][2]); break;
 			case 219: $bom = new BOM($this->dbconn); $bom->display($_SESSION['idarray'][2]); break;
 			case 220: $vc = new VendorCatalog($this->dbconn); $vc->display($_SESSION['idarray'][2]); break;
+			case 221: $entres = new EntityResource($this->dbconn); $entres->display($_SESSION['idarray'][2]); break;
 			case 307: $purch = new Purchasing($this->dbconn); $purch->newRecord(); break;
 			case 319: $bom = new BOM($this->dbconn); $bom->newRecord(); break;
+			case 321: $entres = new EntityResource($this->dbconn); $entres->newRecord(); break;
 		}
 		
 	} // render()

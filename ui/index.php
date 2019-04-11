@@ -59,7 +59,7 @@ var currentScreen = 0;
 <LI>&#x2714; Lookup vendors</LI>
 <LI>&#x2714; Lookup vendor catalog</LI>
 <LI>&#x2714; Create new purchase order</LI>
-<LI>Create new bill of materials</LI>
+<LI>&#x2714; Create new bill of materials</LI>
 <LI>Popup item search</LI>
 <LI>Create new production</LI>
 <LI>Add functionality to Entities: <UL><LI>production capacity</LI><LI>create new entity</LI><LI>Modify entity</LI></UL></LI>
