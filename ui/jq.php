@@ -26,9 +26,15 @@ function jquery() {
 	}
 	$ws = new Workspace($link);
 	
+	/**************************************************************************
+	 * MAIN MENU
+	 **************************************************************************/
 	if ($command=='mainMenu') {
 		unset($_SESSION['activeModule']);
 		$ws->setCurrentScreen(0);
+	/**************************************************************************
+	 * SUB MENU
+	 **************************************************************************/
 	} elseif ($command=='moduleSubMenu') {
 		if (!isset($_POST['module'])) {
 			$messagebar->addError("The selected module has not been installed in this system.");
@@ -42,6 +48,9 @@ function jquery() {
 			$ws->setCurrentScreen(4);
 		}
 		// Workspace::setCurrentScreen renders immediately.
+	/**************************************************************************
+	 * PRESENT SEARCH FORM
+	 **************************************************************************/
 	} elseif ($command=='moduleSearchSpace') {
 		// present the search screen for the selected module.
 		if (!isset($_POST['module'])) {
@@ -51,7 +60,8 @@ function jquery() {
 		}
 		$module = $_POST['module'];
 		$cs = array('Dashboard','Entities','CoreLookups','Contacts','Items','Vendors','Freight','Purchasing','Production','Customers','Sales',
-			'People','Addresses','ItemSetup','ItemAttributes','ItemCategories','ItemTypes','GTINMaster','InventoryLookup','BillofMaterials','VendorCatalog'
+			'People','Addresses','ItemSetup','ItemAttributes','ItemCategories','ItemTypes','GTINMaster','InventoryLookup','BillofMaterials','VendorCatalog',
+			'EntityResource'
 			);
 		$setcs = array_search($module,$cs); // Set the current screen to the index # of the $cs array.
 		if (is_integer($setcs)) $ws->setCurrentScreen($setcs);
@@ -60,10 +70,16 @@ function jquery() {
 			$link->close();
 			return;
 		}
+	/**************************************************************************
+	 * LIST SEARCH RESULTS
+	 **************************************************************************/
 	} elseif ($command=='listResultsAgain') {
 		if (isset($_SESSION['currentScreen']) && ($_SESSION['currentScreen']>=200 && $_SESSION['currentScreen']<300)) {
 			$ws->setCurrentScreen($_SESSION['currentScreen']-100);
 		}
+	/**************************************************************************
+	 * EXECUTE SEARCH
+	 **************************************************************************/
 	} elseif ($command=='executeSearch') {
 		if (!isset($_POST['module'])) {
 			$messagebar->addError("The selected module has not been installed in this system.");
@@ -104,6 +120,13 @@ function jquery() {
 				$modObject = new VendorCatalog($link);
 				$_SESSION['activeModule'] = $modObject;
 			}
+		} elseif ($module=='EntityResourceSearch') {
+			if (isset($_SESSION['activeModule']) && $_SESSION['activeModule'] instanceof EntityResource) 
+				$modObject = $_SESSION['activeModule'];
+			else {
+				$modObject = new EntityResource($link);
+				$_SESSION['activeModule'] = $modObject;
+			}
 		} elseif ($module=='BOMSearch') {
 			if (isset($_SESSION['activeModule']) && $_SESSION['activeModule'] instanceof BOM) 
 				$modObject = $_SESSION['activeModule'];
@@ -122,6 +145,9 @@ function jquery() {
 			return;
 		}
 		$modObject->executeSearch($searchParameters);
+	/**************************************************************************
+	 * VIEW RECORD
+	 **************************************************************************/
 	} elseif ($command=='viewRecord') {
 		if (!isset($_POST['module'])) {
 			$messagebar->addError("The selected module has not been installed in this system.");
@@ -144,6 +170,8 @@ function jquery() {
 			$modObject = new Vendor($link);
 		} elseif ($module=='VendorCatalog') {
 			$modObject = new VendorCatalog($link);
+		} elseif ($module=='EntityResource') {
+			$modObject = new EntityResource($link);
 		} elseif ($module=='BOM') {
 			$modObject = new BOM($link);
 		} else {
@@ -162,6 +190,9 @@ function jquery() {
 			return;
 		}
 		$modObject->display($id);
+	/**************************************************************************
+	 * DISPLAY NEW RECORD FORM
+	 **************************************************************************/
 	} elseif ($command=='newRecord') {
 		if (!isset($_SESSION['currentScreen'])) {
 			$messagebar->addError("Please select a module first.");
@@ -172,6 +203,8 @@ function jquery() {
 			$modObject = new Purchasing($link);
 		} elseif ($_SESSION['currentScreen']%100==19) {
 			$modObject = new BOM($link);
+		} elseif ($_SESSION['currentScreen']%100==21) {
+			$modObject = new EntityResource($link);
 		}
 		if (is_null($modObject)) {
 			$messagebar->addError("The selected module is not available at the moment.  Please wait a few minutes and try again.");
@@ -179,6 +212,9 @@ function jquery() {
 			return;
 		}
 		$modObject->newRecord();
+	/**************************************************************************
+	 * COMMIT INSERTED OR UPDATED RECORD
+	 **************************************************************************/
 	} elseif ($command=='insertRecord' || $command=='updateRecord') {
 		// NOTE: all text in $_POST['module'] will be lower case!
 		$modObject = null;
@@ -191,16 +227,27 @@ function jquery() {
 			$modObject = new Purchasing($link);
 		} elseif ($_POST['module']=='bom') {
 			$modObject = new BOM($link);
+		} elseif ($_POST['module']=='entityresource') {
+			$modObject = new EntityResource($link);
 		}
 		if ($command=='insertRecord')
 			$modObject->insertRecord();
 		else 
 			$modObject->updateRecord();
+	/**************************************************************************
+	 * LOGOFF
+	 **************************************************************************/
 	} elseif ($command=='logoff') {
 		$_SESSION['link']->close();
 		unset($_SESSION['link']);
+	/**************************************************************************
+	 * CLEAR MESSAGES
+	 **************************************************************************/
 	} elseif ($command=='clearMessages') {
 		$messagebar->clear();
+	/**************************************************************************
+	 * UNKNOWN COMMAND
+	 **************************************************************************/
 	} else {
 		$messagebar->addWarning("Invalid jquery option: ".$command);
 		$link->close();

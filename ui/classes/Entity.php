@@ -163,6 +163,8 @@ class Entity extends ERPBase {
 				'<INPUT type="date" id="addr_lastval" value="'.$alastvalidated.'" /><BR />';
 			
 			$html .= '</FIELDSET>';
+			$html .= "<DIV id=\"EntityResourceModuleIcon\" class=\"DashboardIcon\" onClick=\"executeSearch('EntityResourceSearch');\">Entity Resources</DIV>\r\n";
+			$_SESSION['currentEntity'] = $id;
 		}
 		$stmt->close();
 		echo $html;

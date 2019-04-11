@@ -92,7 +92,9 @@ class ERPBase {
 					$intable = false;
 					$tablerow++;
 				} elseif ($field[3]=='dropdown' && count($field)>=6 && is_array($field[5])) {
-					$q = 'SELECT '.$field[5][0].','.$field[5][1].' FROM '.$field[4].';';
+					$q = 'SELECT '.$field[5][0].','.$field[5][1].' FROM '.$field[4];
+					if (count($field[5])>2 && $field[4]=='aa_uom' && is_integer($field[5][2])) $q .= ' WHERE uom_type='.$field[5][2].';';
+					else $q .= ';';
 					$result = $this->dbconn->query($q);
 					if ($result!==false) {
 						if (!$intable) {

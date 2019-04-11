@@ -54,7 +54,7 @@ function executeSearch(whichModule) {
 		}
 		return true;
 	});
-	console.log(kvp);
+	//console.log(kvp);
 	$.post('jq.php',{jquery:'executeSearch',module:whichModule,searchParameters:kvp},function (data) {
 		if (data.length > 0) $("#core").html(data);
 		updateDiv('messagebar');
