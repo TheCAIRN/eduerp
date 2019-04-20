@@ -49,7 +49,7 @@ function jquery() {
 		}
 		// Workspace::setCurrentScreen renders immediately.
 	/**************************************************************************
-	 * PRESENT SEARCH FORM
+	 * PRESENT SEARCH FORM OR SUBMENU
 	 **************************************************************************/
 	} elseif ($command=='moduleSearchSpace') {
 		// present the search screen for the selected module.
@@ -61,7 +61,8 @@ function jquery() {
 		$module = $_POST['module'];
 		$cs = array('Dashboard','Entities','CoreLookups','Contacts','Items','Vendors','Freight','Purchasing','Production','Customers','Sales',
 			'People','Addresses','ItemSetup','ItemAttributes','ItemCategories','ItemTypes','GTINMaster','InventoryLookup','BillofMaterials','VendorCatalog',
-			'EntityResource'
+			'EntityResource','CustomerCatalog','CustomerTypes','Customer','CustomerDC','CustomerStoreTypes','CustomerStores','Consumers','Insights','DashboardSetup',
+			'ReportSetup','Dashboards','Reports'
 			);
 		$setcs = array_search($module,$cs); // Set the current screen to the index # of the $cs array.
 		if (is_integer($setcs)) $ws->setCurrentScreen($setcs);

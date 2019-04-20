@@ -1,0 +1,178 @@
+CREATE TABLE IF NOT EXISTS cust_types (
+	cust_type_code char(5) not null PRIMARY KEY
+	,description varchar(400) not null
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS cust_master (
+	customer_id int not null auto_increment PRIMARY KEY
+	,customer_code char(10) not null
+	,customer_name varchar(400) not null
+	,cust_type_code char(5)
+	,parent int
+	,customer_group varchar(15)
+	,supplier_code varchar(20)
+	,primary_address int not null
+	,billing_address int not null
+	,gl_account_id int not null
+	,default_terms int 
+	,status char(1) not null DEFAULT 'A'
+	,rev_enabled char(1) not null DEFAULT 'N'
+	,rev_number int not null default 1
+	,created_by int not null
+	,creation_date datetime not null
+	,last_update_by int not null
+	,last_update_date datetime not null
+	,FOREIGN KEY (cust_type_code) REFERENCES cust_types (cust_type_code)
+	,FOREIGN KEY (parent) REFERENCES cust_master (customer_id)
+	,FOREIGN KEY (primary_address) REFERENCES cx_addresses (address_id)
+	,FOREIGN KEY (billing_address) REFERENCES cx_addresses (address_id)
+	,FOREIGN KEY (gl_account_id) REFERENCES acgl_accounts (gl_account_id)
+	,FOREIGN KEY (default_terms) REFERENCES aa_terms (terms_id)
+	,FOREIGN KEY (created_by) REFERENCES sec_users (user_id)
+	,FOREIGN KEY (last_update_by) REFERENCES sec_users (user_id)	
+	,UNIQUE (customer_code)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS cust_contacts (
+	customer_id int not null
+	,human_id int not null
+	,created_by int not null
+	,creation_date datetime not null
+	,last_update_by int not null
+	,last_update_date datetime not null
+	,FOREIGN KEY (customer_id) REFERENCES cust_master (customer_id)
+	,FOREIGN KEY (human_id) REFERENCES cx_humans (human_id)
+	,FOREIGN KEY (created_by) REFERENCES sec_users (user_id)
+	,FOREIGN KEY (last_update_by) REFERENCES sec_users (user_id)
+	,UNIQUE (customer_id,human_id)
+
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS cust_notes (
+	customer_note_id int not null auto_increment PRIMARY KEY
+	,customer_id int not null
+	,note_type_id int not null
+	,seq int not null default 1
+	,note_text mediumtext
+	,rev_enabled char(1) not null DEFAULT 'N'
+	,rev_number int not null default 1
+	,created_by int not null
+	,creation_date datetime not null
+	,last_update_by int not null
+	,last_update_date datetime not null
+	,FOREIGN KEY (customer_id) REFERENCES cust_master (customer_id)
+	,FOREIGN KEY (note_type_id) REFERENCES aa_note_types (note_type_id)
+	,FOREIGN KEY (created_by) REFERENCES sec_users (user_id)
+	,FOREIGN KEY (last_update_by) REFERENCES sec_users (user_id)		
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS cust_attachments (
+	customer_id int not null
+	,attachment_id int not null
+	,FOREIGN KEY (customer_id) REFERENCES cust_master (customer_id)
+	,FOREIGN KEY (attachment_id) REFERENCES aa_attachments(attachment_id)
+	,UNIQUE (customer_id,attachment_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS cust_catalog (
+	customer_catalog_id int not null auto_increment PRIMARY KEY
+	,customer_id int not null
+	,currency char(3)
+	,product_id int not null
+	,customer_item_number varchar(256)
+	,customer_gtin char(14)
+	,description varchar(512)
+	,catalog_price decimal(17,5)
+	,sale_price decimal(17,5)
+	,sale_until datetime
+	,discount_percent decimal(9,5)
+	,discount_until datetime
+	,catalog_retail decimal(17,5)
+	,catalog_retail_compare decimal(17,5)
+	,catalog_retail_sale decimal(17,5)
+	,catalog_retail_sale_until datetime
+	,product_url varchar(1024)
+	,status char(1) not null DEFAULT 'A'
+	,rev_enabled char(1) not null DEFAULT 'N'
+	,rev_number int not null default 1
+	,created_by int not null
+	,creation_date datetime not null
+	,last_update_by int not null
+	,last_update_date datetime not null
+	,FOREIGN KEY (customer_id) REFERENCES cust_master (customer_id)
+	,FOREIGN KEY (currency) REFERENCES aa_currency (code)
+	,FOREIGN KEY (product_id) REFERENCES item_master(product_id)
+	,FOREIGN KEY (created_by) REFERENCES sec_users (user_id)
+	,FOREIGN KEY (last_update_by) REFERENCES sec_users (user_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS cust_dc (
+	customer_id int not null
+	,dc_code char(12) not null
+	,dc_edi_code varchar(12)
+	,dc_name varchar(200) not null
+	,dc_address int not null
+	,dc_contact int
+	,open_date date
+	,close_date date
+	,lead_time decimal(5,2)
+	,status char(1) not null DEFAULT 'A'
+	,rev_enabled char(1) not null DEFAULT 'N'
+	,rev_number int not null default 1
+	,created_by int not null
+	,creation_date datetime not null
+	,last_update_by int not null
+	,last_update_date datetime not null
+	,PRIMARY KEY (customer_id,dc_code)
+	,FOREIGN KEY (customer_id) REFERENCES cust_master (customer_id)
+	,FOREIGN KEY (dc_address) REFERENCES cx_addresses (address_id)
+	,FOREIGN KEY (dc_contact) REFERENCES cx_humans (human_id)
+	,FOREIGN KEY (created_by) REFERENCES sec_users (user_id)
+	,FOREIGN KEY (last_update_by) REFERENCES sec_users (user_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS cust_store_types (
+	store_type_code char(5) not null PRIMARY KEY
+	,description varchar(400) not null
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS cust_stores (
+	customer_id int not null
+	,store_code char(12) not null
+	,store_type_code char(5) not null
+	,store_edi_code varchar(12)
+	,store_name varchar(200) not null
+	,store_address int not null
+	,store_contact int
+	,dc_code char(12)
+	,next_dc_code char(12)
+	,dc_change_date date
+	,close_date date
+	,status char(1) not null DEFAULT 'A'
+	,rev_enabled char(1) not null DEFAULT 'N'
+	,rev_number int not null default 1
+	,created_by int not null
+	,creation_date datetime not null
+	,last_update_by int not null
+	,last_update_date datetime not null
+	,PRIMARY KEY (customer_id,store_code)
+	,FOREIGN KEY (store_type_code) REFERENCES cust_store_types (store_type_code)
+	,FOREIGN KEY (customer_id) REFERENCES cust_master (customer_id)
+	,FOREIGN KEY (store_address) REFERENCES cx_addresses (address_id)
+	,FOREIGN KEY (store_contact) REFERENCES cx_humans (human_id)
+	,FOREIGN KEY (created_by) REFERENCES sec_users (user_id)
+	,FOREIGN KEY (last_update_by) REFERENCES sec_users (user_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS cust_consumers (
+	customer_id int not null
+	,consumer_id int not null
+	,billing_address int not null
+	,shipping_address int not null
+	,last_update_date datetime not null
+	,PRIMARY KEY (customer_id,consumer_id)
+	,FOREIGN KEY (customer_id) REFERENCES cust_master(customer_id)
+	,FOREIGN KEY (consumer_id) REFERENCES cx_humans(human_id)
+	,FOREIGN KEY (billing_address) REFERENCES cx_addresses (address_id)
+	,FOREIGN KEY (shipping_address) REFERENCES cx_addresses (address_id)
+) ENGINE=InnoDB;

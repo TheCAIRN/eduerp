@@ -1,0 +1,59 @@
+INSERT INTO aa_terms (terms_id,terms_code,terms_name,terms_type,terms_basis,discount_percent_1,discount_days_1) VALUES
+(1,'N30','Net 30',1,3,0,30)
+;
+
+INSERT INTO cust_types (cust_type_code,description) VALUES
+('GRCH','Grocery Chain')
+,('GRSM','Grocery Small')
+,('RESTCH','Restaurant Chain')
+,('RESTSM','Restaurant Small')
+,('SCHOOL','School')
+,('FMARK','Farmer''s Market')
+,('DS','Direct to consumer')
+;
+
+/* Create Customer Addresses */
+INSERT INTO cx_addresses (address_id,building_number,street,attention,apartment,postal_box,
+line2,line3,city,spc_abbrev,postal_code,country,county,maidenhead,latitude,longitude,osm_id,last_validated)
+VALUES
+(1001,145,'Pleasant Hill Road','','','','','','Scarborough','ME','04074','US','','','','','',NOW())
+,(1002,461,'Nott St.','','','','','','Schenectady','NY','12308','US','','','','','',NOW())
+,(1003,430,'Main St.','','','','','','Catskill','NY','12414','US','','','','','',NOW())
+,(1004,36,'Koeppel Ave.','','','','','','Catskill','NY','12414','US','','','','','',NOW())
+,(1005,343,'W. Main Street','','','','','','Catskill','NY','12414','US','','','','','',NOW())
+,(1006,'','','','','111','','','Catskill','NY','12414','US','','','','','',NOW())
+,(1007,'54','Hemco Road','','','','','','South Portland','ME','04106','US','','','','','',NOW())
+,(1008,'970','US Route 9','','','','','','Schodack Landing','NY','12156','US','','','','','',NOW())
+,(1009,'1245','US Route 202','','','','','','Winthrop','ME','04364','US','','','','','',NOW())
+,(1010,'501','Duanesburg Road','','','','','','Schenectady','NY','12308','US','','','','','',NOW())
+,(1011,'10','Lumberyard Road','','','','','','Lincoln','NH','03251','US','','','','','',NOW())
+;
+
+INSERT INTO acgl_accounts (gl_account_id,account_number,entity_id,division_id,department_id,sub_account_number,gl_account_string,
+gl_account_name,gl_account_balance,currency_code,rev_enabled,rev_number,created_by,creation_date,last_update_by,last_update_date)
+VALUES
+(1001,41001,1,NULL,NULL,1001,'41001.1001','Hannaford Supermarkets',0.00,'USD','N',1,1,NOW(),1,NOW())
+,(1002,41001,1,NULL,NULL,1002,'41001.1002','Price Chopper',0.00,'USD','N',1,1,NOW(),1,NOW())
+,(1003,41001,8,NULL,NULL,1003,'41001.1003','Catskill Country Store',0.00,'USD','N',1,1,NOW(),1,NOW())
+,(1004,41001,8,NULL,NULL,1004,'41001.1004','Serro Foods, LLC',0.00,'USD','N',1,1,NOW(),1,NOW())
+,(1005,41001,8,NULL,NULL,1005,'41001.1005','Catskill Central School District',0.00,'USD','N',1,1,NOW(),1,NOW())
+,(1006,41001,8,NULL,NULL,1006,'41001.1006','Catskill Area Co-op',0.00,'USD','N',1,1,NOW(),1,NOW())
+;
+
+INSERT INTO cust_master (customer_id,customer_code,customer_name,cust_type_code,primary_address,billing_address,gl_account_id,default_terms,created_by,creation_date,last_update_by,last_update_date) VALUES
+(1,'HANNA','Hannaford Supermarkets','GRCH',1001,1001,1001,1,1,NOW(),1,NOW())
+,(2,'PCHOP','Price Chopper','GRCH',1002,1002,1002,1,1,NOW(),1,NOW())
+,(3,'CCTYS','Catskill Country Store','GRSM',1003,1003,1003,1,1,NOW(),1,NOW())
+,(4,'SERRO','Serro Foods, LLC','GRSM',1004,1004,1004,1,1,NOW(),1,NOW())
+,(5,'CCSD','Catskill Central School District','SCHOOL',1005,1005,1005,1,1,NOW(),1,NOW())
+,(6,'CACOOP','Catskill Area Co-op','DS',1006,1006,1006,1,1,NOW(),1,NOW())
+;
+
+INSERT INTO cust_dc (customer_id,dc_code,dc_name,dc_address,created_by,creation_date,last_update_by,last_update_date) VALUES
+(1,'PORT','Hannaford South Portland DC',1007,1,NOW(),1,NOW())
+,(1,'SCHO','Hannaford Schodack DC',1008,1,NOW(),1,NOW())
+,(1,'WINTH','Hannaford Winthrop DC',1009,1,NOW(),1,NOW())
+,(2,'001','Price Chopper Main DC',1010,1,NOW(),1,NOW())
+,(2,'002','Price Chopper Floral DC',1002,1,NOW(),1,NOW())
+,(2,'003','Price Chopper Lincoln DC',1011,1,NOW(),1,NOW())
+;

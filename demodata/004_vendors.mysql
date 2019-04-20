@@ -1,3 +1,8 @@
+INSERT INTO ac_coa (account_number,account_type,account_title,rev_enabled,rev_number,created_by,creation_date,last_update_by,last_update_date) VALUES
+(54001,'E','Operational Vendors','N',1,1,NOW(),1,NOW())
+,(41001,'R','Customer Accounts','N',1,1,NOW(),1,NOW())
+;
+
 /* Create Vendor Addresses */
 INSERT INTO cx_addresses (address_id,building_number,street,attention,apartment,postal_box,
 line2,line3,city,spc_abbrev,postal_code,country,county,maidenhead,latitude,longitude,osm_id,last_validated)
