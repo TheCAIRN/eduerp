@@ -6,6 +6,8 @@ class ERPBase {
 	protected $searchFields;
 	protected $entryFields;
 	protected $mb;
+	protected $supportsAttachments;
+	protected $supportsNotes;
 	public function __construct($link=null) {
 		$this->dbconn = $link;
 		$this->currentRecord = -1;
@@ -13,6 +15,8 @@ class ERPBase {
 		$this->searchFields = array();
 		$this->entryFields = array();
 		$this->mb = new MessageBar();
+		$this->supportsAttachments = false;
+		$this->supportsNotes = false;
 	} // constructor
 	public function setDbConn($link) {
 		$this->dbconn = $link;

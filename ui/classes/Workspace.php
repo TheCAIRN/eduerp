@@ -58,6 +58,8 @@ class Workspace {
 			case 307: $purch = new Purchasing($this->dbconn); $purch->newRecord(); break;
 			case 319: $bom = new BOM($this->dbconn); $bom->newRecord(); break;
 			case 321: $entres = new EntityResource($this->dbconn); $entres->newRecord(); break;
+			case 323: $ct = new CustomerTypes($this->dbconn); $ct->newRecord(); break;
+			case 324: $cust = new Customer($this->dbconn); $cust->newRecord(); break;
 		}
 		
 	} // render()
