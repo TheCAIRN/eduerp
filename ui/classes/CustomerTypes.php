@@ -27,7 +27,7 @@ class CustomerTypes extends ERPBase {
 	} // display()
 	public function newRecord() {
 		echo parent::abstractNewRecord('CustomerTypes');
-		$_SESSION['currentScreen'] = 323;
+		$_SESSION['currentScreen'] = 3023;
 	} // newRecord()
 	private function insertHeader() {
 	

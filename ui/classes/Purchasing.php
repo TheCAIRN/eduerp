@@ -103,7 +103,7 @@ class Purchasing extends ERPBase {
 	} // function display()
 	public function newRecord() {
 		echo parent::abstractNewRecord('Purchasing');
-		$_SESSION['currentScreen'] = 307;
+		$_SESSION['currentScreen'] = 3007;
 	} // function newRecord()
 	private function insertHeader() {
 		$this->resetHeader();

@@ -208,11 +208,17 @@ class ERPBase {
 		return $html;  // This one is returning instead of echoing, because the calling function may need to add some module-specific scripting.
 	} // function abstractNewRecord()
 	protected function abstractListRecords($module) {
+		$printResultCount = true;
+		if (count($this->recordSet)==0 && isset($_SESSION['recordSet']) && isset($_SESSION['recordSet'][$module])) {
+			$this->recordSet = $_SESSION['recordSet'][$module];
+			$printResultCount = false;
+		}
 		if (count($this->recordSet)==0) {
 			$this->mb->addWarning('No records found.');
 			$this->searchPage();
 		} else {
-			$this->mb->addInfo(count($this->recordSet).' record'.(count($this->recordSet)==1?'':'s').' found.');
+			if ($printResultCount)
+				$this->mb->addInfo(count($this->recordSet).' record'.(count($this->recordSet)==1?'':'s').' found.');
 			$html = '<DIV id="searchResultsDiv"><TABLE id="searchResultsList" class="recordList">';
 			$recordNumber = 0;
 			foreach ($this->recordSet as $id=>$data) {
@@ -229,6 +235,8 @@ class ERPBase {
 			}
 			$html .= '</TABLE></DIV>';
 			echo $html;
+			if (!isset($_SESSION['recordSet'])) $_SESSION['recordSet'] = array();
+			$_SESSION['recordSet'][$module] = $this->recordSet;
 		}		
 	} // function abstractListRecords
 	protected function abstractSelect($id=0,$readonly=false,$table='',$idfield='',$idnamefield='',$idlabel='') {

@@ -32,7 +32,7 @@ class VendorCatalog extends ERPBase {
 			} // while rows
 		} // if query succeeded
 		$this->listRecords();
-		$_SESSION['currentScreen'] = 120;
+		$_SESSION['currentScreen'] = 1020;
 		$_SESSION['lastCriteria'] = $criteria;
 		if (!isset($_SESSION['searchResults'])) $_SESSION['searchResults'] = array();
 		$_SESSION['searchResults']['VendorCatalog'] = array_keys($this->recordSet);		
@@ -83,7 +83,7 @@ class VendorCatalog extends ERPBase {
 		} // if $result
 		$stmt->close();			
 		echo $html;
-		$_SESSION['currentScreen'] = 220;
+		$_SESSION['currentScreen'] = 2020;
 		if (!isset($_SESSION['searchResults']) && !isset($_SESSION['searchResults']['VendorCatalog']))
 			$_SESSION['idarray'] = array(0,0,$id,0,0);
 		else {

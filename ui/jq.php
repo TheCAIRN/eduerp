@@ -42,10 +42,12 @@ function jquery() {
 			return;
 		}
 		$module = $_POST['module'];
-		if ($mule=='Contacts') {
+		if ($module=='Contacts') {
 			$ws->setCurrentScreen(3);
-		} elseif ($mule=='Items') {
+		} elseif ($module=='Items') {
 			$ws->setCurrentScreen(4);
+		} elseif ($module=='Insights') {
+			$ws->setCurrentScreen(29);
 		}
 		// Workspace::setCurrentScreen renders immediately.
 	/**************************************************************************
@@ -75,8 +77,8 @@ function jquery() {
 	 * LIST SEARCH RESULTS
 	 **************************************************************************/
 	} elseif ($command=='listResultsAgain') {
-		if (isset($_SESSION['currentScreen']) && ($_SESSION['currentScreen']>=200 && $_SESSION['currentScreen']<300)) {
-			$ws->setCurrentScreen($_SESSION['currentScreen']-100);
+		if (isset($_SESSION['currentScreen']) && ($_SESSION['currentScreen']>=2000 && $_SESSION['currentScreen']<3000)) {
+			$ws->setCurrentScreen($_SESSION['currentScreen']-1000);
 		}
 	/**************************************************************************
 	 * EXECUTE SEARCH
@@ -135,6 +137,48 @@ function jquery() {
 				$modObject = new BOM($link);
 				$_SESSION['activeModule'] = $modObject;
 			}
+		} elseif ($module=='CustomerTypesSearch') {
+			if (isset($_SESSION['activeModule']) && $_SESSION['activeModule'] instanceof CustomerTypes) 
+				$modObject = $_SESSION['activeModule'];
+			else {
+				$modObject = new CustomerTypes($link);
+				$_SESSION['activeModule'] = $modObject;
+			}
+		} elseif ($module=='CustomerSearch') {
+			if (isset($_SESSION['activeModule']) && $_SESSION['activeModule'] instanceof Customer) 
+				$modObject = $_SESSION['activeModule'];
+			else {
+				$modObject = new Customer($link);
+				$_SESSION['activeModule'] = $modObject;
+			}
+		} elseif ($module=='CustomerDCSearch') {
+			if (isset($_SESSION['activeModule']) && $_SESSION['activeModule'] instanceof CustomerDC) 
+				$modObject = $_SESSION['activeModule'];
+			else {
+				$modObject = new CustomerDC($link);
+				$_SESSION['activeModule'] = $modObject;
+			}
+		} elseif ($module=='CustomerStoreTypesSearch') {
+			if (isset($_SESSION['activeModule']) && $_SESSION['activeModule'] instanceof CustomerTypes) 
+				$modObject = $_SESSION['activeModule'];
+			else {
+				$modObject = new CustomerTypes($link);
+				$_SESSION['activeModule'] = $modObject;
+			}
+		} elseif ($module=='CustomerStoresSearch') {
+			if (isset($_SESSION['activeModule']) && $_SESSION['activeModule'] instanceof CustomerStores) 
+				$modObject = $_SESSION['activeModule'];
+			else {
+				$modObject = new CustomerStores($link);
+				$_SESSION['activeModule'] = $modObject;
+			}
+		} elseif ($module=='ConsumersSearch') {
+			if (isset($_SESSION['activeModule']) && $_SESSION['activeModule'] instanceof Consumers) 
+				$modObject = $_SESSION['activeModule'];
+			else {
+				$modObject = new Consumers($link);
+				$_SESSION['activeModule'] = $modObject;
+			}
 		} else {
 			$messagebar->addError("The selected module has not been installed in this system.");
 			$link->close();
@@ -175,6 +219,18 @@ function jquery() {
 			$modObject = new EntityResource($link);
 		} elseif ($module=='BOM') {
 			$modObject = new BOM($link);
+		} elseif ($module=='CustomerTypes') {
+			$modObject = new CustomerTYpes($link);
+		} elseif ($module=='Customer') {
+			$modObject = new Customer($link);
+		} elseif ($module=='CustomerDC') {
+			$modObject = new CustomerDC($link);
+		} elseif ($module=='CustomerStoreTypes') {
+			$modObject = new CustomerStoreTypes($link);
+		} elseif ($module=='CustomerStores') {
+			$modObject = new CustomerStores($link);
+		} elseif ($module=='Consumers') {
+			$modObject = new Consumers($link);
 		} else {
 			$messagebar->addError("The selected module has not been installed in this system.");
 			$link->close();
@@ -195,17 +251,30 @@ function jquery() {
 	 * DISPLAY NEW RECORD FORM
 	 **************************************************************************/
 	} elseif ($command=='newRecord') {
+		$modObject = null;
 		if (!isset($_SESSION['currentScreen'])) {
 			$messagebar->addError("Please select a module first.");
 			$link->close();
 			return;
 		}
-		if ($_SESSION['currentScreen']%100==7) {
+		if ($_SESSION['currentScreen']%1000==7) {
 			$modObject = new Purchasing($link);
-		} elseif ($_SESSION['currentScreen']%100==19) {
+		} elseif ($_SESSION['currentScreen']%1000==19) {
 			$modObject = new BOM($link);
-		} elseif ($_SESSION['currentScreen']%100==21) {
+		} elseif ($_SESSION['currentScreen']%1000==21) {
 			$modObject = new EntityResource($link);
+		} elseif ($_SESSION['currentScreen']%1000==23) {
+			$modObject = new CustomerTypes($link);
+		} elseif ($_SESSION['currentScreen']%1000==24) {
+			$modObject = new Customer($link);
+		} elseif ($_SESSION['currentScreen']%1000==25) {
+			$modObject = new CustomerDC($link);
+		} elseif ($_SESSION['currentScreen']%1000==26) {
+			$modObject = new CustomerStoreTypes($link);
+		} elseif ($_SESSION['currentScreen']%1000==27) {
+			$modObject = new CustomerStores($link);
+		} elseif ($_SESSION['currentScreen']%1000==28) {
+			$modObject = new Consumers($link);
 		}
 		if (is_null($modObject)) {
 			$messagebar->addError("The selected module is not available at the moment.  Please wait a few minutes and try again.");

@@ -54,7 +54,7 @@ class EntityResource extends ERPBase {
 			} // while rows
 		} // if query succeeded
 		$this->listRecords();
-		$_SESSION['currentScreen'] = 121;
+		$_SESSION['currentScreen'] = 1021;
 		$_SESSION['lastCriteria'] = $criteria;
 		if (!isset($_SESSION['searchResults'])) $_SESSION['searchResults'] = array();
 		$_SESSION['searchResults']['EntityResource'] = array_keys($this->recordSet);		
@@ -70,7 +70,7 @@ class EntityResource extends ERPBase {
 	
 		$stmt->close();
 		echo $html;
-		$_SESSION['currentScreen'] = 221;
+		$_SESSION['currentScreen'] = 2021;
 		if (!isset($_SESSION['searchResults']) && !isset($_SESSION['searchResults']['EntityResource']))
 			$_SESSION['idarray'] = array(0,0,$id,0,0);
 		else {
@@ -83,8 +83,8 @@ class EntityResource extends ERPBase {
 		}
 	} // display()
 	public function newRecord() {
-		echo parent::abstractNewRecord('BOM');
-		$_SESSION['currentScreen'] = 321;	
+		echo parent::abstractNewRecord('EntityResource');
+		$_SESSION['currentScreen'] = 3021;	
 	} // newRecord()
 	public function insertRecord() {
 		

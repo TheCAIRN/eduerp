@@ -67,7 +67,7 @@ class ItemManager extends ERPBase {
 			} // while rows
 		} // if query succeeded
 		$this->listRecords();
-		$_SESSION['currentScreen'] = 113;
+		$_SESSION['currentScreen'] = 1013;
 		$_SESSION['lastCriteria'] = $criteria;
 		if (!isset($_SESSION['searchResults'])) $_SESSION['searchResults'] = array();
 		$_SESSION['searchResults']['Item'] = array_keys($this->recordSet);
@@ -162,7 +162,7 @@ class ItemManager extends ERPBase {
 		}
 		$stmt->close();
 		echo $html;
-		$_SESSION['currentScreen'] = 213;
+		$_SESSION['currentScreen'] = 2013;
 		if (!isset($_SESSION['searchResults']) && !isset($_SESSION['searchResults']['Item']))
 			$_SESSION['idarray'] = array(0,0,$id,0,0);
 		else {

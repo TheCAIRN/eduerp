@@ -92,7 +92,7 @@ class BOM extends ERPBase {
 	} // function display()
 	public function newRecord() {
 		echo parent::abstractNewRecord('BOM');
-		$_SESSION['currentScreen'] = 319;
+		$_SESSION['currentScreen'] = 3019;
 		echo "<SCRIPT type=\"text/javascript\">
 			$(\"#bom_detail_edit td:nth-child(4), #bom_detail_edit th:nth-child(4)\").hide();
 			$(\"#bom_detail_edit td:nth-child(5), #bom_detail_edit th:nth-child(5)\").hide();

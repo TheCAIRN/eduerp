@@ -56,7 +56,7 @@ class Vendor extends ERPBase {
 			} // while rows
 		} // if query succeeded
 		$this->listRecords();
-		$_SESSION['currentScreen'] = 105;
+		$_SESSION['currentScreen'] = 1005;
 		$_SESSION['lastCriteria'] = $criteria;
 		if (!isset($_SESSION['searchResults'])) $_SESSION['searchResults'] = array();
 		$_SESSION['searchResults']['Vendor'] = array_keys($this->recordSet);		
@@ -169,7 +169,7 @@ class Vendor extends ERPBase {
 		}
 		$stmt->close();			
 		echo $html;
-		$_SESSION['currentScreen'] = 205;
+		$_SESSION['currentScreen'] = 2005;
 		if (!isset($_SESSION['searchResults']) && !isset($_SESSION['searchResults']['Vendor']))
 			$_SESSION['idarray'] = array(0,0,$id,0,0);
 		else {

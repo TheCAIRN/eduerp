@@ -89,7 +89,7 @@ class Entity extends ERPBase {
 			} // while rows
 		} // if query succeeded
 		$this->listRecords();
-		$_SESSION['currentScreen'] = 102;
+		$_SESSION['currentScreen'] = 1002;
 		$_SESSION['lastCriteria'] = $criteria;
 		if (!isset($_SESSION['searchResults'])) $_SESSION['searchResults'] = array();
 		$_SESSION['searchResults']['Entity'] = array_keys($this->recordSet);
@@ -168,7 +168,7 @@ class Entity extends ERPBase {
 		}
 		$stmt->close();
 		echo $html;
-		$_SESSION['currentScreen'] = 202;
+		$_SESSION['currentScreen'] = 2002;
 		if (!isset($_SESSION['searchResults']) && !isset($_SESSION['searchResults']['Entity']))
 			$_SESSION['idarray'] = array(0,0,$id,0,0);
 		else {
