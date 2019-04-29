@@ -24,13 +24,15 @@ class Vendor extends ERPBase {
 		*/
 		return parent::abstractSelect($id,$readonly,'pur_vendors','vendor_id','vendor_name','vendor');
 	} // function vendorSelect
-	public function statusSelect($status='',$readonly=false) {
-		$html = '<LABEL for="vendorStatus">Status:</LABEL><SELECT id="vendorStatus">';
+	public function statusSelect($status='',$readonly=false,$include_label=false) {
+		$html = '';
+		if ($include_label) $html .= '<LABEL for="vendorStatus">Status:</LABEL>';
+		$html .= '<SELECT id="vendorStatus">';
 		if ($status=='A' || !$readonly) $html .= '<OPTION value="A"'.($status=='A'?' selected="selected">':'>').'Active</OPTION>';
 		if ($status=='B' || !$readonly) $html .= '<OPTION value="B"'.($status=='B'?' selected="selected">':'>').'Bankrupt</OPTION>';
 		if ($status=='D' || !$readonly) $html .= '<OPTION value="D"'.($status=='D'?' selected="selected">':'>').'Defunct</OPTION>';
 		if ($status=='I' || !$readonly) $html .= '<OPTION value="I"'.($status=='I'?' selected="selected">':'>').'Temporarily Inactive</OPTION>';
-		if ($status=='S' || !$readonly) $html .= '<OPTION value="S"'.($status=='A'?' selected="selected">':'>').'Seasonally Inactive</OPTION>';
+		if ($status=='S' || !$readonly) $html .= '<OPTION value="S"'.($status=='S'?' selected="selected">':'>').'Seasonally Inactive</OPTION>';
 		$html .= '</SELECT>';
 		return $html;
 	} // function statusSelect
@@ -104,7 +106,7 @@ class Vendor extends ERPBase {
 			$html .= '<LABEL for="vendorname">Name:</LABEL><INPUT type="text" id="vendorname" value="'.$vname.'"'.$inputtextro.' />';
 			$html .= '<LABEL for="vendorglacct">GL Account:</LABEL><INPUT type="text" id="vendorglacct" value="'.$vglacct.'"'.$inputtextro.' />';
 			$html .= '<LABEL for="vendorterms">Terms:</LABEL><INPUT type="text" id="vendorterms" value="'.$vterms.'"'.$inputtextro.' />';
-			$html .= $this->statusSelect($vstatus,$readonly);
+			$html .= $this->statusSelect($vstatus,$readonly,true);
 			$html .= parent::displayRecordAudit($inputtextro,$vrevyn,$vrevnumber,$vuser_creation,$vdate_creation,$vuser_modify,$vdate_modify);
 			/*
 			$html .= '<DIV id="RecordAudit">';

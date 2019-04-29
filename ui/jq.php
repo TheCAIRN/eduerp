@@ -316,6 +316,25 @@ function jquery() {
 	} elseif ($command=='clearMessages') {
 		$messagebar->clear();
 	/**************************************************************************
+	 * EMBEDDED FUNCTIONS
+	 **************************************************************************/
+	} elseif ($command=='embedded') {
+		if (!isset($_POST['module']) || !isset($_POST['mode']) || !isset($_POST['id']) || !isset($_POST['data'])) {
+			$messagebar->addError("Invalid JQ Embedded command received.");
+		} else {
+			$module = $_POST['module'];
+			$mode = $_POST['mode'];
+			$modObject = null;
+			if ($module=='addresses') {
+				$modObject = new Addresses($link);
+			} else {
+				$messagebar->addError("Requested JQ Embedded module is not installed in this system.");
+			}
+			if (!is_null($modObject)) {
+				echo $modObject->embed($_POST['id'],$_POST['mode'],$_POST['data']);
+			}
+		}
+	/**************************************************************************
 	 * UNKNOWN COMMAND
 	 **************************************************************************/
 	} else {

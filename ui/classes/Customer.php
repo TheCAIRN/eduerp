@@ -21,9 +21,18 @@ class Customer extends ERPBase {
 		$this->entryFields[] = array('cust_master','supplier_code','Supplier #','textbox');
 		$this->entryFields[] = array('cust_master','gl_account_id','G/L Account','GLAccount');
 		$this->entryFields[] = array('cust_master','default_terms','Default Terms','dropdown','aa_terms',array('terms_id','terms_code'));
-		$this->entryFields[] = array('cust_master','status','Status','function','statusSelect');
+		$this->entryFields[] = array('cust_master','status','Status','function',$this,'statusSelect');
 		$this->entryFields[] = array('cust_master','rev_enabled','Enable Revision Tracking','checkbox','rev_number');
 		$this->entryFields[] = array('cust_master','rev_number','Revision number','integer');
+		$this->entryFields[] = array('cust_master','','','endfieldset');
+		$this->entryFields[] = array('cust_master','primary_address','Primary Address','embedded');
+		$this->entryFields[] = array('cust_master','primary_address','Primary Address','Address');
+		$this->entryFields[] = array('cust_master','','','endembedded');
+		$this->entryFields[] = array('cust_master','billing_address','Billing Address','embedded');
+		$this->entryFields[] = array('cust_master','billing_address','Billing Address','Address');
+		$this->entryFields[] = array('cust_master','','','endembedded');
+		
+		$this->resetHeader();
 	} // __construct
 	public function resetHeader() {
 	
@@ -31,13 +40,15 @@ class Customer extends ERPBase {
 	public function customerSelect($id=0,$readonly=false) {
 		return parent::abstractSelect($id,$readonly,'cust_master','customer_id','customer_name','customer');
 	} // customerSelect()
-	public function statusSelect($status='',$readonly=false) {
-		$html = '<LABEL for="customerStatus">Status:</LABEL><SELECT id="customerStatus">';
+	public function statusSelect($status='',$readonly=false,$include_label=false) {
+		$html = '';
+		if ($include_label) $html .= '<LABEL for="customerStatus">Status:</LABEL>';
+		$html .= '<SELECT id="customerStatus">';
 		if ($status=='A' || !$readonly) $html .= '<OPTION value="A"'.($status=='A'?' selected="selected">':'>').'Active</OPTION>';
 		if ($status=='B' || !$readonly) $html .= '<OPTION value="B"'.($status=='B'?' selected="selected">':'>').'Bankrupt</OPTION>';
 		if ($status=='D' || !$readonly) $html .= '<OPTION value="D"'.($status=='D'?' selected="selected">':'>').'Defunct</OPTION>';
 		if ($status=='I' || !$readonly) $html .= '<OPTION value="I"'.($status=='I'?' selected="selected">':'>').'Temporarily Inactive</OPTION>';
-		if ($status=='S' || !$readonly) $html .= '<OPTION value="S"'.($status=='A'?' selected="selected">':'>').'Seasonally Inactive</OPTION>';
+		if ($status=='S' || !$readonly) $html .= '<OPTION value="S"'.($status=='S'?' selected="selected">':'>').'Seasonally Inactive</OPTION>';
 		$html .= '</SELECT>';
 		return $html;
 	} // statusSelect()

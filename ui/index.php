@@ -40,6 +40,7 @@ $_SESSION['dbuserid'] = 1;
 <SCRIPT type="text/javascript" src="js/jquery-3.3.1.min.js"></SCRIPT>
 <SCRIPT type="text/javascript" src="js/jquery-ui.min.js"></SCRIPT>
 <SCRIPT type="text/javascript" src="js/events.js"></SCRIPT>
+<SCRIPT type="text/javascript" src="js/addresses.js"></SCRIPT>
 <SCRIPT type="text/javascript" src="js/item.js"></SCRIPT>
 <SCRIPT type="text/javascript" src="js/purchasing.js"></SCRIPT>
 <SCRIPT type="text/javascript" src="js/BOM.js"></SCRIPT>
@@ -64,6 +65,7 @@ var currentScreen = 0;
 <LI>Create new production</LI>
 <LI>Add functionality to Entities: <UL><LI>production capacity</LI><LI>create new entity</LI><LI>Modify entity</LI></UL></LI>
 <LI>Lookup customers</LI>
+<LI>Lookup / add addresses</LI>
 <LI>Create sales orders</LI>
 <LI>Update sales orders for shipping</LI>
 <LI>Create shipment</LI>
@@ -73,7 +75,7 @@ var currentScreen = 0;
 </DIV>
 <DIV id="core"><?php $workspace->render(); ?></DIV>
 </DIV>
-<DIV id="footerbar">FOOTERBAR<?php /*$fotterbar->render();*/ ?></DIV>
+<DIV id="footerbar">&copy; Cairn University School of Business.  Apache License 2.0<?php /*$fotterbar->render();*/ ?></DIV>
 </BODY>
 </HTML>
 <?php

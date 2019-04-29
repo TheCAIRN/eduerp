@@ -20,6 +20,7 @@
 	width: 15%;
 	height: 500px;
 	border-right: 6px solid black;
+	padding: 5px;
 }
 #core {
 	float: left;
@@ -29,6 +30,7 @@
 #footerbar {
 	background-color: #006600;
 	color: #FFFFFF;
+	padding: 5px;
 }
 /* Display / Edit / Add Records */
 .RecordView {
@@ -43,9 +45,15 @@
 .RecordEdit {
 	background-color: #FFFF99;
 }
+.embedded {
+	display: flex;
+	flex-flow: row wrap;
+}
 legend {
 	background-color: #006600;
 	color: #FFFFFF;
+	border: 1px black solid;
+	padding: 3px;
 }
 .labeldiv {
 	display: inline;

@@ -69,6 +69,7 @@ class ERPBase {
 		// TODO: Make sure the user has the rights to create a new record for this module.
 		$html = '';
 		$intable = false;
+		$embedded = false;
 		$tablerow = 0;
 		$tablecolumn = 0;
 		$tableheader = "";
@@ -80,6 +81,13 @@ class ERPBase {
 					$html .= '<LEGEND onClick="$(this).siblings().toggle();">'.$field[2].'</LEGEND>';
 				} elseif ($field[3]=='endfieldset') {
 					$html .= '</FIELDSET>';
+				} elseif ($field[3]=='embedded') {
+					$html .= '<FIELDSET class="RecordEdit embedded" id="'.$field[0].'_'.$field[1].'_edit">';
+					$html .= '<LEGEND onClick="$(this).siblings().toggle();">'.$field[2].'</LEGEND>';
+					$embedded = true;
+				} elseif ($field[3]=='endembedded') {
+					$html .= '</FIELDSET>';
+					$embedded = false;
 				} elseif ($field[3]=='fieldtable') {
 					$html .= '<FIELDSET class="RecordEdit" id="'.$field[0].'_edit">';
 					$html .= '<LEGEND onClick="$(this).siblings().toggle();">'.$field[2].'</LEGEND>';
@@ -146,10 +154,10 @@ class ERPBase {
 						$tableheader .= '<TH>'.$field[2].'</TH>';
 						$tableentry .= '<TD id="row'.$tablerow.'-'.$field[1].'"><TEXTAREA id="'.$field[1].'">&nbsp;</TEXTAREA></TD>';
 					}
-				} elseif (!$intable) {
+				} elseif (!$intable && !$embedded) {
 					$html .= '<DIV class="labeldiv">';
 					$html .= '<LABEL for="'.$field[1].'">'.$field[2].'</LABEL>';
-				} else {
+				} elseif ($intable) {
 					$tableheader .= '<TH>'.$field[2].'</TH>';
 				}
 				if ($field[3]=='textbox') 
@@ -200,7 +208,26 @@ class ERPBase {
 						$tableentry .= '<BUTTON id="newlinebutton"'.((count($field)>=5)?' onClick="'.$field[4].'"':'').'>'.$field[2].'</BUTTON>';
 						$tableentry .= '</TD>';
 					}
-				if (!$intable) {
+				if ($field[3]=='function' && count($field)>=6 && is_object($field[4]) && method_exists($field[4],$field[5])) {
+					if (!$intable) {
+						$html .= $field[4]->$field[5]();
+					} else {
+						$tableentry .= '<TD id="row'.$tablerow.'-'.$field[1].'">';
+						$tableentry .= $field[4]->$$field[5]();
+						$tableentry .= '</TD>';
+					}
+				}
+				if ($field[3]=='Address') {
+					$addr = new Addresses($this->dbconn);
+					if (!$intable) {
+						$html .= '<DIV id="'.$field[1].'-div" class="embedded">'.$addr->embed($field[1],'search').'</DIV>';
+					} else {
+						$tableentry .= '<TD id="row'.$tablerow.'-'.$field[1].'">';
+						$tableentry .= '<DIV id="'.$field[1].'-div" class="embedded">'.$addr->embed($field[1],'search').'</DIV>';
+						$tableentry .= '</TD>';
+					}
+				}
+				if (!$intable && !$embedded) {
 					$html .= '</DIV>';
 				}
 			} // else, if there are fewer than 4 entries for the field, it is malformed.
