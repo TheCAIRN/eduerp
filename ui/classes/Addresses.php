@@ -51,7 +51,7 @@ class Addresses extends ERPBase {
 	 * requiring the user to open a new tab.
 	 *
 	 * $id = The HTML id attribute of the fieldset.
-	 * $mode = ['search' | 'lookup' | 'new' | 'save' | 'select' | 'display']
+	 * $mode = ['search' | 'lookup' | 'new' | 'save' | 'display']
 	 * $data = An array of address fields, or other data as appropriate to the mode.
 	 */
 	public function embed($id='address',$mode='search',$data=null) {
@@ -59,6 +59,8 @@ class Addresses extends ERPBase {
 			return $this->embed_search($id,$data);
 		} elseif ($mode=='lookup') {
 			return $this->embed_lookup($id,$data);
+		} elseif ($mode=='display') {
+			return $this->embed_display($id,$data);
 		} else {
 			$this->mb->addError('JQ Embedded Address does not understand mode, "'.$mode.'".');
 		}
@@ -117,6 +119,44 @@ class Addresses extends ERPBase {
 		$html .= "<BUTTON onClick=\"embeddedAddressSelect('$id');\">Select</BUTTON>";
 		return $html;
 	} // embed_lookup()
+	private function embed_display($id='address',$data=null,$readonly=true) {
+		if (!($this->isIDValid($data))) {
+			$this->mb->addError("JQ Embedded Address: Selected ID is not valid.");
+			return $this->embed_search($id);
+		}
+		$q = "SELECT {$this->column_list} FROM cx_addresses WHERE address_id=?";
+		$stmt = $this->dbconn->prepare($q);
+		$stmt->bind_param('i',$data);
+		$return = $stmt->execute();
+		$stmt->store_result();
+		if ($return===false || $stmt->num_rows==0) {
+			$this->mb->addError("JQ Embedded Address: Selected ID is not valid.");
+			return $this->embed_search($id);
+		}
+		$stmt->bind_result($this->id,$this->building_number,$this->street,$this->attention,$this->apartment,$this->postal_box,$this->line2,$this->line3,
+			$this->city,$this->spc_abbrev,$this->postal_code,$this->country,$this->county,$this->maidenhead,$this->latitude,$this->longitude,$this->osm_id,
+			$this->last_validated);
+		if ($stmt->fetch()) {
+			$html = '';
+			if ($readonly) $html .= $this->embed_search($id).'<BR />';
+			$html .= '<P><LABEL for="'.$id.'-address_id">ID:</LABEL><B id="'.$id.'-address_id">'.$this->id.'</B></P>';
+			if ($readonly) {
+				$html .= ''.$this->building_number.' '.$this->street.'<BR />';
+				if ($this->attention!='') $html .= "Attn: {$this->attention} <BR />";
+				if ($this->apartment!='') $html .= "Apt {$this->apartment} <BR />";
+				if ($this->postal_box!='') $html .= "Box {$this->postal_box} <BR />";
+				if ($this->line2!='') $html .= $this->line2.'<BR />';
+				if ($this->line3!='') $html .= $this->line3.'<BR />';
+				if ($this->city!='' && $this->spc_abbrev!='') $html .= "{$this->city}, {$this->spc_abbrev} {$this->postal_code} {$this->country}<BR />";
+				elseif ($this->city!='') $html .= "{$this->city} {$this->postal_code} {$this->country}<BR />";
+				if ($this->county!='') $html .= "{$this->county} County<BR />";
+				$html .= "OSM ID: {$this->osm_id}  Coordinates: {$this->latitude},{$this->longitude}  Maidenhead: {$this->maidenhead}   Last Validated: {$this->last_validated}<BR />";
+				return $html;	
+			}
+		} else {
+			return $this->embed_search($id);
+		}
+	} // embed_display()
 	public function listRecords() {
 	
 	} // listRecords()
@@ -127,7 +167,11 @@ class Addresses extends ERPBase {
 	
 	} // executeSearch()
 	public function isIDValid($id) {
-	
+		// TODO: Validate that the ID is actually a record in the database
+		if ($id<1) return false;
+		if (is_integer($id)) return true;
+		if (ctype_digit($id)) return true;
+		return false;
 	} // isIDValid()
 	public function display($id) {
 	
