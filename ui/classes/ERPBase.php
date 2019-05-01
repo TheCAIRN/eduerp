@@ -210,10 +210,10 @@ class ERPBase {
 					}
 				if ($field[3]=='function' && count($field)>=6 && is_object($field[4]) && method_exists($field[4],$field[5])) {
 					if (!$intable) {
-						$html .= $field[4]->$field[5]();
+						$html .= $field[4]->{$field[5]}();
 					} else {
 						$tableentry .= '<TD id="row'.$tablerow.'-'.$field[1].'">';
-						$tableentry .= $field[4]->$$field[5]();
+						$tableentry .= $field[4]->{$field[5]}();
 						$tableentry .= '</TD>';
 					}
 				}
