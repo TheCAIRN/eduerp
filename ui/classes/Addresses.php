@@ -21,11 +21,44 @@ class Addresses extends ERPBase {
 	private $column_list;
 	public function __construct($link=null) {
 		parent::__construct($link);
-		
+		$this->searchFields[] = array('cx_addresses','unified_search','Type in any part of the address and click Search','textbox');
+		$this->entryFields[] = array('cx_addresses','id','ID','integerid');
+		$this->entryFields[] = array('cx_addresses','building_number','Building #','textbox');
+		$this->entryFields[] = array('cx_addresses','street','Street','textbox');
+		$this->entryFields[] = array('cx_addresses','attention','Attn','textbox');
+		$this->entryFields[] = array('cx_addresses','apartment','Apt','textbox');
+		$this->entryFields[] = array('cx_addresses','postal_box','PO Box','textbox');
+		$this->entryFields[] = array('cx_addresses','line2','Line 2','textbox');
+		$this->entryFields[] = array('cx_addresses','line3','Line 3','textbox');
+		$this->entryFields[] = array('cx_addresses','spc_abbrev','State','dropdown','aa_spc',array('abbrev','name'));
+		$this->entryFields[] = array('cx_addresses','postal_code','Zip','textbox');
+		$this->entryFields[] = array('cx_addresses','country','Country','dropdown','aa_country',array('iso','printable_name'));
+		$this->entryFields[] = array('cx_addresses','county','County','textbox');
+		$this->entryFields[] = array('cx_addresses','maidenhead','Maidenhead','textbox');
+		$this->entryFields[] = array('cx_addresses','latitude','Latitude','decimal',17,11);
+		$this->entryFields[] = array('cx_addresses','longitude','Longitude','decimal',17,11);
+		$this->entryFields[] = array('cx_addresses','osm_id','OSM ID','integer');
 		$this->resetHeader();
 	} // __construct()
 	public function resetHeader() {
-	
+		$this->id = -1;
+		$this->building_number = 0;
+		$this->street = '';
+		$this->attention = '';
+		$this->apartment = '';
+		$this->postal_box = '';
+		$this->line2 = '';
+		$this->line3 = '';
+		$this->city = '';
+		$this->spc_abbrev = '';
+		$this->postal_code = '';
+		$this->country = '';
+		$this->county = '';
+		$this->maidenhead = '';
+		$this->latitude = 0.00;
+		$this->longitude = 0.00;
+		$this->osm_id = 0;
+		$this->last_validated = null;
 		$this->column_list = 'address_id,building_number,street,attention,apartment,postal_box,line2,line3,city,spc_abbrev,postal_code,country,'.
 			'county,maidenhead,latitude,longitude,osm_id,last_validated';
 	} // resetHeader()
@@ -157,11 +190,19 @@ class Addresses extends ERPBase {
 			return $this->embed_search($id);
 		}
 	} // embed_display()
+	public function embed_new($id='address',$data=null) {
+		
+	} // embed_new()
+	public function embed_save($id='address',$data=null) {
+		
+	} // embed_save()
 	public function listRecords() {
-	
+		parent::abstractListRecords('Addresses');
+		$_SESSION['currentScreen'] = 1012;
 	} // listRecords()
 	public function searchPage() {
-	
+		parent::abstractSearchPage('AddressesSearch');
+		$_SESSION['currentScreen'] = 12;
 	} // searchPage()
 	public function executeSearch($criteria) {
 	
@@ -177,7 +218,8 @@ class Addresses extends ERPBase {
 	
 	} // display()
 	public function newRecord() {
-	
+		echo parent::abstractNewRecord('Addresses');
+		$_SESSION['currentScreen'] = 3012;
 	} // newRecord()
 	public function insertHeader() {
 	

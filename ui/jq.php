@@ -109,6 +109,13 @@ function jquery() {
 				$modObject = new ItemManager($link);
 				$_SESSION['activeModule'] = $modObject;
 			}
+		} elseif ($module=='AddressesSearch') {
+			if (isset($_SESSION['activeModule']) && $_SESSION['activeModule'] instanceof Addresses) 
+				$modObject = $_SESSION['activeModule'];
+			else {
+				$modObject = new Addresses($link);
+				$_SESSION['activeModule'] = $modObject;
+			}
 		} elseif ($module=='VendorSearch') {
 			if (isset($_SESSION['activeModule']) && $_SESSION['activeModule'] instanceof Vendor) 
 				$modObject = $_SESSION['activeModule'];
@@ -211,6 +218,8 @@ function jquery() {
 			$modObject = new Entity($link);
 		} elseif ($module=='ItemManager') {
 			$modObject = new ItemManager($link);
+		} elseif ($module=='Addresses') {
+			$modObject = new Addresses($link);
 		} elseif ($module=='Vendor') {
 			$modObject = new Vendor($link);
 		} elseif ($module=='VendorCatalog') {
@@ -257,24 +266,17 @@ function jquery() {
 			$link->close();
 			return;
 		}
-		if ($_SESSION['currentScreen']%1000==7) {
-			$modObject = new Purchasing($link);
-		} elseif ($_SESSION['currentScreen']%1000==19) {
-			$modObject = new BOM($link);
-		} elseif ($_SESSION['currentScreen']%1000==21) {
-			$modObject = new EntityResource($link);
-		} elseif ($_SESSION['currentScreen']%1000==23) {
-			$modObject = new CustomerTypes($link);
-		} elseif ($_SESSION['currentScreen']%1000==24) {
-			$modObject = new Customer($link);
-		} elseif ($_SESSION['currentScreen']%1000==25) {
-			$modObject = new CustomerDC($link);
-		} elseif ($_SESSION['currentScreen']%1000==26) {
-			$modObject = new CustomerStoreTypes($link);
-		} elseif ($_SESSION['currentScreen']%1000==27) {
-			$modObject = new CustomerStores($link);
-		} elseif ($_SESSION['currentScreen']%1000==28) {
-			$modObject = new Consumers($link);
+		switch ($_SESSION['currentScreen']%1000) {
+			case 7: $modObject = new Purchasing($link); break;
+			case 12: $modObject = new Addresses($link); break;
+			case 19: $modObject = new BOM($link); break;
+			case 21: $modObject = new EntityResource($link); break;
+			case 23: $modObject = new CustomerTypes($link); break;
+			case 24: $modObject = new Customer($link); break;
+			case 25: $modObject = new CustomerDC($link); break;
+			case 26: $modObject = new CustomerStoreTypes($link); break;
+			case 27: $modObject = new CustomerStores($link); break;
+			case 28: $modObject = new Consumers($link); break;
 		}
 		if (is_null($modObject)) {
 			$messagebar->addError("The selected module is not available at the moment.  Please wait a few minutes and try again.");
@@ -299,6 +301,8 @@ function jquery() {
 			$modObject = new BOM($link);
 		} elseif ($_POST['module']=='entityresource') {
 			$modObject = new EntityResource($link);
+		} elseif ($_POST['module']=='addresses') {
+			$modObject = new Addresses($link);
 		}
 		if ($command=='insertRecord')
 			$modObject->insertRecord();

@@ -21,7 +21,7 @@ class Workspace {
 			case 9: echo $this->customerSubMenu(); break; 
 			case 10: $sales = new Sales($this->dbconn); echo $sales->searchPage(); break;
 			case 11: /* TO DO People */ break;
-			case 12: /* TO DO Addresses */ break;
+			case 12: $addr = new Addresses($this->dbconn); echo $addr->searchPage(); break;
 			case 13: $item = new ItemManager($this->dbconn); echo $item->searchPage(); break;
 			case 14: $item = new ItemAttributes($this->dbconn); echo $item->searchPage(); break;
 			case 15: $item = new ItemCategories($this->dbconn); echo $item->searchPage(); break;
@@ -46,6 +46,7 @@ class Workspace {
 			/* 1000-1999: List Records */
 			case 1002: $ent = new Entity($this->dbconn); $ent->listRecords(); break;
 			case 1005: $vend = new Vendor($this->dbconn); $vend->listRecords(); break;
+			case 1012: $addr = new Addresses($this->dbconn); $addr->listRecords(); break;
 			case 1013: $item = new ItemManager($this->dbconn); $item->listRecords(); break;
 			case 1019: $bom = new BOM($this->dbconn); $bom->listRecords(); break;
 			case 1020: $vc = new VendorCatalog($this->dbconn); $vc->listRecords(); break;
@@ -59,6 +60,7 @@ class Workspace {
 			/* 2000-2999: Display record */
 			case 2002: $ent = new Entity($this->dbconn); $ent->display($_SESSION['idarray'][2]); break;
 			case 2005: $vend = new Vendor($this->dbconn); $vend->display($_SESSION['idarray'][2]); break;
+			case 2012: $addr = new Addresses($this->dbconn); $addr->display($_SESSION['idarray'][2]); break;
 			case 2013: $item = new ItemManager($this->dbconn); $item->display($_SESSION['idarray'][2]); break;
 			case 2019: $bom = new BOM($this->dbconn); $bom->display($_SESSION['idarray'][2]); break;
 			case 2020: $vc = new VendorCatalog($this->dbconn); $vc->display($_SESSION['idarray'][2]); break;
@@ -71,6 +73,7 @@ class Workspace {
 			case 2028: $cc = new Consumers($this->dbconn); $cc->display($_SESSION['idarray'][2]); break;
 			/* 3000-3999: New Record */
 			case 3007: $purch = new Purchasing($this->dbconn); $purch->newRecord(); break;
+			case 3012: $addr = new Addresses($this->dbconn); $addr->newRecord(); break;
 			case 3019: $bom = new BOM($this->dbconn); $bom->newRecord(); break;
 			case 3021: $entres = new EntityResource($this->dbconn); $entres->newRecord(); break;
 			case 3023: $ct = new CustomerTypes($this->dbconn); $ct->newRecord(); break;
