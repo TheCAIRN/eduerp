@@ -30,6 +30,7 @@ class Addresses extends ERPBase {
 		$this->entryFields[] = array('cx_addresses','postal_box','PO Box','textbox');
 		$this->entryFields[] = array('cx_addresses','line2','Line 2','textbox');
 		$this->entryFields[] = array('cx_addresses','line3','Line 3','textbox');
+		$this->entryFields[] = array('cx_addresses','city','City','textbox');
 		$this->entryFields[] = array('cx_addresses','spc_abbrev','State','dropdown','aa_spc',array('abbrev','name'));
 		$this->entryFields[] = array('cx_addresses','postal_code','Zip','textbox');
 		$this->entryFields[] = array('cx_addresses','country','Country','dropdown','aa_country',array('iso','printable_name'));
@@ -94,6 +95,10 @@ class Addresses extends ERPBase {
 			return $this->embed_lookup($id,$data);
 		} elseif ($mode=='display') {
 			return $this->embed_display($id,$data);
+		} elseif ($mode=='new') {
+			return $this->embed_new($id,$data);
+		} elseif ($mode=='save') {
+			return $this->embed_save($id,$data);
 		} else {
 			$this->mb->addError('JQ Embedded Address does not understand mode, "'.$mode.'".');
 		}
@@ -191,10 +196,18 @@ class Addresses extends ERPBase {
 		}
 	} // embed_display()
 	public function embed_new($id='address',$data=null) {
-		
+		$html = parent::abstractNewRecord('Addresses',$id);
+		$html .= "<BR /><BUTTON onClick=\"embeddedAddressSave('$id');\">Save</BUTTON><BR />";
+		$html .= $this->embed_search($id);
+		return $html;
 	} // embed_new()
 	public function embed_save($id='address',$data=null) {
-		
+		$this->insertHeader(true);
+		if ($this->id==0) {
+			return $this->embed_new($id,null);
+		} else {
+			return $this->embed_display($id,$this->id);
+		}
 	} // embed_save()
 	public function listRecords() {
 		parent::abstractListRecords('Addresses');
@@ -221,12 +234,75 @@ class Addresses extends ERPBase {
 		echo parent::abstractNewRecord('Addresses');
 		$_SESSION['currentScreen'] = 3012;
 	} // newRecord()
-	public function insertHeader() {
-	
+	private function insertHeader($embed=false) {
+		$this->resetHeader();
+		if (!isset($_POST['data'])) {
+			$this->mb->addError("No data was submitted.  Address save failed.");
+		}
+		$data = $_POST['data'];
+		$this->id = isset($data['id'])?$data['id']:0;
+		$this->building_number = isset($data['building_number'])?$data['building_number']:'';
+		$this->street = isset($data['street'])?$data['street']:'';
+		$this->attention = isset($data['attention'])?$data['attention']:'';
+		$this->apartment = isset($data['apartment'])?$data['apartment']:'';
+		$this->postal_box = isset($data['postal_box'])?$data['postal_box']:'';
+		$this->line2 = isset($data['line2'])?$data['line2']:'';
+		$this->line3 = isset($data['line3'])?$data['line3']:'';
+		$this->city = isset($data['city'])?$data['city']:'';
+		$this->spc_abbrev = isset($data['spc_abbrev'])?$data['spc_abbrev']:'';
+		$this->postal_code = isset($data['postal_code'])?$data['postal_code']:'';
+		$this->country = isset($data['country'])?$data['country']:'';
+		$this->county = isset($data['county'])?$data['county']:'';
+		$this->maidenhead = isset($data['maidenhead'])?$data['maidenhead']:'';
+		$this->latitude = isset($data['latitude'])?$data['latitude']:0.00;
+		$this->longitude = isset($data['longitude'])?$data['longitude']:0.00;
+		$this->osm_id = isset($data['osm_id'])?$data['osm_id']:0;
+		$q = "INSERT INTO cx_addresses ({$this->column_list}) VALUES (NULL,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,NOW());";
+		$stmt = $this->dbconn->prepare($q);
+		$stmt->bind_param('sssssssssssssddi',$p1,$p2,$p3,$p4,$p5,$p6,$p7,$p8,$p9,$p10,$p11,$p12,$p13,$p14,$p15,$p16);
+		$p1 = $this->building_number;
+		$p2 = $this->street;
+		$p3 = $this->attention;
+		$p4 = $this->apartment;
+		$p5 = $this->postal_box;
+		$p6 = $this->line2;
+		$p7 = $this->line3;
+		$p8 = $this->city;
+		$p9 = $this->spc_abbrev;
+		$p10 = $this->postal_code;
+		$p11 = $this->country;
+		$p12 = $this->county;
+		// TODO: Validate Maidenhead
+		$p13 = $this->maidenhead;
+		$p14 = 1.0 * $this->latitude;
+		$p15 = 1.0 * $this->longitude;
+		$p16 = 1 * $this->osm_id;
+		$result = $stmt->execute();
+		if ($embed) {
+			if ($result!==false) {
+				$this->id = $this->dbconn->insert_id;
+			} else {
+				echo 'Address save failed: '.$this->dbconn->error.'<BR />';
+			}
+		} else {
+			if ($result!==false) {
+				echo 'inserted|'.$this->dbconn->insert_id.($return_date?'|'.$p2:'');
+			} else {
+				echo 'fail|'.$this->dbconn->error;
+				$this->mb->addError($this->dbconn->error);
+			}
+		}
+		$stmt->close();		
 	} // insertHeader()
-	public function updateHeader() {
+	private function updateHeader($embed=false) {
 	
 	} // updateHeader()
+	public function insertRecord() {
+		if (isset($_POST['level']) && $_POST['level']=='header') $this->insertHeader(false);
+	}
+	public function updateRecord() {
+		if (isset($_POST['level']) && $_POST['level']=='header') $this->updateHeader();
+	}
 	public function saveRecord() {
 	
 	} // saveRecord()

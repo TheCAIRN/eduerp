@@ -65,7 +65,7 @@ class ERPBase {
 		$html .= '</FIELDSET>';
 		echo $html;
 	} // function abstractSearchPage
-	protected function abstractNewRecord($module) {
+	protected function abstractNewRecord($module,$prefix='') {
 		// TODO: Make sure the user has the rights to create a new record for this module.
 		$html = '';
 		$intable = false;
@@ -111,8 +111,8 @@ class ERPBase {
 					if ($result!==false) {
 						if (!$intable) {
 							$html .= '<DIV class="labeldiv">';
-							$html .= '<LABEL for="'.$field[1].'">'.$field[2].'</LABEL>';
-							$html .= '<SELECT id="'.$field[1].'"><OPTION value="">&nbsp;</OPTION>';
+							$html .= '<LABEL for="'.$prefix.$field[1].'">'.$field[2].'</LABEL>';
+							$html .= '<SELECT id="'.$prefix.$field[1].'"><OPTION value="">&nbsp;</OPTION>';
 							while ($option = $result->fetch_row()) {
 								$html .= '<OPTION value="'.$option[0].'">'.$option[1].'</OPTION>';
 							}
@@ -120,7 +120,7 @@ class ERPBase {
 							$html .= '</DIV>';
 						} else {
 							$tableheader .= '<TH>'.$field[2].'</TH>';
-							$tableentry .= '<TD id="row'.$tablerow.'-'.$field[1].'"><SELECT id="'.$field[1].'"><OPTION value="">&nbsp;</OPTION>';
+							$tableentry .= '<TD id="row'.$tablerow.'-'.$field[1].'"><SELECT id="'.$prefix.$field[1].'"><OPTION value="">&nbsp;</OPTION>';
 							while ($option = $result->fetch_row()) {
 								$tableentry .= '<OPTION value="'.$option[0].'">'.$option[1].'</OPTION>';
 							}
@@ -131,15 +131,15 @@ class ERPBase {
 				} elseif ($field[3]=='dropdown' && count($field)>=5 && is_array($field[4])) {
 					if (!$intable) {
 						$html .= '<DIV class="labeldiv">';
-						$html .= '<LABEL for="'.$field[1].'">'.$field[2].'</LABEL>';						
-						$html .= '<SELECT id="'.$field[1].'"><OPTION value="">&nbsp;</OPTION>';
+						$html .= '<LABEL for="'.$prefix.$field[1].'">'.$field[2].'</LABEL>';						
+						$html .= '<SELECT id="'.$prefix.$field[1].'"><OPTION value="">&nbsp;</OPTION>';
 						foreach ($field[4] as $option) {
 							$html .= '<OPTION value="'.$option[0].'">'.$option[1].'</OPTION>';
 						}
 						$html .= '</SELECT></DIV>';
 					} else {
 						$tableheader .= '<TH>'.$field[2].'</TH>';
-						$tableentry .= '<TD id="row'.$tablerow.'-'.$field[1].'"><SELECT id="'.$field[1].'"><OPTION value="">&nbsp;</OPTION>';
+						$tableentry .= '<TD id="row'.$tablerow.'-'.$field[1].'"><SELECT id="'.$prefix.$field[1].'"><OPTION value="">&nbsp;</OPTION>';
 						foreach ($field[4] as $option) {
 							$tableentry .= '<OPTION value="'.$option[0].'">'.$option[1].'</OPTION>';
 						}
@@ -147,33 +147,33 @@ class ERPBase {
 					}
 				} elseif ($field[3]=='textarea') {
 					if (!$intable) {
-						$html .= '<DIV class="labeldiv" id="'.$field[1].'-div" style="height: 4em;">';
-						$html .= '<LABEL for="'.$field[1].'">'.$field[2].'</LABEL>';						
+						$html .= '<DIV class="labeldiv" id="'.$prefix.$field[1].'-div" style="height: 4em;">';
+						$html .= '<LABEL for="'.$prefix.$field[1].'">'.$field[2].'</LABEL>';						
 						$html .= "<TEXTAREA id=\"{$field[1]}\" onMouseUp=\"document.getElementById('{$field[1]}-div').height=this.height;\">&nbsp;</TEXTAREA></DIV>";
 					} else {
 						$tableheader .= '<TH>'.$field[2].'</TH>';
-						$tableentry .= '<TD id="row'.$tablerow.'-'.$field[1].'"><TEXTAREA id="'.$field[1].'">&nbsp;</TEXTAREA></TD>';
+						$tableentry .= '<TD id="row'.$tablerow.'-'.$field[1].'"><TEXTAREA id="'.$prefix.$field[1].'">&nbsp;</TEXTAREA></TD>';
 					}
 				} elseif (!$intable && !$embedded) {
 					$html .= '<DIV class="labeldiv">';
-					$html .= '<LABEL for="'.$field[1].'">'.$field[2].'</LABEL>';
+					$html .= '<LABEL for="'.$prefix.$field[1].'">'.$field[2].'</LABEL>';
 				} elseif ($intable) {
 					$tableheader .= '<TH>'.$field[2].'</TH>';
 				}
 				if ($field[3]=='textbox') 
-					if (!$intable) $html .= '<INPUT type="text" id="'.$field[1].'" />';
+					if (!$intable) $html .= '<INPUT type="text" id="'.$prefix.$field[1].'" />';
 					else {
-						$tableentry .= '<TD id="row'.$tablerow.'-'.$field[1].'"><INPUT type="text" id="'.$field[1].'" /></TD>';
+						$tableentry .= '<TD id="row'.$tablerow.'-'.$prefix.$field[1].'"><INPUT type="text" id="'.$prefix.$field[1].'" /></TD>';
 					}
 				if ($field[3]=='integerid') 
-					if (!$intable) $html .= '<INPUT type="number" id="'.$field[1].'" min="0" step="1" readonly="readonly" />';
+					if (!$intable) $html .= '<INPUT type="number" id="'.$prefix.$field[1].'" min="0" step="1" readonly="readonly" />';
 					else {
-						$tableentry .= '<TD id="row'.$tablerow.'-'.$field[1].'"><INPUT type="number" id="'.$field[1].'" min="0" step="1" readonly="readonly"/></TD>';
+						$tableentry .= '<TD id="row'.$tablerow.'-'.$prefix.$field[1].'"><INPUT type="number" id="'.$prefix.$field[1].'" min="0" step="1" readonly="readonly"/></TD>';
 					}
 				if ($field[3]=='integer') 
-					if (!$intable) $html .= '<INPUT type="number" id="'.$field[1].'" min="0" step="1" />';
+					if (!$intable) $html .= '<INPUT type="number" id="'.$prefix.$field[1].'" min="0" step="1" />';
 					else {
-						$tableentry .= '<TD id="row'.$tablerow.'-'.$field[1].'"><INPUT type="number" id="'.$field[1].'" min="0" step="1" /></TD>';
+						$tableentry .= '<TD id="row'.$tablerow.'-'.$prefix.$field[1].'"><INPUT type="number" id="'.$field[1].'" min="0" step="1" /></TD>';
 					}
 				if ($field[3]=='decimal') {
 					$places = 5;
@@ -184,27 +184,28 @@ class ERPBase {
 					}
 					$step = 1 / (pow(10,$decimals));
 					$max = pow(10,$places-($decimals+1))-$step;
-					if (!$intable) $html .= '<INPUT type="number" id="'.$field[1].'" min="0" max="'.$max.'" step="'.$step.'" />';
+					if (!$intable) $html .= '<INPUT type="number" id="'.$prefix.$field[1].'" min="0" max="'.$max.'" step="'.$step.'" />';
 					else {
-						$tableentry .= '<TD id="row'.$tablerow.'-'.$field[1].'"><INPUT type="number" id="'.$field[1].'" min="0" max="'.$max.'" step="'.$step.'" /></TD>';
+						$tableentry .= '<TD id="row'.$tablerow.'-'.$prefix.$field[1].'"><INPUT type="number" id="'.$prefix.$field[1].'" min="0" max="'.$max.'" step="'.$step.'" /></TD>';
 					}
 				}
 				if ($field[3]=='checkbox') 
-					if (!$intable) $html .= '<INPUT type="checkbox" id="'.$field[1].'" indeterminate="true" />';
+					if (!$intable) $html .= '<INPUT type="checkbox" id="'.$prefix.$field[1].'" indeterminate="true" />';
 					else {
-						$tableentry .= '<TD id="row'.$tablerow.'-'.$field[1].'"><INPUT type="checkbox" id="'.$field[1].'" indeterminate="true" /></TD>';
+						$tableentry .= '<TD id="row'.$tablerow.'-'.$prefix.$field[1].'"><INPUT type="checkbox" id="'.$prefix.$field[1].'" indeterminate="true" /></TD>';
 					}
 				if ($field[3]=='datetime') 
 					if (!$intable) {
-						$html .= '<INPUT type="date" id="'.$field[1].'-date" /><INPUT type="time" id="'.$field[1].'-time" />';
+						$html .= '<INPUT type="date" id="'.$prefix.$field[1].'-date" /><INPUT type="time" id="'.$prefix.$field[1].'-time" />';
 					} else {
-						$tableentry .= '<TD id="row'.$tablerow.'-'.$field[1].'"><INPUT type="date" id="'.$field[1].'-date" /><INPUT type="time" id="'.$field[1].'-time" /></TD>';
+						$tableentry .= '<TD id="row'.$tablerow.'-'.$prefix.$field[1].'"><INPUT type="date" id="'.$prefix.$field[1].'-date" />'.
+							'<INPUT type="time" id="'.$prefix.$field[1].'-time" /></TD>';
 					}
 				if ($field[3]=='newlinebutton')
 					if (!$intable) {
 						$html .= '<BUTTON id="newlinebutton"'.((count($field)>=5)?' onClick="'.$field[4].'"':'').'>'.$field[2].'</BUTTON>';
 					} else {
-						$tableentry .= '<TD id="row'.$tablerow.'-'.$field[1].'">';
+						$tableentry .= '<TD id="row'.$tablerow.'-'.$prefix.$field[1].'">';
 						$tableentry .= '<BUTTON id="newlinebutton"'.((count($field)>=5)?' onClick="'.$field[4].'"':'').'>'.$field[2].'</BUTTON>';
 						$tableentry .= '</TD>';
 					}
@@ -212,7 +213,7 @@ class ERPBase {
 					if (!$intable) {
 						$html .= $field[4]->{$field[5]}();
 					} else {
-						$tableentry .= '<TD id="row'.$tablerow.'-'.$field[1].'">';
+						$tableentry .= '<TD id="row'.$tablerow.'-'.$prefix.$field[1].'">';
 						$tableentry .= $field[4]->{$field[5]}();
 						$tableentry .= '</TD>';
 					}

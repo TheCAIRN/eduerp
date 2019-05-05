@@ -89,6 +89,9 @@ function saveRecord(whichModule) {
 	if (whichModule=="BOM") {
 		saveBOMHeader();
 	}
+	if (whichModule=="Customer") {
+		saveCustomerHeader();
+	}
 }
 function addDetailRow(whichModule) {
 	if (whichModule=="Purchasing") {
