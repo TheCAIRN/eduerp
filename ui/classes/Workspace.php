@@ -2,10 +2,12 @@
 class Workspace {
 	private $currentScreen;
 	private $dbconn;
+	private $mb;
 	public function __construct($link=null) {
 		if (isset($_SESSION) && isset($_SESSION['currentScreen'])) $this->currentScreen = $_SESSION['currentScreen'];
 		else $this->currentScreen = 0;
 		$this->dbconn = $link;
+		$this->mb = new MessageBar();
 	} // construct()
 	public function render() {
 		switch ($this->currentScreen) {
@@ -15,34 +17,40 @@ class Workspace {
 			case 3: echo $this->contactSubmenu(); break;
 			case 4: echo $this->itemSubmenu(); break;
 			case 5: $vend = new Vendor($this->dbconn); echo $vend->searchPage(); break;
-			case 6: $freight = new Freight($this->dbconn); echo $freight->searchPage(); break;
+			case 6: $this->notInstalled("Freight"); break; //$freight = new Freight($this->dbconn); echo $freight->searchPage(); break;
 			case 7: $purch = new Purchasing($this->dbconn); echo $purch->searchPage(); break;
-			case 8: $prod = new Production($this->dbconn); echo $prod->searchPage(); break;
+			case 8: $this->notInstalled("Production"); break; // $prod = new Production($this->dbconn); echo $prod->searchPage(); break;
 			case 9: echo $this->customerSubMenu(); break; 
-			case 10: $sales = new Sales($this->dbconn); echo $sales->searchPage(); break;
-			case 11: /* TO DO People */ break;
+			case 10: $this->notInstalled("Sales"); break; //$sales = new Sales($this->dbconn); echo $sales->searchPage(); break;
+			case 11: $this->notInstalled("People"); /* TO DO People */ break;
 			case 12: $addr = new Addresses($this->dbconn); echo $addr->searchPage(); break;
 			case 13: $item = new ItemManager($this->dbconn); echo $item->searchPage(); break;
-			case 14: $item = new ItemAttributes($this->dbconn); echo $item->searchPage(); break;
-			case 15: $item = new ItemCategories($this->dbconn); echo $item->searchPage(); break;
-			case 16: $item = new ItemTypes($this->dbconn); echo $item->searchPage(); break;
+			case 14: $this->notInstalled("Item Attributes"); break; // $item = new ItemAttributes($this->dbconn); echo $item->searchPage(); break;
+			case 15: $this->notInstalled("Item Categories"); break; //$item = new ItemCategories($this->dbconn); echo $item->searchPage(); break;
+			case 16: $this->notInstalled("Item Types"); break; $item = new ItemTypes($this->dbconn); echo $item->searchPage(); break;
 			case 17: echo $this->gtinSubmenu(); break;
-			case 18: $item = new InventoryManager($this->dbconn); echo $item->searchPage(); break;
+			case 18: $this->notInstalled("Inventory Manager"); break; //$item = new InventoryManager($this->dbconn); echo $item->searchPage(); break;
 			case 19: $bom = new BOM($this->dbconn); echo $bom->searchPage(); break;
 			case 20: $vc = new VendorCatalog($this->dbconn); echo $vc->searchPage(); break;
 			case 21: $entres = new EntityResource($this->dbconn); echo $entres->searchPage(); break;
-			case 22: $cc = new CustomerCatalog($this->dbconn); echo $cc->searchPage(); break;
-			case 23: $ct = new CustomerTypes($this->dbconn); echo $ct->searchPage(); break;
+			case 22: $this->notInstalled("Customer Catalog"); break; //$cc = new CustomerCatalog($this->dbconn); echo $cc->searchPage(); break;
+			case 23: $this->notInstalled("Customer Types"); break; //$ct = new CustomerTypes($this->dbconn); echo $ct->searchPage(); break;
 			case 24: $cust = new Customer($this->dbconn); echo $cust->searchPage(); break;
-			case 25: $dc = new CustomerDC($this->dbconn); echo $dc->searchPage(); break;
-			case 26: $st = new CustomerStoreTypes($this->dbconn); echo $st->searchPage(); break;
-			case 27: $st = new CustomerStores($this->dbconn); echo $st->searchPage(); break;
-			case 28: $cc = new Consumers($this->dbconn); echo $cc->searchPage(); break;
+			case 25: $this->notInstalled("Customer DC"); break; //$dc = new CustomerDC($this->dbconn); echo $dc->searchPage(); break;
+			case 26: $this->notInstalled("Customer Store Types"); break; //$st = new CustomerStoreTypes($this->dbconn); echo $st->searchPage(); break;
+			case 27: $this->notInstalled("Customer Stores"); break; //$st = new CustomerStores($this->dbconn); echo $st->searchPage(); break;
+			case 28: $this->notInstalled("Consumers"); break; //$cc = new Consumers($this->dbconn); echo $cc->searchPage(); break;
 			case 29: echo $this->insightSubmenu(); break;
-			case 30: $dsu = new DashboardSetup($this->dbconn); echo $dsu->searchPage(); break;
-			case 31: $rsu = new ReportSetup($this->dbconn); echo $rsu->searchPage(); break;
-			case 32: $db = new Dashboards($this->dbconn); echo $db->searchPage(); break;
-			case 33: $rpt = new Reports($this->dbconn); echo $rpt->searchPage(); break;
+			case 30: $this->notInstalled("Dashboard Setup"); break; //$dsu = new DashboardSetup($this->dbconn); echo $dsu->searchPage(); break;
+			case 31: $this->notInstalled("Report Setup"); break; //$rsu = new ReportSetup($this->dbconn); echo $rsu->searchPage(); break;
+			case 32: $this->notInstalled("Dashboards"); break; //$db = new Dashboards($this->dbconn); echo $db->searchPage(); break;
+			case 33: $this->notInstalled("Reports"); break; //$rpt = new Reports($this->dbconn); echo $rpt->searchPage(); break;
+			case 34: echo $this->accountingSubmenu(); break;
+			case 35: $this->notInstalled("Chart of Accounts"); break; // Chart of Accounts
+			case 36: $this->notInstalled("GL Periods"); break; // GL Periods
+			case 37: $this->notInstalled("GL Accounts"); break; // GL Accounts
+			case 38: $this->notInstalled("GL Balances"); break; // GL Balances
+			case 39: $this->notInstalled("GL Journal"); break; // GL Journal
 			/* 1000-1999: List Records */
 			case 1002: $ent = new Entity($this->dbconn); $ent->listRecords(); break;
 			case 1005: $vend = new Vendor($this->dbconn); $vend->listRecords(); break;
@@ -85,22 +93,26 @@ class Workspace {
 		}
 		
 	} // render()
+	private function notInstalled($module) {
+		$this->mb->addWarning("The $module module has not been installed on this system.");
+	} // notInstalled()
 	public function setCurrentScreen($screen) {
 		if (!is_numeric($screen) && !ctype_digit($screen)) return;
 		if ($screen < 0 || $screen > 3999) return;
 		$this->currentScreen = $screen;
 		$_SESSION['currentScreen'] = $screen;
 		$this->render();
-	}
+	} // setCurrentScreen()
 	private function dashboard() {
 		// TODO: Only display those modules the user has permissions to.
-		$module_list = ['Entities','Core Lookups','Contacts','Items','Vendors','Freight','Purchasing','Production','Customers','Sales','Insights'];
+		$module_list = ['Entities','Core Lookups','Contacts','Items','Vendors','Freight',
+			'Purchasing','Production','Customers','Sales','Insights','Accounting'];
 		$html = '';
 		foreach ($module_list as $module) {
 			$html .= '<DIV id="'.str_replace(' ','',$module).'ModuleIcon" class="DashboardIcon" onClick="selectModule(this);">'.$module."</DIV>\r\n";
 		}
 		return $html;
-	}
+	} // dashboard()
 	private function coreSubmenu() {
 		// TODO: Only display those modules the user has permissions to.
 		$module_list = ['Currency','Country','Language','State','UOM Types','UOM','UOM Conversions','Terms','Note Types','Attachment Types','Cancellation Reason Codes',
@@ -143,12 +155,33 @@ class Workspace {
 		return $html;
 	}
 	private function customerSubmenu() {
+		// TODO: Only display those modules the user has permissions to.
 		$module_list = ['Customer Types','Customer','Customer DC','Customer Store Types','Customer Stores','Consumers'];
 		$html = '';
 		foreach ($module_list as $module) {
 			$html .= '<DIV id="'.str_replace(' ','',$module).'ModuleIcon" class="DashboardIcon" onClick="selectModule(this);">'.$module."</DIV>\r\n";
 		}
 		$this->currentScreen = 9;
+		return $html;
+	}
+	private function insightSubmenu() {
+		// TODO: Only display those modules the user has permissions to.
+		$module_list = ['Dashboard Setup','Report Setup','Dashboards','Reports'];
+		$html = '';
+		foreach ($module_list as $module) {
+			$html .= '<DIV id="'.str_replace(' ','',$module).'ModuleIcon" class="DashboardIcon" onClick="selectModule(this);">'.$module."</DIV>\r\n";
+		}
+		$this->currentScreen = 17;
+		return $html;
+	}
+	private function accountingSubmenu() {
+		// TODO: Only display those modules the user has permissions to.
+		$module_list = ['Chart of Accounts','GL Periods','GL Accounts','GL Balances','GL Journal'];
+		$html = '';
+		foreach ($module_list as $module) {
+			$html .= '<DIV id="'.str_replace(' ','',$module).'ModuleIcon" class="DashboardIcon" onClick="selectModule(this);">'.$module."</DIV>\r\n";
+		}
+		$this->currentScreen = 17;
 		return $html;
 	}
 } // class Workspace

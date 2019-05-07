@@ -8,7 +8,7 @@ class Toolbar {
 		if (isset($_SESSION['currentScreen'])) {
 			$cs = $_SESSION['currentScreen'];
 			$mod = '';
-			$subscreens = array(0,2,3,4,9,17,29);
+			$subscreens = array(0,2,3,4,9,17,29,34);
 			switch ($cs) {
 				case 1: $mod="'EntitySearch'"; break;
 				case 5: $mod="'VendorSearch'"; break;

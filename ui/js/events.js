@@ -12,7 +12,7 @@ function mainMenu() {
 } // mainMenu()
 function selectModule(whichModule) {
 	var moduleName = whichModule.id.replace('ModuleIcon','');
-	if (whichModule=="CoreLookups" || whichModule=="Items") {
+	if (whichModule=="CoreLookups" || whichModule=="Items" || whichModule=="Insights" || whichModule=="Accounting") {
 		$.post('jq.php',{jquery:'moduleSubMenu',module:moduleName},function (data) {
 			if (data.length > 0) $("#core").html(data);
 			updateDiv('messagebar');

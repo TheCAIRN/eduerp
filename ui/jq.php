@@ -36,8 +36,10 @@ function jquery() {
 	 * SUB MENU
 	 **************************************************************************/
 	} elseif ($command=='moduleSubMenu') {
+		// Only activate submenus for top-level dashboard icons here.  Third-level menus are 
+		// selected from the Workspace directly.
 		if (!isset($_POST['module'])) {
-			$messagebar->addError("The selected module has not been installed in this system.");
+			$messagebar->addWarning("The selected module has not been installed in this system.");
 			$link->close();
 			return;
 		}
@@ -48,6 +50,8 @@ function jquery() {
 			$ws->setCurrentScreen(4);
 		} elseif ($module=='Insights') {
 			$ws->setCurrentScreen(29);
+		} elseif ($module=='Accounting') {
+			$ws->setCurrentScreen(34);
 		}
 		// Workspace::setCurrentScreen renders immediately.
 	/**************************************************************************
@@ -56,7 +60,7 @@ function jquery() {
 	} elseif ($command=='moduleSearchSpace') {
 		// present the search screen for the selected module.
 		if (!isset($_POST['module'])) {
-			$messagebar->addError("The selected module has not been installed in this system.");
+			$messagebar->addWarning("The selected module has not been installed in this system.");
 			$link->close();
 			return;
 		}
@@ -64,12 +68,12 @@ function jquery() {
 		$cs = array('Dashboard','Entities','CoreLookups','Contacts','Items','Vendors','Freight','Purchasing','Production','Customers','Sales',
 			'People','Addresses','ItemSetup','ItemAttributes','ItemCategories','ItemTypes','GTINMaster','InventoryLookup','BillofMaterials','VendorCatalog',
 			'EntityResource','CustomerCatalog','CustomerTypes','Customer','CustomerDC','CustomerStoreTypes','CustomerStores','Consumers','Insights','DashboardSetup',
-			'ReportSetup','Dashboards','Reports'
+			'ReportSetup','Dashboards','Reports','Accounting','ChartOfAccounts','GLPeriods','GLAccounts','GLBalances','GLJournal'
 			);
 		$setcs = array_search($module,$cs); // Set the current screen to the index # of the $cs array.
 		if (is_integer($setcs)) $ws->setCurrentScreen($setcs);
 		else {
-			$messagebar->addError("The selected module has not been installed in this system.");
+			$messagebar->addWarning("The selected module has not been installed in this system.");
 			$link->close();
 			return;
 		}
@@ -85,7 +89,7 @@ function jquery() {
 	 **************************************************************************/
 	} elseif ($command=='executeSearch') {
 		if (!isset($_POST['module'])) {
-			$messagebar->addError("The selected module has not been installed in this system.");
+			$messagebar->addWarning("The selected module has not been installed in this system.");
 			$link->close();
 			return;
 		}
@@ -187,12 +191,12 @@ function jquery() {
 				$_SESSION['activeModule'] = $modObject;
 			}
 		} else {
-			$messagebar->addError("The selected module has not been installed in this system.");
+			$messagebar->addWarning("The selected module has not been installed in this system.");
 			$link->close();
 			return;			
 		}
 		if (is_null($modObject)) {
-			$messagebar->addError("The selected module is not available at the moment.  Please wait a few minutes and try again.");
+			$messagebar->addWarning("The selected module is not available at the moment.  Please wait a few minutes and try again.");
 			$link->close();
 			return;
 		}
@@ -202,7 +206,7 @@ function jquery() {
 	 **************************************************************************/
 	} elseif ($command=='viewRecord') {
 		if (!isset($_POST['module'])) {
-			$messagebar->addError("The selected module has not been installed in this system.");
+			$messagebar->addWarning("The selected module has not been installed in this system.");
 			$link->close();
 			return;
 		}
@@ -241,12 +245,12 @@ function jquery() {
 		} elseif ($module=='Consumers') {
 			$modObject = new Consumers($link);
 		} else {
-			$messagebar->addError("The selected module has not been installed in this system.");
+			$messagebar->addWarning("The selected module has not been installed in this system.");
 			$link->close();
 			return;			
 		}
 		if (is_null($modObject)) {
-			$messagebar->addError("The selected module is not available at the moment.  Please wait a few minutes and try again.");
+			$messagebar->addWarning("The selected module is not available at the moment.  Please wait a few minutes and try again.");
 			$link->close();
 			return;
 		}
@@ -279,7 +283,7 @@ function jquery() {
 			case 28: $modObject = new Consumers($link); break;
 		}
 		if (is_null($modObject)) {
-			$messagebar->addError("The selected module is not available at the moment.  Please wait a few minutes and try again.");
+			$messagebar->addWarning("The selected module is not available at the moment.  Please wait a few minutes and try again.");
 			$link->close();
 			return;
 		}
@@ -303,6 +307,8 @@ function jquery() {
 			$modObject = new EntityResource($link);
 		} elseif ($_POST['module']=='addresses') {
 			$modObject = new Addresses($link);
+		} elseif ($_POST['module']=='customer') {
+			$modObject = new Customer($link);
 		}
 		if ($command=='insertRecord')
 			$modObject->insertRecord();
@@ -324,7 +330,7 @@ function jquery() {
 	 **************************************************************************/
 	} elseif ($command=='embedded') {
 		if (!isset($_POST['module']) || !isset($_POST['mode']) || !isset($_POST['id']) || !isset($_POST['data'])) {
-			$messagebar->addError("Invalid JQ Embedded command received.");
+			$messagebar->addError("An invalid JQ Embedded command has been received.");
 		} else {
 			$module = $_POST['module'];
 			$mode = $_POST['mode'];
@@ -332,7 +338,7 @@ function jquery() {
 			if ($module=='addresses') {
 				$modObject = new Addresses($link);
 			} else {
-				$messagebar->addError("Requested JQ Embedded module is not installed in this system.");
+				$messagebar->addWarning("The requested JQ Embedded module is not installed in this system.");
 			}
 			if (!is_null($modObject)) {
 				echo $modObject->embed($_POST['id'],$_POST['mode'],$_POST['data']);

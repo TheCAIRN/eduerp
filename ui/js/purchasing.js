@@ -38,6 +38,9 @@ function savePurchasingHeader() {
 			$("#messagebar").html('<DIV class="successMessage">Data saved.</DIV>');
 			pur_orderkey = orderkey;
 		}
+		if (fields[0]=="fail") {
+			updateDiv('messagebar');
+		}
 		savePurchasingDetail();
 	})
 	.fail(function() {
@@ -77,6 +80,9 @@ function savePurchasingDetail() {
 		if (fields[0]=="inserted") {
 			$("#pur_detail_id").val(fields[1]);
 			$("#messagebar").html('<DIV class="successMessage">Data saved.</DIV>');
+		}
+		if (fields[0]=="fail") {
+			updateDiv('messagebar');
 		}
 	})
 	.fail(function() {

@@ -54,10 +54,13 @@ function saveCustomerHeader() {
 			$("#messagebar").html('<DIV class="successMessage">Data saved.</DIV>');
 			custkey = fields[1];
 		}
-		if (fields[1]=="updated") {
+		if (fields[0]=="updated") {
 			$("#messagebar").html('<DIV class="successMessage">Data saved.</DIV>');
 			custkey = custid;
-		}			
+		}	
+		if (fields[0]=="fail") {
+			updateDiv('messagebar');
+		}
 	})
 	.fail(function() {
 		$("#messagebar").html('<DIV class="errorMessage">I could not contact the database. Your data has <B>NOT</B> been saved.</DIV>');

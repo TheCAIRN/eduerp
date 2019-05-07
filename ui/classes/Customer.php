@@ -19,7 +19,8 @@ class Customer extends ERPBase {
 		$this->entryFields[] = array('cust_master','parent','Parent','dropdown','cust_master',array('customer_id','customer_name'));
 		$this->entryFields[] = array('cust_master','customer_group','Group','textbox');
 		$this->entryFields[] = array('cust_master','supplier_code','Supplier #','textbox');
-		$this->entryFields[] = array('cust_master','gl_account_id','G/L Account','textbox'); // TODO: Change from textbox to GLAccount, and treat as an embedded field.
+		$this->entryFields[] = array('cust_master','gl_account_id','G/L Account','dropdown','acgl_accounts',array('gl_account_id','gl_account_name'));
+ // TODO: Change gl_account_id from simple dropdown to GLAccount, and treat as an embedded field, so new G/L accounts can be created in place.
 		$this->entryFields[] = array('cust_master','default_terms','Default Terms','dropdown','aa_terms',array('terms_id','terms_code'));
 		$this->entryFields[] = array('cust_master','status','Status','function',$this,'statusSelect');
 		$this->entryFields[] = array('cust_master','rev_enabled','Enable Revision Tracking','checkbox','rev_number');
@@ -106,6 +107,7 @@ class Customer extends ERPBase {
 		$stmt->bind_param('i',$custid);
 		$custid = $id;
 		$result = $stmt->execute();
+		// TODO: What if another user deletes the record while it's still in my search results?
 		if ($result!==false) {
 			$stmt->bind_result($ccode,$cname,$ctype,$parent,$cgroup,$supplier,$gl,$terms,$status,
 				$crevyn,$crevnumber,$cuser_creation,$cdate_creation,$cuser_modify,$cdate_modify,
@@ -188,15 +190,71 @@ class Customer extends ERPBase {
 		$custtype = isset($_POST['cust_type_code'])?$_POST['cust_type_code']:null;
 		$parent = isset($_POST['parent'])?$_POST['parent']:null;
 		$custgroup = isset($_POST['customer_group'])?$_POST['customer_group']:'';
-		$supplier = isset($_POST['supplier_code'])?$_POST['supplier']:'';
+		$supplier = isset($_POST['supplier_code'])?$_POST['supplier_code']:'';
 		$glacct = isset($_POST['gl_account_id'])?$_POST['gl_account_id']:null;
 		$terms = isset($_POST['default_terms'])?$_POST['default_terms']:null;
-		$status = isset($_POST['status'])?$_POST['status']:'';
+		$status = isset($_POST['status'])?$_POST['status']:'A';
 		$rev_enabled = isset($_POST['rev_enabled'])?$_POST['rev_enabled']:false;
 		$rev_number = isset($_POST['rev_number'])?$_POST['rev_number']:1;
 		$primary_addr = isset($_POST['primary_address'])?$_POST['primary_address']:null;
 		$billing_addr = isset($_POST['billing_address'])?$_POST['billing_address']:null;
-		
+		$q = "INSERT INTO cust_master (customer_code,customer_name,cust_type_code,parent,customer_group,supplier_code,
+			gl_account_id,default_terms,status,primary_address,billing_address,
+			rev_enabled,rev_number,created_by,creation_date,last_update_by,last_update_date) VALUES 
+			(?,?,?,?,?,?,?,?,?,?,?,?,?,?,NOW(),?,NOW());";
+		$stmt = $this->dbconn->prepare($q);
+		$stmt->bind_param('sssissiisiisiii',$p1,$p2,$p3,$p4,$p5,$p6,$p7,$p8,$p9,$p10,$p11,$p12,$p13,$p14,$p16);
+		if ($custcode=='') {
+			$this->mb->addError("A short text customer code is required when creating a new customer.");
+			$stmt->close();
+			return;
+		}
+		$p1 = $custcode;
+		if ($custname=='') {
+			$this->mb->addError("Please provide a customer name.");
+			$stmt->close();
+			return;			
+		}
+		$p2 = $custname;
+		if (is_null($custtype)) {
+			$this->mb->addError("Customer type was not selected.");
+			$stmt->close();
+			return;
+		}
+		$p3 = $custtype;
+		if ($parent=='') $parent = null;
+		$p4 = $parent;
+		$p5 = $custgroup;
+		$p6 = $supplier;
+		$p7 = $glacct;
+		$p8 = $terms;
+		if ($status=='') $status='A';
+		$p9 = $status;
+		if (is_null($primary_addr)) {
+			$this->mb->addError("Primary address was not selected.");
+			$stmt->close();
+			return;			
+		}
+		$p10 = $primary_addr;
+		if (is_null($billing_addr)) {
+			$this->mb->addError("Billing address was not selected.");
+			$stmt->close();
+			return;
+		}
+		$p11 = $billing_addr;
+		$p12 = ($rev_enabled=='true')?'Y':'N';
+		if ($rev_number<1) $rev_number = 1;
+		$p13 = $rev_number;
+		$p14 = $_SESSION['dbuserid'];
+		$p16 = $_SESSION['dbuserid'];
+		$result = $stmt->execute();
+		if ($result!==false) {
+			echo 'inserted|'.$this->dbconn->insert_id;
+		} else {
+			echo 'fail|'.$this->dbconn->error;
+			$this->mb->addError($this->dbconn->error);
+		}
+		$stmt->close();
 	} // insertHeader()
 	private function updateHeader() {
 	

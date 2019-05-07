@@ -21,11 +21,13 @@ function saveBOMHeader() {
 			$("#messagebar").html('<DIV class="successMessage">Data saved.</DIV>');
 			currentBOM = fields[1];
 		}
-		if (fields[1]=="updated") {
+		if (fields[0]=="updated") {
 			$("#messagebar").html('<DIV class="successMessage">Data saved.</DIV>');
 			currentBOM = orderkey;
 		}
-		updateDiv('messagebar');
+		if (fields[0]=="fail") {
+			updateDiv('messagebar');
+		}
 		saveBOMDetail();
 	})
 	.fail(function() {

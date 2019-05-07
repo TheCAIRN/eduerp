@@ -118,7 +118,7 @@ class Addresses extends ERPBase {
 			$slevel = 1;
 		} elseif (strpos($data,' ')===false && strpos($data,',')===false) {
 			// one word search
-			$q .= ' WHERE street LIKE ? OR line2 LIKE ? OR line3 LIKE ? OR city LIKE ? OR spc_abbrev=? OR postal_code=? OR country=? OR maidenhead LIKE ? OR osm_id=?';
+			$q .= ' WHERE street LIKE ? OR line2 LIKE ? OR line3 LIKE ? OR city LIKE ? OR spc_abbrev=? OR postal_code=? OR country=? OR maidenhead LIKE ? OR osm_id=? OR address_id=?';
 			$slevel = 2;
 		} elseif (strpos($data,',')===false) {
 			// spaces, but no commas
@@ -127,10 +127,11 @@ class Addresses extends ERPBase {
 		$stmt = $this->dbconn->prepare($q);
 		switch ($slevel) {
 			case 2:
-				$stmt->bind_param('ssssssssi',$p1,$p2,$p3,$p4,$p5,$p6,$p7,$p8,$p9);
+				$stmt->bind_param('ssssssssii',$p1,$p2,$p3,$p4,$p5,$p6,$p7,$p8,$p9,$p10);
 				$p1 = $p2 = $p3 = $p4 = $p8 = '%'.$data.'%';
 				$p5 = $p6 = $p7 = $data;
 				$p9 = ctype_digit($data)?$data:-99999;
+				$p10 = ctype_digit($data)?$data:-99999;
 				break;
 		}
 		$result = $stmt->execute();
@@ -177,7 +178,7 @@ class Addresses extends ERPBase {
 		if ($stmt->fetch()) {
 			$html = '';
 			if ($readonly) $html .= $this->embed_search($id).'<BR />';
-			$html .= '<P><LABEL for="'.$id.'-address_id">ID:</LABEL><B id="'.$id.'-address_id">'.$this->id.'</B></P>';
+			$html .= '<DIV class="labeldiv"><LABEL for="'.$id.'-address_id">ID:</LABEL><B id="'.$id.'-address_id">'.$this->id.'</B></DIV>';
 			if ($readonly) {
 				$html .= ''.$this->building_number.' '.$this->street.'<BR />';
 				if ($this->attention!='') $html .= "Attn: {$this->attention} <BR />";
@@ -188,7 +189,7 @@ class Addresses extends ERPBase {
 				if ($this->city!='' && $this->spc_abbrev!='') $html .= "{$this->city}, {$this->spc_abbrev} {$this->postal_code} {$this->country}<BR />";
 				elseif ($this->city!='') $html .= "{$this->city} {$this->postal_code} {$this->country}<BR />";
 				if ($this->county!='') $html .= "{$this->county} County<BR />";
-				$html .= "OSM ID: {$this->osm_id}  Coordinates: {$this->latitude},{$this->longitude}  Maidenhead: {$this->maidenhead}   Last Validated: {$this->last_validated}<BR />";
+				$html .= "OSM ID: {$this->osm_id}  Coordinates: {$this->latitude},{$this->longitude}  <BR />Maidenhead: {$this->maidenhead}   Last Validated: {$this->last_validated}<BR />";
 				return $html;	
 			}
 		} else {
@@ -218,7 +219,7 @@ class Addresses extends ERPBase {
 		$_SESSION['currentScreen'] = 12;
 	} // searchPage()
 	public function executeSearch($criteria) {
-	
+		// TODO!
 	} // executeSearch()
 	public function isIDValid($id) {
 		// TODO: Validate that the ID is actually a record in the database
@@ -228,7 +229,7 @@ class Addresses extends ERPBase {
 		return false;
 	} // isIDValid()
 	public function display($id) {
-	
+		// TODO!
 	} // display()
 	public function newRecord() {
 		echo parent::abstractNewRecord('Addresses');
@@ -274,9 +275,9 @@ class Addresses extends ERPBase {
 		$p12 = $this->county;
 		// TODO: Validate Maidenhead
 		$p13 = $this->maidenhead;
-		$p14 = 1.0 * $this->latitude;
-		$p15 = 1.0 * $this->longitude;
-		$p16 = 1 * $this->osm_id;
+		$p14 = (float)$this->latitude;
+		$p15 = (float)$this->longitude;
+		$p16 = (int)$this->osm_id;
 		$result = $stmt->execute();
 		if ($embed) {
 			if ($result!==false) {
