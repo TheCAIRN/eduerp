@@ -219,7 +219,46 @@ class Addresses extends ERPBase {
 		$_SESSION['currentScreen'] = 12;
 	} // searchPage()
 	public function executeSearch($criteria) {
-		// TODO!
+		// criteria is passed in as an array of key-value pairs
+		$result = null;
+		$q = "SELECT {$this->column_list} FROM cx_addresses ";
+		if (!is_null($criteria) && is_array($criteria) && count($criteria)>0) {
+			// The only key for Addresses is unified_search.
+			if (is_array($criteria[0]) && count($criteria[0])>=2 && $criteria[0][0]=='unified_search') $criteria = $criteria[0][1];
+			else $criteria='';
+			$q .= 'WHERE street LIKE ? OR line2 LIKE ? OR line3 LIKE ? OR city LIKE ? OR spc_abbrev=? OR postal_code=? OR country=? OR maidenhead LIKE ? OR osm_id=? OR address_id=?';
+			$stmt = $this->dbconn->prepare($q);
+			$stmt->bind_param('ssssssssii',$p1,$p2,$p3,$p4,$p5,$p6,$p7,$p8,$p9,$p10);
+			$p1 = $p2 = $p3 = $p4 = $p8 = '%'.$criteria.'%';
+			$p5 = $p6 = $p7 = $criteria;
+			$p9 = ctype_digit($criteria)?$criteria:-99999;
+			$p10 = ctype_digit($criteria)?$criteria:-99999;
+			$result = $stmt->execute();
+			if ($result!==false) {
+				$stmt->store_result();
+				$stmt->bind_result($this->id,$this->building_number,$this->street,$this->attention,$this->apartment,$this->postal_box,$this->line2,$this->line3,
+					$this->city,$this->spc_abbrev,$this->postal_code,$this->country,$this->county,$this->maidenhead,$this->latitude,$this->longitude,$this->osm_id,
+					$this->last_validated);
+				while ($stmt->fetch()) {
+					$this->recordSet[$this->id] = array('line1'=>$this->building_number.' '.$this->street,'po_box'=>$this->postal_box,
+						'city'=>$this->city,'state'=>$this->spc_abbrev,'country'=>$this->country);
+				}
+			}
+		// if criteria exists
+		} else {
+			$result = $this->dbconn->query($q);
+			if ($result!==false) {
+				while ($row=$result->fetch_assoc()) {
+					$this->recordSet[$row['address_id']] = array('line1'=>$row['building_number'].' '.$row['street'],
+						'po_box'=>$row['po_box'],'city'=>$row['city'],'state'=>$row['spc_abbrev'],'country'=>$row['country']);
+				}
+			}
+		} // if criteria does not exist
+		$this->listRecords();
+		$_SESSION['currentScreen'] = 1012;
+		$_SESSION['lastCriteria'] = $criteria;
+		if (!isset($_SESSION['searchResults'])) $_SESSION['searchResults'] = array();
+		$_SESSION['searchResults']['Addresses'] = array_keys($this->recordSet);		
 	} // executeSearch()
 	public function isIDValid($id) {
 		// TODO: Validate that the ID is actually a record in the database
@@ -229,7 +268,55 @@ class Addresses extends ERPBase {
 		return false;
 	} // isIDValid()
 	public function display($id) {
-		// TODO!
+		if (!$this->isIDValid($id)) return;
+		$readonly = true;
+		$html = '';
+		$q = "SELECT {$this->column_list} FROM cx_addresses WHERE address_id=?;";
+		$stmt = $this->dbconn->prepare($q);
+		$stmt->bind_param('i',$p1);
+		$p1 = $id;
+		$result = $stmt->execute();
+		if ($result!==false) {
+			$stmt->store_result();
+			$stmt->bind_result($this->id,$this->building_number,$this->street,$this->attention,$this->apartment,$this->postal_box,$this->line2,$this->line3,
+				$this->city,$this->spc_abbrev,$this->postal_code,$this->country,$this->county,$this->maidenhead,$this->latitude,$this->longitude,$this->osm_id,
+				$this->last_validated);
+			$stmt->fetch();
+			$this->last_validated = new DateTime($this->last_validated);
+			if ($readonly) $cls = 'RecordView'; else $cls = 'RecordEdit';
+			if ($readonly) $inputtextro = ' readonly="readonly"'; else $inputtextro = '';
+			$html .= '<FIELDSET id="AddressRecord" class="'.$cls.'">';
+			$html .= '<LABEL for="addressid">Address ID:</LABEL><B id="addressid">'.$id.'</B>';
+			$html .= '<LABEL for="addr_attn">Attn:</LABEL><INPUT type="text" id="addr_attn" value="'.$this->attention.'"'.$inputtextro.' /><BR />';
+			$html .= '<LABEL for="addr_pobox">PO Box:</LABEL><INPUT type="text" id="addr_pobox" value="'.$this->postal_box.'"'.$inputtextro.' /><BR />';
+			$html .= '<INPUT id="addr_number" value="'.$this->building_number.'"'.$inputtextro.' /><INPUT id="addr_street" value="'.$this->street.'"'.$inputtextro.' /><BR />';
+			$html .= '<LABEL for="addr_apt">Apartment/Suite:</LABEL><INPUT type="text" id="addr_apt" value="'.$this->apartment.'"'.$inputtextro.' /><BR />';
+			$html .= '<INPUT id="addr_line2" value="'.$this->line2.'"'.$inputtextro.' /><BR />';
+			$html .= '<INPUT id="addr_line3" value="'.$this->line3.'"'.$inputtextro.' /><BR />';
+			$html .= '<INPUT id="addr_city" value="'.$this->city.'"'.$inputtextro.' /><INPUT id="addr_spc" value="'.$this->spc_abbrev.'"'.$inputtextro.' /><INPUT id="addr_zip" value="'.$this->postal_code.'"'.$inputtextro.
+				' /><INPUT id="addr_country" value="'.$this->country.'"'.$inputtextro.' /><BR />';
+			$html .= '<LABEL for="addr_county">County:</LABEL><INPUT type="text" id="addr_county" value="'.$this->county.'"'.$inputtextro.' /><BR />';
+			$html .= '<LABEL for="addr_latitude">Lat/Long/Grid:</LABEL><INPUT id="addr_latitude" value="'.$this->latitude.'"'.$inputtextro.' /><INPUT id="addr_longitude" value="'.$this->longitude.
+				'"'.$inputtextro.' /><INPUT	id="addr_maidenhead" value="'.$this->maidenhead.'"'.$inputtextro.' /><BR />';
+			$html .= '<LABEL for="addr_osm">Open Street Map ID:</LABEL><INPUT id="addr_osm" value="'.$this->osm_id.'"'.$inputtextro.' /><LABEL for="addr_lastval">Last validated:</LABEL>'.
+				'<INPUT type="date" id="addr_lastval" value="'.$this->last_validated->format("Y-m-d").'" /><BR />';
+			$html .= '</FIELDSET>';			
+			// TODO: Display map object
+			// TODO: List all table records where address is applied.
+		}
+		$stmt->close();			
+		echo $html;
+		$_SESSION['currentScreen'] = 2012;
+		if (!isset($_SESSION['searchResults']) && !isset($_SESSION['searchResults']['Addresses']))
+			$_SESSION['idarray'] = array(0,0,$id,0,0);
+		else {
+			$idloc = array_search($id,$_SESSION['searchResults']['Addresses'],false);
+			$f = $_SESSION['searchResults']['Addresses'][0];
+			$l = $_SESSION['searchResults']['Addresses'][] = array_pop($_SESSION['searchResults']['Addresses']); // https://stackoverflow.com/questions/3687358/whats-the-best-way-to-get-the-last-element-of-an-array-without-deleting-it#comment63556865_3687358
+			if ($idloc > 0) $p = $_SESSION['searchResults']['Addresses'][$idloc-1]; else $p = $f;
+			if ($l != $id) $n = $_SESSION['searchResults']['Addresses'][$idloc+1]; else $n = $l;
+			$_SESSION['idarray'] = array($f,$p,$id,$n,$l);
+		}				
 	} // display()
 	public function newRecord() {
 		echo parent::abstractNewRecord('Addresses');

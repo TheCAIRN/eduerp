@@ -65,8 +65,8 @@ var currentScreen = 0;
 <LI>Popup item search</LI>
 <LI>Create new production</LI>
 <LI>Add functionality to Entities: <UL><LI>production capacity</LI><LI>create new entity</LI><LI>Modify entity</LI></UL></LI>
-<LI>Lookup customers</LI>
-<LI>Lookup / add addresses</LI>
+<LI>&#x2714; Lookup customers</LI>
+<LI>&#x2714; Lookup / add addresses</LI>
 <LI>Create sales orders</LI>
 <LI>Update sales orders for shipping</LI>
 <LI>Create shipment</LI>
