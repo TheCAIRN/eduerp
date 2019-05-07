@@ -19,7 +19,7 @@ class Customer extends ERPBase {
 		$this->entryFields[] = array('cust_master','parent','Parent','dropdown','cust_master',array('customer_id','customer_name'));
 		$this->entryFields[] = array('cust_master','customer_group','Group','textbox');
 		$this->entryFields[] = array('cust_master','supplier_code','Supplier #','textbox');
-		$this->entryFields[] = array('cust_master','gl_account_id','G/L Account','GLAccount');
+		$this->entryFields[] = array('cust_master','gl_account_id','G/L Account','textbox'); // TODO: Change from textbox to GLAccount, and treat as an embedded field.
 		$this->entryFields[] = array('cust_master','default_terms','Default Terms','dropdown','aa_terms',array('terms_id','terms_code'));
 		$this->entryFields[] = array('cust_master','status','Status','function',$this,'statusSelect');
 		$this->entryFields[] = array('cust_master','rev_enabled','Enable Revision Tracking','checkbox','rev_number');
@@ -181,7 +181,22 @@ class Customer extends ERPBase {
 		$_SESSION['currentScreen'] = 3024;
 	} // newRecord()
 	private function insertHeader() {
-	
+		$this->resetHeader();
+		$custid = isset($_POST['customer_id'])?$_POST['customer_id']:-1;
+		$custcode = isset($_POST['customer_code'])?$_POST['customer_code']:'';
+		$custname = isset($_POST['customer_name'])?$_POST['customer_name']:'';
+		$custtype = isset($_POST['cust_type_code'])?$_POST['cust_type_code']:null;
+		$parent = isset($_POST['parent'])?$_POST['parent']:null;
+		$custgroup = isset($_POST['customer_group'])?$_POST['customer_group']:'';
+		$supplier = isset($_POST['supplier_code'])?$_POST['supplier']:'';
+		$glacct = isset($_POST['gl_account_id'])?$_POST['gl_account_id']:null;
+		$terms = isset($_POST['default_terms'])?$_POST['default_terms']:null;
+		$status = isset($_POST['status'])?$_POST['status']:'';
+		$rev_enabled = isset($_POST['rev_enabled'])?$_POST['rev_enabled']:false;
+		$rev_number = isset($_POST['rev_number'])?$_POST['rev_number']:1;
+		$primary_addr = isset($_POST['primary_address'])?$_POST['primary_address']:null;
+		$billing_addr = isset($_POST['billing_address'])?$_POST['billing_address']:null;
+		
 	} // insertHeader()
 	private function updateHeader() {
 	
