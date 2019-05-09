@@ -1,0 +1,37 @@
+CREATE TABLE sales_payment_types (
+	payment_type_code char(6) not null primary key
+	,description varchar(200) not null
+	,active char(1) not null default 'Y'
+) ENGINE=InnoDB;
+INSERT INTO sales_payment_types VALUES 
+	('CASH','Cash payment','Y')
+	,('CHECK','Check payment','Y')
+	,('EFT','Electronic Funds Transfer','Y')
+	,('WIRE','Wire Transfer','Y')
+	,('ACH','Automated Clearinghouse','Y')
+	,('CC','Credit Card','Y')
+	,('GIFT','Gift Certificate','Y')
+	,('ADJ','Invoice adjustment','Y')
+;
+CREATE TABLE sales_payments (
+	payment_id int not null auto_increment PRIMARY KEY
+	,sales_order_number int not null
+	,payment_type_code char(6) not null
+	,transaction_source varchar(250) not null
+	,transaction_reference varchar(100) not null
+	,status char(1) not null default 'P'
+	,currency_code char(3) not null
+	,amount decimal(17,5) not null default 0.00
+	,balance decimal(17,5) 
+	,rev_enabled char(1) not null DEFAULT 'N'
+	,rev_number int not null default 1
+	,created_by int not null
+	,creation_date datetime not null
+	,last_update_by int not null
+	,last_update_date datetime not null
+	,FOREIGN KEY (sales_order_number) REFERENCES sales_header (sales_order_number)
+	,FOREIGN KEY (payment_type_code) REFERENCES sales_payment_types (payment_type_code)
+	,FOREIGN KEY (currency_code) REFERENCES aa_currency (code)
+	,FOREIGN KEY (created_by) REFERENCES sec_users (user_id)
+	,FOREIGN KEY (last_update_by) REFERENCES sec_users (user_id)		
+) ENGINE=InnoDB;

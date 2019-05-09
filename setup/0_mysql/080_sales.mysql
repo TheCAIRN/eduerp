@@ -18,17 +18,18 @@ CREATE TABLE sales_header (
 	,quote_approved_by int
 	,customer_purchase_order_number varchar(40)
 	,customer_department varchar(15)
+	,customer_product_group varchar(30)
 	,quote_given_date datetime
 	,quote_expires_date datetime
 	,order_date datetime
 	,credit_release_date datetime
 	,wave_date datetime
 	,inventory_needed_by datetime
-	,inventory_pulled datetime
-	,inventory_packed datetime
+	,inventory_pulled_complete datetime
+	,inventory_packed_complete datetime
 	,routing_requested datetime
 	,pickup_scheduled_for datetime
-	,inventory_loaded datetime
+	,inventory_loaded_complete datetime
 	,bol_date datetime
 	,order_shipped_date datetime
 	,order_invoiced_date datetime
@@ -37,9 +38,10 @@ CREATE TABLE sales_header (
 	,ship_window_end datetime
 	,must_route_by datetime
 	,must_arrive_by datetime
-	,store_id int
+	,store_code char(12)
 	,shipping_from int
 	,shipping_to int
+	,remit_to int
 	,fv_vendor_id int
 	,buyer int
 	,seller int
@@ -48,6 +50,9 @@ CREATE TABLE sales_header (
 	,department_id int
 	,inventory_entity int
 	,terms int
+	,invoice_paid_complete datetime
+	,currency_code char(3) not null
+	,balance_due decimal(17,5) not null default 0.00
 	,visible char(1) not null default 'Y'
 	,rev_enabled char(1) not null DEFAULT 'N'
 	,rev_number int not null default 1
@@ -55,18 +60,36 @@ CREATE TABLE sales_header (
 	,creation_date datetime not null
 	,last_update_by int not null
 	,last_update_date datetime not null
+	,FOREIGN KEY (parent) REFERENCES sales_header (sales_order_number)
+	,FOREIGN KEY (sales_order_type) REFERENCES sales_order_types (sales_order_type)
+	,FOREIGN KEY (customer_id) REFERENCES cust_master (customer_id)
+	,FOREIGN KEY (quote_approved_by) REFERENCES sec_users (user_id)
+	,FOREIGN KEY (customer_id,store_code) REFERENCES cust_stores (customer_id,store_code)
 	,FOREIGN KEY (shipping_from) REFERENCES cx_addresses (address_id)
 	,FOREIGN KEY (shipping_to) REFERENCES cx_addresses (address_id)
+	,FOREIGN KEY (remit_to) REFERENCES cx_addresses (address_id)
+	,FOREIGN KEY (fv_vendor_id) REFERENCES fv_freight_vendors (fv_vendor_id)
+	,FOREIGN KEY (buyer) REFERENCES cx_humans (human_id)
+	,FOREIGN KEY (seller) REFERENCES sec_users (user_id)
+	,FOREIGN KEY (entity_id) REFERENCES ent_entities(entity_id)
+	,FOREIGN KEY (entity_id,division_id) REFERENCES ent_divisions(entity_id,division_id)
+	,FOREIGN KEY (entity_id,department_id) REFERENCES ent_departments(entity_id,department_id)
+	,FOREIGN KEY (terms) REFERENCES aa_terms (terms_id)
+	,FOREIGN KEY (currency_code) REFERENCES aa_currency (code)
+	,FOREIGN KEY (created_by) REFERENCES sec_users (user_id)
+	,FOREIGN KEY (last_update_by) REFERENCES sec_users (user_id)		
 ) ENGINE=InnoDB;
 
 CREATE TABLE sales_detail (
 	sales_order_number int not null
 	,sales_order_line int not null
-	,parent_line int not null default 0
+	,parent_line int 
 	,entity_id int not null
 	,division_id int
 	,department_id int
 	,customer_line varchar(10)
+	,edi_raw1 varchar(500)
+	,edi_raw2 varchar(500)
 	,item_id int not null
 	,quantity_requested decimal(9,5) not null default 0.00
 	,quantity_shipped decimal(9,5) not null default 0.00
@@ -75,23 +98,46 @@ CREATE TABLE sales_detail (
 	,quantity_cancelled decimal(9,5) not null default 0.00
 	,quantity_uom char(5) not null
 	,price decimal(17,5)
+	,discount_percent decimal(7,3)
+	,discount_amount decimal(17,5)
 	,retail_high decimal(17,5)
 	,retail_low decimal(17,5)
 	,credit_release_date datetime
 	,wave_date datetime
+	,assigned_to int
 	,inventory_needed_by datetime
+	,inventory_location int
 	,inventory_pulled datetime
+	,inventory_pulled_by int
 	,inventory_packed datetime
+	,inventory_packed_by int
 	,inventory_loaded datetime
+	,inventory_loaded_by int
 	,line_shipped_date datetime
 	,line_invoiced_date datetime
 	,line_cancelled_date datetime
+	,visible char(1) not null DEFAULT 'Y'
 	,rev_enabled char(1) not null DEFAULT 'N'
 	,rev_number int not null default 1
 	,created_by int not null
 	,creation_date datetime not null
 	,last_update_by int not null
 	,last_update_date datetime not null
+	,PRIMARY KEY (sales_order_number,sales_order_line)
+	,FOREIGN KEY (sales_order_number) REFERENCES sales_header (sales_order_number)
+	,FOREIGN KEY (sales_order_number,parent_line) REFERENCES sales_detail (sales_order_number,sales_order_line)
+	,FOREIGN KEY (entity_id) REFERENCES ent_entities(entity_id)
+	,FOREIGN KEY (entity_id,division_id) REFERENCES ent_divisions(entity_id,division_id)
+	,FOREIGN KEY (entity_id,department_id) REFERENCES ent_departments(entity_id,department_id)
+	,FOREIGN KEY (item_id) REFERENCES item_master (product_id)
+	,FOREIGN KEY (quantity_uom) REFERENCES aa_uom(uom_code)
+	,FOREIGN KEY (assigned_to) REFERENCES sec_users (user_id)
+	,FOREIGN KEY (inventory_location) REFERENCES inv_locations (location_id)
+	,FOREIGN KEY (inventory_pulled_by) REFERENCES sec_users (user_id)
+	,FOREIGN KEY (inventory_packed_by) REFERENCES sec_users (user_id)
+	,FOREIGN KEY (inventory_loaded_by) REFERENCES sec_users (user_id)
+	,FOREIGN KEY (created_by) REFERENCES sec_users (user_id)
+	,FOREIGN KEY (last_update_by) REFERENCES sec_users (user_id)		
 ) ENGINE=InnoDB;
 
 CREATE TABLE sales_header_notes (
@@ -113,15 +159,28 @@ CREATE TABLE sales_header_notes (
 ) ENGINE=InnoDB;
 
 CREATE TABLE sales_detail_notes (
-
+	sod_note_id int not null auto_increment primary key
+	,sales_order_number int not null
+	,sales_order_line int not null
+	,note_type_id int not null
+	,seq int not null default 1
+	,note_text mediumtext
 	,rev_enabled char(1) not null DEFAULT 'N'
 	,rev_number int not null default 1
 	,created_by int not null
 	,creation_date datetime not null
 	,last_update_by int not null
 	,last_update_date datetime not null
+	,FOREIGN KEY (sales_order_number,sales_order_line) REFERENCES sales_detail (sales_order_number,sales_order_line)
+	,FOREIGN KEY (note_type_id) REFERENCES aa_note_types (note_type_id)
+	,FOREIGN KEY (created_by) REFERENCES sec_users (user_id)
+	,FOREIGN KEY (last_update_by) REFERENCES sec_users (user_id)		
 ) ENGINE=InnoDB;
 
+/*
 CREATE TABLE sales_production_link (
-
+	sales_order_number int
+	sales_order_line int
+	
 ) ENGINE=InnoDB;
+*/
