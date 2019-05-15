@@ -22,6 +22,7 @@ class Addresses extends ERPBase {
 	public function __construct($link=null) {
 		parent::__construct($link);
 		$this->searchFields[] = array('cx_addresses','unified_search','Type in any part of the address and click Search','textbox');
+		// For embeddable classes, don't use fieldset.
 		$this->entryFields[] = array('cx_addresses','id','ID','integerid');
 		$this->entryFields[] = array('cx_addresses','building_number','Building #','textbox');
 		$this->entryFields[] = array('cx_addresses','street','Street','textbox');

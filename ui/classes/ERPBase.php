@@ -82,11 +82,13 @@ class ERPBase {
 				} elseif ($field[3]=='endfieldset') {
 					$html .= '</FIELDSET>';
 				} elseif ($field[3]=='embedded') {
-					$html .= '<FIELDSET class="RecordEdit embedded" id="'.$field[0].'_'.$field[1].'_edit">';
-					$html .= '<LEGEND onClick="$(this).siblings().toggle();">'.$field[2].'</LEGEND>';
+					if (!$intable) {
+						$html .= '<FIELDSET class="RecordEdit embedded" id="'.$field[0].'_'.$field[1].'_edit">';
+						$html .= '<LEGEND onClick="$(this).siblings().toggle();">'.$field[2].'</LEGEND>';
+					}
 					$embedded = true;
 				} elseif ($field[3]=='endembedded') {
-					$html .= '</FIELDSET>';
+					if (!$intable) $html .= '</FIELDSET>';
 					$embedded = false;
 				} elseif ($field[3]=='fieldtable') {
 					$html .= '<FIELDSET class="RecordEdit" id="'.$field[0].'_edit">';
@@ -126,8 +128,8 @@ class ERPBase {
 							}
 							$tableentry .= '</SELECT></TD>';
 						}
+						$result->free();
 					}
-					$result->free();
 				} elseif ($field[3]=='dropdown' && count($field)>=5 && is_array($field[4])) {
 					if (!$intable) {
 						$html .= '<DIV class="labeldiv">';
@@ -201,6 +203,18 @@ class ERPBase {
 						$tableentry .= '<TD id="row'.$tablerow.'-'.$prefix.$field[1].'"><INPUT type="date" id="'.$prefix.$field[1].'-date" />'.
 							'<INPUT type="time" id="'.$prefix.$field[1].'-time" /></TD>';
 					}
+				if ($field[3]=='date') 
+					if (!$intable) {
+						$html .= '<INPUT type="date" id="'.$prefix.$field[1].'-date" />';
+					} else {
+						$tableentry .= '<TD id="row'.$tablerow.'-'.$prefix.$field[1].'"><INPUT type="date" id="'.$prefix.$field[1].'-date" />';
+					}
+				if ($field[3]=='time') 
+					if (!$intable) {
+						$html .= '<INPUT type="time" id="'.$prefix.$field[1].'-time" />';
+					} else {
+						$tableentry .= '<TD id="row'.$tablerow.'-'.$prefix.$field[1].'"><INPUT type="time" id="'.$prefix.$field[1].'-time" /></TD>';
+					}
 				if ($field[3]=='newlinebutton')
 					if (!$intable) {
 						$html .= '<BUTTON id="newlinebutton"'.((count($field)>=5)?' onClick="'.$field[4].'"':'').'>'.$field[2].'</BUTTON>';
@@ -225,6 +239,16 @@ class ERPBase {
 					} else {
 						$tableentry .= '<TD id="row'.$tablerow.'-'.$field[1].'">';
 						$tableentry .= '<DIV id="'.$field[1].'-div" class="embedded">'.$addr->embed($field[1],'search').'</DIV>';
+						$tableentry .= '</TD>';
+					}
+				}
+				if ($field[3]=='Item') {
+					$item = new ItemManager($this->dbconn);
+					if (!$intable) {
+						$html .= '<DIV id="'.$field[1].'-div" class="embedded">'.$item->embed($field[1],'search').'</DIV>';
+					} else {
+						$tableentry .= '<TD id="row'.$tablerow.'-'.$field[1].'">';
+						$tableentry .= '<DIV id="'.$field[1].'-div" class="embedded">'.$item->embed($field[1],'search').'</DIV>';
 						$tableentry .= '</TD>';
 					}
 				}

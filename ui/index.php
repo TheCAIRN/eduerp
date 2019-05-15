@@ -76,7 +76,7 @@ var currentScreen = 0;
 </DIV>
 <DIV id="core"><?php $workspace->render(); ?></DIV>
 </DIV>
-<DIV id="footerbar">&copy; Cairn University School of Business.  Apache License 2.0<?php /*$fotterbar->render();*/ ?></DIV>
+<DIV id="footerbar">&copy; 2019. Cairn University School of Business.  Apache License 2.0<?php /*$fotterbar->render();*/ ?></DIV>
 </BODY>
 </HTML>
 <?php

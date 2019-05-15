@@ -17,11 +17,11 @@ class Workspace {
 			case 3: echo $this->contactSubmenu(); break;
 			case 4: echo $this->itemSubmenu(); break;
 			case 5: $vend = new Vendor($this->dbconn); echo $vend->searchPage(); break;
-			case 6: $this->notInstalled("Freight"); break; //$freight = new Freight($this->dbconn); echo $freight->searchPage(); break;
+			case 6: echo $this->freightSubmenu(); break;
 			case 7: $purch = new Purchasing($this->dbconn); echo $purch->searchPage(); break;
 			case 8: $this->notInstalled("Production"); break; // $prod = new Production($this->dbconn); echo $prod->searchPage(); break;
 			case 9: echo $this->customerSubMenu(); break; 
-			case 10: $this->notInstalled("Sales"); break; //$sales = new Sales($this->dbconn); echo $sales->searchPage(); break;
+			case 10: echo $this->salesSubmenu(); break;
 			case 11: $this->notInstalled("People"); /* TO DO People */ break;
 			case 12: $addr = new Addresses($this->dbconn); echo $addr->searchPage(); break;
 			case 13: $item = new ItemManager($this->dbconn); echo $item->searchPage(); break;
@@ -51,6 +51,12 @@ class Workspace {
 			case 37: $this->notInstalled("GL Accounts"); break; // GL Accounts
 			case 38: $this->notInstalled("GL Balances"); break; // GL Balances
 			case 39: $this->notInstalled("GL Journal"); break; // GL Journal
+			case 40: $this->notInstalled("Freight Vendor Types"); break; // Freight Vendor Types
+			case 41: $this->notInstalled("Freight Vendors"); break; // Freight Vendors
+			case 42: $this->notInstalled("Inbound Freight"); break;
+			case 43: $this->notInstalled("Outbound Freight"); break;
+			case 44: $so = new SalesOrders($this->dbconn); echo $so->searchPage(); break;
+			case 45: $this->notInstalled("Sales Payments"); break;
 			/* 1000-1999: List Records */
 			case 1002: $ent = new Entity($this->dbconn); $ent->listRecords(); break;
 			case 1005: $vend = new Vendor($this->dbconn); $vend->listRecords(); break;
@@ -154,6 +160,15 @@ class Workspace {
 		$this->currentScreen = 17;
 		return $html;
 	}
+	private function freightSubmenu() {
+		$module_list = ['Freight Vendor Types','Freight Vendors','Inbound Freight','Outbound Freight'];
+		$html = '';
+		foreach ($module_list as $module) {
+			$html .= '<DIV id="'.str_replace(' ','',$module).'ModuleIcon" class="DashboardIcon" onClick="selectModule(this);">'.$module."</DIV>\r\n";
+		}
+		$this->currentScreen = 6;
+		return $html;
+	}
 	private function customerSubmenu() {
 		// TODO: Only display those modules the user has permissions to.
 		$module_list = ['Customer Types','Customer','Customer DC','Customer Store Types','Customer Stores','Consumers'];
@@ -162,6 +177,15 @@ class Workspace {
 			$html .= '<DIV id="'.str_replace(' ','',$module).'ModuleIcon" class="DashboardIcon" onClick="selectModule(this);">'.$module."</DIV>\r\n";
 		}
 		$this->currentScreen = 9;
+		return $html;
+	}
+	private function salesSubmenu() {
+		$module_list = ['Sales Orders','Sales Payments'];
+		$html = '';
+		foreach ($module_list as $module) {
+			$html .= '<DIV id="'.str_replace(' ','',$module).'ModuleIcon" class="DashboardIcon" onClick="selectModule(this);">'.$module."</DIV>\r\n";
+		}
+		$this->currentScreen = 10;
 		return $html;
 	}
 	private function insightSubmenu() {

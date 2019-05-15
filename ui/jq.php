@@ -48,6 +48,12 @@ function jquery() {
 			$ws->setCurrentScreen(3);
 		} elseif ($module=='Items') {
 			$ws->setCurrentScreen(4);
+		} elseif ($module=='Freight') {
+			$ws->setCurrentScreen(6);
+		} elseif ($module=='Customers') {
+			$ws->setCurrentScreen(9);
+		} elseif ($module=='Sales') {
+			$ws->setCurrentScreen(10);
 		} elseif ($module=='Insights') {
 			$ws->setCurrentScreen(29);
 		} elseif ($module=='Accounting') {
@@ -68,7 +74,8 @@ function jquery() {
 		$cs = array('Dashboard','Entities','CoreLookups','Contacts','Items','Vendors','Freight','Purchasing','Production','Customers','Sales',
 			'People','Addresses','ItemSetup','ItemAttributes','ItemCategories','ItemTypes','GTINMaster','InventoryLookup','BillofMaterials','VendorCatalog',
 			'EntityResource','CustomerCatalog','CustomerTypes','Customer','CustomerDC','CustomerStoreTypes','CustomerStores','Consumers','Insights','DashboardSetup',
-			'ReportSetup','Dashboards','Reports','Accounting','ChartOfAccounts','GLPeriods','GLAccounts','GLBalances','GLJournal'
+			'ReportSetup','Dashboards','Reports','Accounting','ChartOfAccounts','GLPeriods','GLAccounts','GLBalances','GLJournal','FreightVendorTypes','FreightVendors',
+			'InboundFreight','OutboundFreight','SalesOrders','SalesPayments'
 			);
 		$setcs = array_search($module,$cs); // Set the current screen to the index # of the $cs array.
 		if (is_integer($setcs)) $ws->setCurrentScreen($setcs);
@@ -281,6 +288,7 @@ function jquery() {
 			case 26: $modObject = new CustomerStoreTypes($link); break;
 			case 27: $modObject = new CustomerStores($link); break;
 			case 28: $modObject = new Consumers($link); break;
+			case 44: $modObject = new SalesOrders($link); break;
 		}
 		if (is_null($modObject)) {
 			$messagebar->addWarning("The selected module is not available at the moment.  Please wait a few minutes and try again.");

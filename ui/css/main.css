@@ -11,6 +11,8 @@
 	border: 2px solid black;
 }
 #content {
+	display: flex;
+	flex-flow: row wrap;
 	min-height: 500px;
 }
 #leftnav {
@@ -18,7 +20,7 @@
 	color: #FFFFFF;
 	float: left;
 	width: 15%;
-	height: 500px;
+	min-height: 500px;
 	border-right: 6px solid black;
 	padding: 5px;
 }
@@ -31,6 +33,7 @@
 	background-color: #006600;
 	color: #FFFFFF;
 	padding: 5px;
+	border: 6px solid #006600;
 }
 /* Display / Edit / Add Records */
 .RecordView {

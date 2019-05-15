@@ -1,7 +1,42 @@
 <?php
 class ItemManager extends ERPBase {
+	private $entity_id;
+	private $division_id;
+	private $department_id;
+	private $item_type_code;
+	private $item_category_id;
+	private $product_id;
+	private $product_code;
+	private $product_description;
+	private $product_catalog_title;
+	private $product_uom;
+	private $gtin;
+	private $standard_cost;
+	private $suggested_retail;
+	private $wholesale_price;
+	private $currency;
+	private $length;
+	private $width;
+	private $height;
+	private $lwh_uom;
+	private $weight;
+	private $weight_uom;
+	private $htc;
+	private $tariff_revision;
+	private $promotion_start_date;
+	private $promotion_end_date;
+	private $product_launch_date;
+	private $product_sunset_date;
+	private $product_end_of_support_date;
+	private $product_end_extended_support_date;
+	private $visible;
+	private $rev_enabled;
+	private $rev_number;
 	public function __construct($link=null) {
 		parent::__construct($link);
+		/*
+		Revised 13 May 2019 to use unified_search instead of field based search (Michael J. Sabal)
+		
 		$this->searchFields[] = array('item_master','product_id','ID','integer');
 		$this->searchFields[] = array('item_master','product_code','Code','textbox');
 		$this->searchFields[] = array('item_master','product_description','Description','textbox');
@@ -13,7 +48,60 @@ class ItemManager extends ERPBase {
 		$this->searchFields[] = array('item_categories',array('item_category_id','item_category_description'),'Category','dropdown');
 		$this->searchFields[] = array('item_master','product_catalog_title','Catalog','textbox');
 		$this->searchFields[] = array('item_master','visible','Visible','yn');
+		*/
+		$this->searchFields[] = array('item_master','unified_search','Type in any item related info and click Search','textbox');
+		// For embeddable classes, don't use fieldset.
+		$this->entryFields[] = array('item_master','entity_id','Entity','dropdown','ent_entities',array('entity_id','entity_name'));
+		$this->entryFields[] = array('item_master','division_id','Division','dropdown','ent_division_master',array('division_id','division_name'));
+		$this->entryFields[] = array('item_master','department_id','Department','dropdown','ent_department_master',array('department_id','department_name'));
+		$this->entryFields[] = array('item_master','item_type_code','Type','dropdown','item_types',array('item_type_code','item_type_description'));
+		$this->entryFields[] = array('item_master','item_category_id','Category','dropdown','item_categories',array('item_category_id','item_category_description'));
+		$this->entryFields[] = array('item_master','product_id','Product ID','integerid');
+		$this->entryFields[] = array('item_master','product_code','Product Code','textbox');
+		$this->entryFields[] = array('item_master','product_description','Description','textbox');
+		$this->entryFields[] = array('item_master','product_catalog_title','Catalog Title','textbox');
+		$this->entryFields[] = array('item_master','product_uom','Product UOM','dropdown','aa_uom',array('uom_code','uom_description'));
+		
+		$this->entryFields[] = array('item_master','currency_code','Currency','dropdown','aa_currency',array('code','code'));
+		$this->entryFields[] = array('item_master','visible','Visible','checkbox');
+		$this->entryFields[] = array('item_master','rev_enabled','Enable Revision Tracking','checkbox','rev_number');
+		$this->entryFields[] = array('item_master','rev_number','Revision number','integer');
+		$this->resetHeader();
 	} // constructor
+	public function resetHeader() {
+		$this->entity_id = 0;
+		$this->division_id = 0;
+		$this->department_id = 0;
+		$this->item_type_code = '';
+		$this->item_category_id = 0;
+		$this->product_id = 0;
+		$this->product_code = '';
+		$this->product_description = '';
+		$this->product_catalog_title = '';
+		$this->product_uom = '';
+		$this->gtin = '';
+		$this->standard_cost = 0.00;
+		$this->suggested_retail = 0.00;
+		$this->wholesale_price = 0.00;
+		$this->currency = '';
+		$this->length = 0.00;
+		$this->width = 0.00;
+		$this->height = 0.00;
+		$this->lwh_uom = '';
+		$this->weight = 0.00;
+		$this->weight_uom = '';
+		$this->htc = '';
+		$this->tariff_revision = 0;
+		$this->promotion_start_date = null;
+		$this->promotion_end_date = null;
+		$this->product_launch_date = null;
+		$this->product_sunset_date = null;
+		$this->product_end_of_support_date = null;
+		$this->product_end_extended_support_date = null;
+		$this->visible = 1;
+		$this->rev_enabled = 'Y';
+		$this->rev_number = 1;
+	}
 	public function itemSelect($id=0,$readonly=false) {
 		return parent::abstractSelect($id,$readonly,'item_master','product_id','product_code','item');
 	} // function itemSelect

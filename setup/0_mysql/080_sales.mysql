@@ -40,7 +40,7 @@ CREATE TABLE sales_header (
 	,must_arrive_by datetime
 	,store_code char(12)
 	,shipping_from int
-	,shipping_to int
+	,shipping_to char(12)
 	,remit_to int
 	,fv_vendor_id int
 	,buyer int
