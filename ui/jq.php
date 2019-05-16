@@ -348,6 +348,8 @@ function jquery() {
 			$modObject = null;
 			if ($module=='addresses') {
 				$modObject = new Addresses($link);
+			} elseif ($module=='ItemManager') {
+				$modObject = new ItemManager($link);
 			} else {
 				$messagebar->addWarning("The requested JQ Embedded module is not installed in this system.");
 			}

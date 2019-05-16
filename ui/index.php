@@ -45,6 +45,7 @@ $_SESSION['dbuserid'] = 1;
 <SCRIPT type="text/javascript" src="js/purchasing.js"></SCRIPT>
 <SCRIPT type="text/javascript" src="js/BOM.js"></SCRIPT>
 <SCRIPT type="text/javascript" src="js/customers.js"></SCRIPT>
+<SCRIPT type="text/javascript" src="js/salesorders.js"></SCRIPT>
 <SCRIPT type="text/javascript">
 var currentScreen = 0;
 </SCRIPT>
@@ -62,7 +63,7 @@ var currentScreen = 0;
 <LI>&#x2714; Lookup vendor catalog</LI>
 <LI>&#x2714; Create new purchase order</LI>
 <LI>&#x2714; Create new bill of materials</LI>
-<LI>Popup item search</LI>
+<LI>&#x2714; Embedded item search</LI>
 <LI>Create new production</LI>
 <LI>Add functionality to Entities: <UL><LI>production capacity</LI><LI>create new entity</LI><LI>Modify entity</LI></UL></LI>
 <LI>&#x2714; Lookup customers</LI>

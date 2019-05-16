@@ -36,6 +36,8 @@ class ItemManager extends ERPBase {
 	private $column_list;
 	public function __construct($link=null) {
 		parent::__construct($link);
+		$this->supportsNotes = true;
+		$this->supportsAttachments = true;
 		/*
 		Revised 13 May 2019 to use unified_search instead of field based search (Michael J. Sabal)
 		
@@ -163,8 +165,70 @@ class ItemManager extends ERPBase {
 		return $html;
 	} // embed_search()
 	private function embed_lookup($id='item',$data=null) {
+		$q = "SELECT product_id,product_description FROM item_master 
+			JOIN item_categories ON item_master.item_category_id = item_categories.item_category_id";
+		$html = $this->embed_search($id).'<BR /><SELECT id="'.$id.'-select"><OPTION value="[new]">--Create a new record--</OPTION>';
+		$slevel = 0;
+		if (is_null($data) || $data=='') {
+			$slevel = 1;
+		} elseif (strpos($data,' ')===false && strpos($data,',')===false) {
+			// one word search
+			$q .= " WHERE item_category_description LIKE ? OR product_id = ? OR product_code LIKE ? OR product_description LIKE ? OR product_catalog_title LIKE ? or gtin=?";
+			$slevel = 2;
+		} elseif (strpos($data,',')===false) {
+			// spaces, but no commas
+			
+		}
+		$stmt = $this->dbconn->prepare($q);
+		switch ($slevel) {
+			case 2:
+				$stmt->bind_param('sissss',$p1,$p2,$p3,$p4,$p5,$p6);
+				$p1 = $p3 = $p4 = $p5 = '%'.$data.'%';
+				$p6 = $data;
+				$p2 = ctype_digit($data)?$data:-99999;
+				break;
+		}
+		$result = $stmt->execute();
+		if ($result === false) {
+			$this->mb->addError($this->dbconn->error);
+		} else {
+			$stmt->store_result();
+			$stmt->bind_result($pid,$pdesc);
+			while ($stmt->fetch()) {
+				$html .= '<OPTION value="'.$pid.'">'.$pdesc.'</OPTION>';
+			} // fetch
+		}
+		$html .= '</SELECT>';
+		$html .= "<BUTTON onClick=\"embeddedItemSelect('$id');\">Select</BUTTON>";
+		return $html;		
 	} // embed_lookup()
 	private function embed_display($id='item',$data=null,$readonly=true) {
+		if (!($this->isIDValid($data))) {
+			$this->mb->addError("JQ Embedded Item: Selected ID is not valid.");
+			return $this->embed_search($id);
+		}
+		$q = "SELECT product_id,product_code,product_description,gtin FROM item_master WHERE product_id=?";
+		$stmt = $this->dbconn->prepare($q);
+		$stmt->bind_param('i',$data);
+		$return = $stmt->execute();
+		$stmt->store_result();
+		if ($return===false || $stmt->num_rows==0) {
+			$this->mb->addError("JQ Embedded Item: Selected ID is not valid.");
+			return $this->embed_search($id);
+		}
+		$stmt->bind_result($pid,$pcode,$pdesc,$gtin);
+		if ($stmt->fetch()) {
+			$html = '';
+			if ($readonly) $html .= $this->embed_search($id).'<BR />';
+			$html .= '<DIV class="labeldiv"><LABEL for="'.$id.'-product_id">ID:</LABEL><B id="'.$id.'-product_id">'.$pid.'</B></DIV>';
+			if ($readonly) {
+				$html .= '&nbsp;<I id="'.$id.'-product_code">'.$pcode.'</I>&nbsp;'.$pdesc.'<BR />';
+				if ($gtin!='') $html .= 'GTIN: '.$gtin;
+				return $html;
+			}
+		} else {
+			return $this->embed_search($id);
+		}
 	} // embed_display()
 	public function embed_new($id='item',$data=null) {
 		$html = parent::abstractNewRecord('ItemManager',$id);
