@@ -280,6 +280,7 @@ function jquery() {
 		switch ($_SESSION['currentScreen']%1000) {
 			case 7: $modObject = new Purchasing($link); break;
 			case 12: $modObject = new Addresses($link); break;
+			case 13: $modObject = new ItemManager($link); break;
 			case 19: $modObject = new BOM($link); break;
 			case 21: $modObject = new EntityResource($link); break;
 			case 23: $modObject = new CustomerTypes($link); break;
@@ -307,7 +308,9 @@ function jquery() {
 			$link->close();
 			return;
 		}
-		if ($_POST['module']=='purchasing') {
+		if ($_POST['module']=='itemmanager') {
+			$modObject = new ItemManager($link);
+		} elseif ($_POST['module']=='purchasing') {
 			$modObject = new Purchasing($link);
 		} elseif ($_POST['module']=='bom') {
 			$modObject = new BOM($link);

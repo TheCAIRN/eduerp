@@ -26,6 +26,15 @@ function selectModule(whichModule) {
 		});
 	}
 } // selectModule()
+function newSearch(whichModule) {
+	var moduleName = whichModule;
+	if (whichModule=='ItemManager') moduleName='ItemSetup';
+	$.post('jq.php',{jquery:'moduleSearchSpace',module:moduleName},function (data) {
+		if (data.length > 0) $("#core").html(data);
+		updateDiv('messagebar');
+		updateDiv('toolbar');
+	});
+} // newSearch()
 function clearMessages() {
 	$.post('jq.php',{jquery:'clearMessages'},function (data) {
 		$("#messagebar").html("");

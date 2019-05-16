@@ -320,7 +320,10 @@ class Addresses extends ERPBase {
 		}				
 	} // display()
 	public function newRecord() {
+		echo '<FIELDSET class="RecordEdit" id="Addresses_edit">';
+		echo '<LEGEND onClick="$(this).siblings().toggle();">Address</LEGEND>';
 		echo parent::abstractNewRecord('Addresses');
+		echo '</FIELDSET';
 		$_SESSION['currentScreen'] = 3012;
 	} // newRecord()
 	private function insertHeader($embed=false) {

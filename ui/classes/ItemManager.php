@@ -11,6 +11,7 @@ class ItemManager extends ERPBase {
 	private $product_catalog_title;
 	private $product_uom;
 	private $gtin;
+	private $season;
 	private $standard_cost;
 	private $suggested_retail;
 	private $wholesale_price;
@@ -32,6 +33,7 @@ class ItemManager extends ERPBase {
 	private $visible;
 	private $rev_enabled;
 	private $rev_number;
+	private $column_list;
 	public function __construct($link=null) {
 		parent::__construct($link);
 		/*
@@ -61,8 +63,25 @@ class ItemManager extends ERPBase {
 		$this->entryFields[] = array('item_master','product_description','Description','textbox');
 		$this->entryFields[] = array('item_master','product_catalog_title','Catalog Title','textbox');
 		$this->entryFields[] = array('item_master','product_uom','Product UOM','dropdown','aa_uom',array('uom_code','uom_description'));
-		
+		$this->entryFields[] = array('item_master','gtin','GTIN','textbox');
+		$this->entryFields[] = array('item_master','standard_cost','Cost','decimal',24,5);
+		$this->entryFields[] = array('item_master','suggested_retail','MSRP','decimal',24,5);
+		$this->entryFields[] = array('item_master','wholesale_price','Wholesale','decimal',24,5);
 		$this->entryFields[] = array('item_master','currency_code','Currency','dropdown','aa_currency',array('code','code'));
+		$this->entryFields[] = array('item_master','length','Length','decimal',11,3);
+		$this->entryFields[] = array('item_master','width','Width','decimal',11,3);
+		$this->entryFields[] = array('item_master','height','Height','decimal',11,3);
+		$this->entryFields[] = array('item_master','lwh_uom','LWH UOM','dropdown','aa_uom',array('uom_code','uom_description'),1);
+		$this->entryFields[] = array('item_master','weight','Weight','decimal',11,5);
+		$this->entryFields[] = array('item_master','weight_uom','Weight UOM','dropdown','aa_uom',array('uom_code','uom_description'),3);
+		$this->entryFields[] = array('item_master','harmonized_tariff_code','HTC','textbox'); // TODO: Change to dropdown
+		$this->entryFields[] = array('item_master','tariff_revision','HTC Revision','integer');
+		$this->entryFields[] = array('item_master','promotion_start_date','Promotion Start','datetime');
+		$this->entryFields[] = array('item_master','promotion_end_date','Promotion End','datetime');
+		$this->entryFields[] = array('item_master','product_launch_date','Product launch','date');
+		$this->entryFields[] = array('item_master','product_sunset_date','Product sunset','date');
+		$this->entryFields[] = array('item_master','product_end_of_support_date','End of support','date');
+		$this->entryFields[] = array('item_master','product_end_extended_support_date','End of LTS','date');
 		$this->entryFields[] = array('item_master','visible','Visible','checkbox');
 		$this->entryFields[] = array('item_master','rev_enabled','Enable Revision Tracking','checkbox','rev_number');
 		$this->entryFields[] = array('item_master','rev_number','Revision number','integer');
@@ -80,6 +99,7 @@ class ItemManager extends ERPBase {
 		$this->product_catalog_title = '';
 		$this->product_uom = '';
 		$this->gtin = '';
+		$this->season = 0;
 		$this->standard_cost = 0.00;
 		$this->suggested_retail = 0.00;
 		$this->wholesale_price = 0.00;
@@ -101,7 +121,65 @@ class ItemManager extends ERPBase {
 		$this->visible = 1;
 		$this->rev_enabled = 'Y';
 		$this->rev_number = 1;
-	}
+		$this->column_list = 'entity_id, division_id, department_id, item_type_code, item_category_id, product_code, 
+			product_description, product_catalog_title, product_uom, gtin, standard_cost, suggested_retail, wholesale_price, 
+			currency, length, width, height, lwh_uom, weight, weight_uom, harmonized_tariff_code, tariff_revision, 
+			promotion_start_date, promotion_end_date, product_launch_date, product_sunset_date, product_end_of_support_date, 
+			product_end_extended_support_date, 
+			visible, rev_enabled, rev_number, created_by, creation_date, last_update_by, last_update_date';
+	} // resetHeader()
+	public function arrayify() {
+		
+	} // arrayify
+	/*
+	 * Item fields are linked from many different tables within the ERP system.  As a result, many other modules need to have access to 
+	 * look up, select, and add item records.  The embed method provides that capability without changing $_SESSION['currentScreen'] or
+	 * requiring the user to open a new tab.
+	 *
+	 * $id = The HTML id attribute of the fieldset.
+	 * $mode = ['search' | 'lookup' | 'new' | 'save' | 'display']
+	 * $data = An array of item fields, or other data as appropriate to the mode.
+	 */
+	public function embed($id='item',$mode='search',$data=null) {
+		if ($mode=='search') {
+			return $this->embed_search($id,$data);
+		} elseif ($mode=='lookup') {
+			return $this->embed_lookup($id,$data);
+		} elseif ($mode=='display') {
+			return $this->embed_display($id,$data);
+		} elseif ($mode=='new') {
+			return $this->embed_new($id,$data);
+		} elseif ($mode=='save') {
+			return $this->embed_save($id,$data);
+		} else {
+			$this->mb->addError('JQ Embedded Item does not understand mode, "'.$mode.'".');
+		}
+	} // embed()
+	private function embed_search($id='item',$data=null) {
+		$html = "<INPUT type=\"text\" id=\"$id\" placeholder=\"Type in any item related info and click Search\" size=\"50\" />
+			<BUTTON onClick=\"embeddedItemSearch('$id');\">Search</BUTTON>
+			<BUTTON onClick=\"embeddedItemList('$id');\">List</BUTTON>
+			<BUTTON onClick=\"embeddedItemNew('$id');\">New</BUTTON>";
+		return $html;
+	} // embed_search()
+	private function embed_lookup($id='item',$data=null) {
+	} // embed_lookup()
+	private function embed_display($id='item',$data=null,$readonly=true) {
+	} // embed_display()
+	public function embed_new($id='item',$data=null) {
+		$html = parent::abstractNewRecord('ItemManager',$id);
+		$html .= "<BR /><BUTTON onClick=\"embeddedItemSave('$id');\">Save</BUTTON><BR />";
+		$html .= $this->embed_search($id);
+		return $html;
+	} // embed_new()
+	public function embed_save($id='item',$data=null) {
+		$this->insertHeader(true);
+		if ($this->id==0) {
+			return $this->embed_new($id,null);
+		} else {
+			return $this->embed_display($id,$this->id);
+		}
+	} // embed_save()	
 	public function itemSelect($id=0,$readonly=false) {
 		return parent::abstractSelect($id,$readonly,'item_master','product_id','product_code','item');
 	} // function itemSelect
@@ -112,6 +190,7 @@ class ItemManager extends ERPBase {
 		parent::abstractListRecords('ItemManager');
 	} // function listRecords()
 	public function executeSearch($criteria) {
+		// TODO: Now using unified_search.
 		$searchParameters = array();
 		if (isset($_POST['searchParameters']) && is_array($_POST['searchParameters'])) $searchParameters = $_POST['searchParameters'];
 		$q = "SELECT product_id,product_code,product_description,gtin,item_type_description,item_category_description,product_catalog_title,i.visible 
@@ -261,6 +340,32 @@ class ItemManager extends ERPBase {
 			if ($l != $id) $n = $_SESSION['searchResults']['Item'][$idloc+1]; else $n = $l;
 			$_SESSION['idarray'] = array($f,$p,$id,$n,$l);
 		}		
+	} // display()
+	public function newRecord() {
+		echo '<FIELDSET class="RecordEdit" id="ItemManager_edit">';
+		echo '<LEGEND onClick="$(this).siblings().toggle();">Item</LEGEND>';
+		echo parent::abstractNewRecord('ItemManager');
+		echo '</FIELDSET>';
+		$_SESSION['currentScreen'] = 3013;
+	} // newRecord()
+	private function insertHeader($embed=false) {
+		$this->resetHeader();
+		if (!isset($_POST['data'])) {
+			$this->mb->addError("No data was submitted.  Item save failed.");
+		}
+		$data = $_POST['data'];
+	} // insertHeader()
+	private function updateHeader($embed=false) {
+	
+	} // updateHeader()
+	public function insertRecord() {
+		if (isset($_POST['level']) && $_POST['level']=='header') $this->insertHeader(false);
 	}
+	public function updateRecord() {
+		if (isset($_POST['level']) && $_POST['level']=='header') $this->updateHeader();
+	}
+	public function saveRecord() {
+	
+	} // saveRecord()	
 } // class ItemManager
 ?>
