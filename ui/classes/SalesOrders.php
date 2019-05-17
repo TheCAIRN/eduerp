@@ -27,13 +27,13 @@ class SalesOrders extends ERPBase {
 		$this->entryFields[] = array('sales_header','rev_enabled','Enable Revision Tracking','checkbox','rev_number');
 		$this->entryFields[] = array('sales_header','rev_number','Revision number','integer');
 		$this->entryFields[] = array('sales_header','','','endfieldset');
-		$this->entryFields[] = array('sales_header','','Pre-sales','fieldset');
+		$this->entryFields[] = array('sales_header','-quote','Pre-sales','fieldset');
 		$this->entryFields[] = array('sales_header','quote_number','Quote #','textbox');
 		$this->entryFields[] = array('sales_header','quote_approved_by','Quote approved by','dropdown','v_sec_users',array('user_id','human_name'));
 		$this->entryFields[] = array('sales_header','quote_given_date','Quote Given','date');
 		$this->entryFields[] = array('sales_header','quote_expires_date','Quote Expires','date');
 		$this->entryFields[] = array('sales_header','','','endfieldset');
-		$this->entryFields[] = array('sales_header','','Order confirmation','fieldset');
+		$this->entryFields[] = array('sales_header','-ordered','Order confirmation','fieldset');
 		$this->entryFields[] = array('sales_header','customer_purchase_order_number','Customer PO #','textbox');
 		$this->entryFields[] = array('sales_header','customer_department','Customer Dept','textbox');
 		$this->entryFields[] = array('sales_header','customer_product_group','Product Group','textbox');
@@ -47,14 +47,14 @@ class SalesOrders extends ERPBase {
 		$this->entryFields[] = array('sales_header','must_arrive_by','Must arrive by','date');
 		$this->entryFields[] = array('sales_header','order_cancelled_date','Order Cancelled','date');
 		$this->entryFields[] = array('sales_header','','','endfieldset');
-		$this->entryFields[] = array('sales_header','','Processing','fieldset');
+		$this->entryFields[] = array('sales_header','-processing','Processing','fieldset');
 		$this->entryFields[] = array('sales_header','wave_number','Wave #','integer');
 		$this->entryFields[] = array('sales_header','wave_date','Wave date','date');
 		$this->entryFields[] = array('sales_header','inventory_needed_by','Inventory needed by','datetime');
 		$this->entryFields[] = array('sales_header','inventory_pulled_complete','Inventory Pulled','datetime');
 		$this->entryFields[] = array('sales_header','inventory_packed_complete','Inventory Packed','datetime');
 		$this->entryFields[] = array('sales_header','','','endfieldset');
-		$this->entryFields[] = array('sales_header','','Shipping','fieldset');
+		$this->entryFields[] = array('sales_header','-shipping','Shipping','fieldset');
 		$this->entryFields[] = array('sales_header','fv_vendor_id','Shipper','dropdown','fv_freight_vendors',array('fv_vendor_id','fv_vendor_name'));
 		$this->entryFields[] = array('sales_header','bill_of_lading','BOL','textbox');
 		$this->entryFields[] = array('sales_header','rrc','Routing request #','textbox');
@@ -65,7 +65,7 @@ class SalesOrders extends ERPBase {
 		$this->entryFields[] = array('sales_header','bol_date','BOL Date','date');
 		$this->entryFields[] = array('sales_header','order_shipped_date','Order Shipped','date');
 		$this->entryFields[] = array('sales_header','','','endfieldset');
-		$this->entryFields[] = array('sales_header','','Invoicing','fieldset');
+		$this->entryFields[] = array('sales_header','-invoicing','Invoicing','fieldset');
 		$this->entryFields[] = array('sales_header','invoice_number','Invoice #','integer');
 		$this->entryFields[] = array('sales_header','order_invoiced_date','Order Invoiced','date');
 		$this->entryFields[] = array('sales_header','invoice_paid_complete','Invoice Paid','date');
@@ -178,7 +178,7 @@ class SalesOrders extends ERPBase {
 		} // if result
 		$stmt->close();			
 		echo $html;
-		$_SESSION['currentScreen'] = 2000;
+		$_SESSION['currentScreen'] = 2044;
 		if (!isset($_SESSION['searchResults']) && !isset($_SESSION['searchResults']['SalesOrders']))
 			$_SESSION['idarray'] = array(0,0,$id,0,0);
 		else {
@@ -192,7 +192,12 @@ class SalesOrders extends ERPBase {
 	} // display()
 	public function newRecord() {
 		echo parent::abstractNewRecord('SalesOrders');
-		$_SESSION['currentScreen'] = 3000;
+		echo '<SCRIPT>$("#sales_header-ordered_edit legend").siblings().hide(); 
+			$("#sales_header-processing_edit legend").siblings().hide(); 
+			$("#sales_header-shipping_edit legend").siblings().hide();
+			$("#sales_header-invoicing_edit legend").siblings().hide();
+			</SCRIPT>';
+		$_SESSION['currentScreen'] = 3044;
 	} // newRecord()
 	private function insertHeader() {
 		$this->resetHeader();

@@ -101,12 +101,18 @@ function saveRecord(whichModule) {
 	if (whichModule=="Customer") {
 		saveCustomerHeader();
 	}
+	if (whichModule=="SalesOrders") {
+		saveSalesOrdersHeader();
+	}
 }
 function addDetailRow(whichModule) {
 	if (whichModule=="Purchasing") {
-		
+		newPurchasingDetailRow();
 	}
 	if (whichModule=="BOM") {
 		newBOMDetailRow();
+	}
+	if (whichModule=="SalesOrders") {
+		newSalesOrdersDetailRow();
 	}
 }

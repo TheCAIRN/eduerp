@@ -77,7 +77,7 @@ class ERPBase {
 		foreach ($this->entryFields as $field) {
 			if (count($field)>=4) {
 				if ($field[3]=='fieldset') {
-					$html .= '<FIELDSET class="RecordEdit" id="'.$field[0].'_edit">';
+					$html .= '<FIELDSET class="RecordEdit" id="'.$field[0].$field[1].'_edit">';
 					$html .= '<LEGEND onClick="$(this).siblings().toggle();">'.$field[2].'</LEGEND>';
 				} elseif ($field[3]=='endfieldset') {
 					$html .= '</FIELDSET>';
