@@ -1,5 +1,62 @@
 <?php
 class SalesOrders extends ERPBase {
+	private $sales_order_number;
+	private $parent;
+	private $sales_order_status;
+	private $customer_id;
+	private $buyer;
+	private $seller;
+	private $entity_id;
+	private $division_id;
+	private $department_id;
+	private $inventory_entity;
+	private $currency_code;
+	private $visible;
+	private $rev_enabled;
+	private $rev_number;
+	private $quote_number;
+	private $quote_approved_by;
+	private $quote_given_date;
+	private $quote_expires_date;
+	private $customer_purchase_order_number;
+	private $customer_department;
+	private $customer_product_group;
+	private $store_code;
+	private $terms;
+	private $order_date;
+	private $credit_release_date;
+	private $ship_window_start;
+	private $ship_window_end;
+	private $must_route_by;
+	private $must_arrive_by;
+	private $order_cancelled_date;
+	private $wave_number;
+	private $wave_date;
+	private $inventory_needed_by;
+	private $inventory_pulled_complete;
+	private $inventory_packed_complete;
+	private $fv_vendor_id;
+	private $bill_of_lading;
+	private $rrc;
+	private $load_id;
+	private $routing_requested;
+	private $pickup_scheduled_for;
+	private $inventory_loaded_complete;
+	private $bol_date;
+	private $order_shipped_date;
+	private $invoice_number;
+	private $order_invoiced_date;
+	private $invoice_paid_complete;
+	private $shipping_from;
+	private $shipping_to;
+	private $remit_to;
+	private $column_list_header = 'sales_order_number,parent,sales_order_type,sales_order_status,customer_id,buyer,seller,entity_id,division_id,department_id,
+		inventory_entity,currency_code,visible,rev_enabled,rev_number,quote_number,quote_approved_by,quote_given_date,quote_expires_date,
+		customer_purchase_order_number,customer_department,customer_product_group,store_code,terms,order_date,credit_release_date,ship_window_start,ship_window_end,
+		must_route_by,must_arrive_by,order_cancelled_date,wave_number,wave_date,inventory_needed_by,inventory_pulled_complete,inventory_packed_complete,
+		fv_vendor_id,bill_of_lading,rrc,load_id,routing_requested,pickup_scheduled_for,inventory_loaded_complete,bol_date,order_shipped_date,
+		invoice_number,order_invoiced_date,invoice_paid_complete,shipping_from,shipping_to,remit_to';
+	
 	public function __construct ($link=null) {
 		parent::__construct($link);
 		$this->supportsNotes = true;
@@ -201,6 +258,25 @@ class SalesOrders extends ERPBase {
 	} // newRecord()
 	private function insertHeader() {
 		$this->resetHeader();
+		$this->resetDetail();
+		$ordernum = isset($_POST['h1'])?$_POST['h1']:0;
+		$parent = isset($_POST['h2'])?$_POST['h2']:0;
+		$ordertype = isset($_POST['h3'])?$_POST['h3']:0;
+		$orderstatus = isset($_POST['h4'])?$_POST['h4']:'Q';
+		$customerid = isset($_POST['h5'])?$_POST['h5']:0;
+		$buyer = isset($_POST['h6'])?$_POST['h6']:0;
+		$seller = isset($_POST['h7'])?$_POST['h7']:0;
+		$entityid = isset($_POST['h8'])?$_POST['h8']:0;
+		$divisionid = isset($_POST['h9'])?$_POST['h9']:0;
+		$departmentid = isset($_POST['h10'])?$_POST['h10']:0;
+		$invent = isset($_POST['h11'])?$_POST['h11']:0;
+		$visible = isset($_POST['h12'])?$_POST['h12']:false;
+		$termsid = isset($_POST['o5'])?$_POST['o5']:0;
+		$rev_enabled = isset($_POST['h13'])?$_POST['h13']:false;
+		$rev_number = isset($_POST['h14'])?$_POST['h14']:1;
+		$return_date = false;
+		if (strlen(trim($orderdate_date))==0) $return_date = true;
+		$orderdate = new DateTime($orderdate_date.' '.$orderdate_time);
 		$q = "INSERT INTO SalesOrders_master (
 			rev_enabled,rev_number,created_by,creation_date,last_update_by,last_update_date) VALUES 
 			(?,?,?,?,?,?,?,?,?,?,?,?,?,?,NOW(),?,NOW());";
@@ -222,16 +298,26 @@ class SalesOrders extends ERPBase {
 		$stmt->close();
 	} // insertHeader()
 	private function updateHeader() {
-	
-	} // updateHeader()
+		$this->resetHeader();
+		$this->resetDetail();
+		
+	}
+	private function updateDetail() {
+		$this->resetDetail();
+		
+	}
 	public function insertRecord() {
-		$this->insertHeader();
-	} // insertRecord()
+		// Assumes values are stored in $_POST
+		if (isset($_POST['level']) && $_POST['level']=='header') $this->insertHeader();
+		if (isset($_POST['level']) && $_POST['level']=='detail') $this->insertDetail();
+	}
 	public function updateRecord() {
-		$this->updateHeader();
-	} // updateRecord()
+		// Assumes values are stored in $_POST
+		if (isset($_POST['level']) && $_POST['level']=='header') $this->updateHeader();
+		if (isset($_POST['level']) && $_POST['level']=='detail') $this->updateDetail();
+	}
 	public function saveRecord() {
-	
-	} // saveRecord()
+		
+	} // function saveRecord()
 } // class _template
 ?>
