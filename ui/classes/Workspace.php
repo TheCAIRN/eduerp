@@ -57,6 +57,7 @@ class Workspace {
 			case 43: $this->notInstalled("Outbound Freight"); break;
 			case 44: $so = new SalesOrders($this->dbconn); echo $so->searchPage(); break;
 			case 45: $this->notInstalled("Sales Payments"); break;
+			case 46: $this->notInstalled("Sales Order Types"); break;
 			/* 1000-1999: List Records */
 			case 1002: $ent = new Entity($this->dbconn); $ent->listRecords(); break;
 			case 1005: $vend = new Vendor($this->dbconn); $vend->listRecords(); break;
@@ -180,7 +181,7 @@ class Workspace {
 		return $html;
 	}
 	private function salesSubmenu() {
-		$module_list = ['Sales Orders','Sales Payments'];
+		$module_list = ['Sales Order Types','Sales Orders','Sales Payments'];
 		$html = '';
 		foreach ($module_list as $module) {
 			$html .= '<DIV id="'.str_replace(' ','',$module).'ModuleIcon" class="DashboardIcon" onClick="selectModule(this);">'.$module."</DIV>\r\n";

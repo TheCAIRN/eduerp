@@ -75,7 +75,7 @@ function jquery() {
 			'People','Addresses','ItemSetup','ItemAttributes','ItemCategories','ItemTypes','GTINMaster','InventoryLookup','BillofMaterials','VendorCatalog',
 			'EntityResource','CustomerCatalog','CustomerTypes','Customer','CustomerDC','CustomerStoreTypes','CustomerStores','Consumers','Insights','DashboardSetup',
 			'ReportSetup','Dashboards','Reports','Accounting','ChartOfAccounts','GLPeriods','GLAccounts','GLBalances','GLJournal','FreightVendorTypes','FreightVendors',
-			'InboundFreight','OutboundFreight','SalesOrders','SalesPayments'
+			'InboundFreight','OutboundFreight','SalesOrders','SalesPayments','SalesOrderTypes'
 			);
 		$setcs = array_search($module,$cs); // Set the current screen to the index # of the $cs array.
 		if (is_integer($setcs)) $ws->setCurrentScreen($setcs);
@@ -197,6 +197,13 @@ function jquery() {
 				$modObject = new Consumers($link);
 				$_SESSION['activeModule'] = $modObject;
 			}
+		} elseif ($module=='SalesOrdersSearch') {
+			if (isset($_SESSION['activeModule']) && $_SESSION['activeModule'] instanceof SalesOrders) 
+				$modObject = $_SESSION['activeModule'];
+			else {
+				$modObject = new SalesOrders($link);
+				$_SESSION['activeModule'] = $modObject;
+			}
 		} else {
 			$messagebar->addWarning("The selected module has not been installed in this system.");
 			$link->close();
@@ -251,6 +258,8 @@ function jquery() {
 			$modObject = new CustomerStores($link);
 		} elseif ($module=='Consumers') {
 			$modObject = new Consumers($link);
+		} elseif ($module=='SalesOrders') {
+			$modObject = new SalesOrders($link);
 		} else {
 			$messagebar->addWarning("The selected module has not been installed in this system.");
 			$link->close();
@@ -320,6 +329,13 @@ function jquery() {
 			$modObject = new Addresses($link);
 		} elseif ($_POST['module']=='customer') {
 			$modObject = new Customer($link);
+		} elseif ($_POST['module']=='salesorders') {
+			$modObject = new SalesOrders($link);
+		}
+		if (is_null($modObject)) {
+			$messagebar->addWarning("The selected module is not available at the moment.  Please wait a few minutes and try again.");
+			$link->close();
+			return;
 		}
 		if ($command=='insertRecord')
 			$modObject->insertRecord();

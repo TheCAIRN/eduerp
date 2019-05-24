@@ -16,6 +16,13 @@ class Toolbar {
 				case 12: $mod="'AddressesSearch'"; break;
 				case 13: $mod="'ItemSearch'"; break;
 				case 20: $mod="'VendorCatalogSearch'"; break;
+				case 23: $mod="'CustomerTypesSearch'"; break;
+				case 24: $mod="'CustomerSearch'"; break;
+				case 25: $mod="'CustomerDCSearch'"; break;
+				case 26: $mod="'CustomerStoreTypesSearch'"; break;
+				case 27: $mod="'CustomerStoresSearch'"; break;
+				case 28: $mod="'ConsumersSearch'"; break;
+				case 44: $mod="'SalesOrdersSearch'"; break;
 				case 2002: 
 				case 3002: $mod="'Entity'"; break;
 				case 2005: 
@@ -42,6 +49,8 @@ class Toolbar {
 				case 3027: $mod="'CustomerStores'"; break;
 				case 2028:
 				case 3028: $mod="'Consumers'"; break;
+				case 2044: 
+				case 3044: $mod="'SalesOrders'"; break;
 			}
 			if ($cs >= 1 && $cs < 1000 && array_search($cs,$subscreens)==false) {
 				// Submenu or search

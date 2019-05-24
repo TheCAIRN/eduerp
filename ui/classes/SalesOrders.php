@@ -155,6 +155,9 @@ class SalesOrders extends ERPBase {
 	public function resetHeader() {
 	
 	} // resetHeader()
+	public function resetDetail() {
+		
+	} // resetDetail()
 	public function _templateSelect($id=0,$readonly=false) {
 		return parent::abstractSelect($id,$readonly,'sales_header','sales_order_number','sales_order_number','SalesOrders');
 	} // _templateSelect()
@@ -192,7 +195,7 @@ class SalesOrders extends ERPBase {
 			} // while rows
 		} // if query succeeded
 		$this->listRecords();
-		$_SESSION['currentScreen'] = 1000;
+		$_SESSION['currentScreen'] = 1044;
 		$_SESSION['lastCriteria'] = $criteria;
 		if (!isset($_SESSION['searchResults'])) $_SESSION['searchResults'] = array();
 		$_SESSION['searchResults']['SalesOrders'] = array_keys($this->recordSet);		
@@ -209,8 +212,8 @@ class SalesOrders extends ERPBase {
 		$readonly = true;
 		$html = '';
 		$q = "SELECT *
-			FROM SalesOrders_master c 
-			WHERE SalesOrders_id=?";
+			FROM sales_header h 
+			WHERE sales_order_number=?";
 		$stmt = $this->dbconn->prepare($q);
 		if ($stmt===false) {
 			echo $this->dbconn->error;
@@ -270,40 +273,160 @@ class SalesOrders extends ERPBase {
 		$divisionid = isset($_POST['h9'])?$_POST['h9']:null;
 		$departmentid = isset($_POST['h10'])?$_POST['h10']:null;
 		$invent = isset($_POST['h11'])?$_POST['h11']:null;
-		$visible = isset($_POST['h12'])?$_POST['h12']:false;
-		$rev_enabled = isset($_POST['h13'])?$_POST['h13']:false;
-		$rev_number = isset($_POST['h14'])?$_POST['h14']:1;
+		$currency = isset($_POST['h12'])?$_POST['h12']:null;
+		$visible = isset($_POST['h13'])?$_POST['h13']:false;
+		$rev_enabled = isset($_POST['h14'])?$_POST['h14']:false;
+		$rev_number = isset($_POST['h15'])?$_POST['h15']:1;
 		$quotenum = isset($_POST['q1'])?$_POST['q1']:0;
 		$quoteapprovedby = isset($_POST['q2'])?$_POST['q2']:null;
-		$quotegiven = isset($_POST['q3'])?$_POST['q3']:null;
-		$quoteexpires = isset($_POST['q4'])?$_POST['q4']:null;
+		$quotegiven = isset($_POST['q3'])?new DateTime($_POST['q3']):null;
+		if (!is_null($quotegiven)) $quotegiven = $quotegiven->format('Y-m-d');
+		$quoteexpires = isset($_POST['q4'])?new DateTime($_POST['q4']):null;
+		if (!is_null($quoteexpires)) $quoteexpires = $quoteexpires->format('Y-m-d');
 		$customerpo = isset($_POST['o1'])?$_POST['o1']:'';
 		$customerdept = isset($_POST['o2'])?$_POST['o2']:'';
 		$customerpg = isset($_POST['o3'])?$_POST['o3']:'';
 		$store = isset($_POST['o4'])?$_POST['o4']:null;
 		$termsid = isset($_POST['o5'])?$_POST['o5']:null;
-		$orderdate = isset($_POST['o6'])?$_POST['o6']:null;
-		$creditrelease = isset($_POST['o7'])?$_POST['o7']:null;
-		$startship = isset($_POST['o8'])?$_POST['o8']:null;
-		$endship = isset($_POST['o9'])?$_POST['o9']:null;
-		$routeby = isset($_POST['o10'])?$_POST['o10']:null;
-		$mustarrive = isset($_POST['o11'])?$_POST['o11']:null;
-		$cancelleddate = isset($_POST['o12'])?$_POST['o12']:null;
-		
+		$orderdate = isset($_POST['o6'])?new DateTime($_POST['o6']):null;
+		if (!is_null($orderdate)) $orderdate = $orderdate->format('Y-m-d');
+		$creditrelease = isset($_POST['o7'])?new DateTime($_POST['o7']):null;
+		if (!is_null($creditrelease)) $creditrelease = $creditrelease->format('Y-m-d');
+		$startship = isset($_POST['o8'])?new DateTime($_POST['o8']):null;
+		if (!is_null($startship)) $startship = $startship->format('Y-m-d');
+		$endship = isset($_POST['o9'])?new DateTime($_POST['o9']):null;
+		if (!is_null($endship)) $endship = $endship->format('Y-m-d');
+		$routeby = isset($_POST['o10'])?new DateTime($_POST['o10']):null;
+		if (!is_null($routeby)) $routeby = $routeby->format('Y-m-d');
+		$mustarrive = isset($_POST['o11'])?new DateTime($_POST['o11']):null;
+		if (!is_null($mustarrive)) $mustarrive = $mustarrive->format('Y-m-d');
+		$cancelleddate = isset($_POST['o12'])?new DateTime($_POST['o12']):null;
+		if (!is_null($cancelleddate)) $cancelleddate = $cancelleddate->format('Y-m-d');
+		$wavenum = isset($_POST['p1'])?$_POST['p1']:0;
+		$wavedate = isset($_POST['p2'])?new DateTime($_POST['p2']):null;
+		if (!is_null($wavedate)) $wavedate = $wavedate->format('Y-m-d');
+		$invneeded_d = isset($_POST['p3d'])?$_POST['p3d']:'';
+		$invneeded_t = isset($_POST['p3t'])?$_POST['p3t']:'';
+		$invpulled_d = isset($_POST['p4d'])?$_POST['p4d']:'';
+		$invpulled_t = isset($_POST['p4t'])?$_POST['p4t']:'';
+		$invpacked_d = isset($_POST['p5d'])?$_POST['p5d']:'';
+		$invpacked_t = isset($_POST['p5t'])?$_POST['p5t']:'';
+		$shipper = isset($_POST['s1'])?$_POST['s1']:null;
+		$bol = isset($_POST['s2'])?$_POST['s2']:'';
+		$rrc = isset($_POST['s3'])?$_POST['s3']:'';
+		$loadid = isset($_POST['s4'])?$_POST['s4']:'';
+		$routed_d = isset($_POST['s5d'])?$_POST['s5d']:'';
+		$routed_t = isset($_POST['s5t'])?$_POST['s5t']:'';
+		$pickup_d = isset($_POST['s6d'])?$_POST['s6d']:'';
+		$pickup_t = isset($_POST['s6t'])?$_POST['s6t']:'';
+		$invloaded_d = isset($_POST['s7d'])?$_POST['s7d']:'';
+		$invloaded_t = isset($_POST['s7t'])?$_POST['s7t']:'';
+		$boldate = isset($_POST['s8'])?new DateTime($_POST['s8']):null;
+		if (!is_null($boldate)) $boldate = $boldate->format('Y-m-d');
+		$ordershipped = isset($_POST['s9'])?new DateTime($_POST['s9']):null;
+		if (!is_null($ordershipped)) $ordershipped = $ordershipped->format('Y-m-d');
+		$invoicenum = isset($_POST['i1'])?$_POST['i1']:0;
+		$invoicedate = isset($_POST['i2'])?new DateTime($_POST['i2']):null;
+		if (!is_null($invoicedate)) $invoicedate = $invoicedate->format('Y-m-d');
+		$paiddate = isset($_POST['i3'])?new DateTime($_POST['i3']):null;
+		if (!is_null($paiddate)) $paiddate = $paiddate->format('Y-m-d');
+		$shipfrom = isset($_POST['o13'])?$_POST['o13']:null;
+		$shipto = isset($_POST['o14'])?$_POST['o14']:null;
+		$remitto = isset($_POST['i4'])?$_POST['i4']:null;
 		$return_date = false;
-		if (strlen(trim($orderdate_date))==0) $return_date = true;
-		$orderdate = new DateTime($orderdate_date.' '.$orderdate_time);
-		$q = "INSERT INTO SalesOrders_master (
+		if ($orderstatus=='O' && strlen(trim($orderdate))==0) $return_date = true;
+		$invneeded = new DateTime($invneeded_d.' '.$invneeded_t);
+		if (!is_null($invneeded)) $invneeded = $invneeded->format('Y-m-d H:i:s');
+		$invpulled = new DateTime($invpulled_d.' '.$invpulled_t);
+		if (!is_null($invpulled)) $invpulled = $invpulled->format('Y-m-d H:i:s');
+		$invpacked = new DateTime($invpacked_d.' '.$invpacked_t);
+		if (!is_null($invpacked)) $invpacked = $invpacked->format('Y-m-d H:i:s');
+		$routed = new DateTime($routed_d.' '.$routed_t);
+		if (!is_null($routed)) $routed = $routed->format('Y-m-d H:i:s');
+		$pickup = new DateTime($pickup_d.' '.$pickup_t);
+		if (!is_null($pickup)) $pickup = $pickup->format('Y-m-d H:i:s');
+		$invloaded = new DateTime($invloaded_d.' '.$invloaded_t);
+		if (!is_null($invloaded)) $invloaded = $invloaded->format('Y-m-d H:i:s');
+		$q = "INSERT INTO sales_header (
+			parent,sales_order_type,sales_order_status,customer_id,buyer,seller,entity_id,division_id,department_id,inventory_entity,currency_code,visible,
+			quote_number,quote_approved_by,quote_given_date,quote_expires_date,
+			customer_purchase_order_number,customer_department,customer_product_group,store_code,terms,order_date,credit_release_date,ship_window_start,ship_window_end,must_route_by,must_arrive_by,order_cancelled_date,
+			wave_number,wave_date,inventory_needed_by,inventory_pulled_complete,inventory_packed_complete,
+			fv_vendor_id,bill_of_lading,rrc,load_id,routing_requested,pickup_scheduled_for,inventory_loaded_complete,bol_date,order_shipped_date,
+			invoice_number,order_invoiced_date,invoice_paid_complete,
+			shipping_from,shipping_to,remit_to,
 			rev_enabled,rev_number,created_by,creation_date,last_update_by,last_update_date) VALUES 
-			(?,?,?,?,?,?,?,?,?,?,?,?,?,?,NOW(),?,NOW());";
+			(?,?,?,?,?,?,?,?,?,?,?,?,
+			?,?,?,?,
+			?,?,?,?,?,?,?,?,?,?,?,?,
+			?,?,?,?,?,
+			?,?,?,?,?,?,?,?,?,
+			?,?,?,?,?,?,
+			?,?,?,NOW(),?,NOW());";
 		$stmt = $this->dbconn->prepare($q);
-		$stmt->bind_param('sssissiisiisiii',$p1,$p2,$p3,$p4,$p5,$p6,$p7,$p8,$p9,$p10,$p11,$p12,$p13,$p14,$p16);
-
-		$p12 = ($rev_enabled=='true')?'Y':'N';
+		$stmt->bind_param('iisiiiiiiiss'.'siss'.'sssiisssssss'.'issss'.'issssssss'.'issiii'.'siii',
+			$h2,$h3,$h4,$h5,$h6,$h7,$h8,$h9,$h10,$h11,$h12,$h13,
+			$q1,$q2,$q3,$q4,
+			$o1,$o2,$o3,$o4,$o5,$o6,$o7,$o8,$o9,$o10,$o11,$o12,
+			$p1,$p2,$p3,$p4,$p5,
+			$s1,$s2,$s3,$s4,$s5,$s6,$s7,$s8,$s9,
+			$i1,$i2,$i3,$o13,$o14,$i4,
+			$h14,$h15,$h16,$h17
+		);
+		// TODO: Validate all fields & send appropriate error messages
+		if (is_integer($parent) || ctype_digit($parent)) $h2 = $parent; else $h2 = null;
+		if (is_integer($ordertype) || ctype_digit($ordertype)) $h3 = $ordertype; else $h3 = null;
+		$h4 = $orderstatus;
+		if (is_integer($customerid) || ctype_digit($customerid)) $h5 = $customerid; else $h5 = null;
+		if (is_integer($buyer) || ctype_digit($buyer)) $h6 = $buyer; else $h6 = null;
+		if (is_integer($seller) || ctype_digit($seller)) $h7 = $seller; else $h7 = null;
+		if (is_integer($entityid) || ctype_digit($entityid)) $h8 = $entityid; else $h8 = null;
+		if (is_integer($divisionid) || ctype_digit($divisionid)) $h9 = $divisionid; else $h9 = null;
+		if (is_integer($departmentid) || ctype_digit($departmentid)) $h10 = $departmentid; else $h10 = null;
+		if (is_integer($invent) || ctype_digit($invent)) $h11 = $invent; else $h11 = null;
+		if ($currency!='') $h12 = $currency; else $h12 = null;
+		$h13 = ($visible=='true')?'Y':'N';
+		$q1 = $quotenum;
+		if (is_integer($quoteapprovedby) || ctype_digit($quoteapprovedby)) $q2 = $quoteapprovedby; else $q2 = null;
+		$q3 = $quotegiven;
+		$q4 = $quoteexpires;
+		$o1 = $customerpo;
+		$o2 = $customerdept;
+		$o3 = $customerpg;
+		if (is_integer($store) || ctype_digit($store)) $o4 = $store; else $o4 = null;
+		if (is_integer($termsid) || ctype_digit($termsid)) $o5 = $termsid; else $o5 = null;
+		$o6 = $orderdate;
+		$o7 = $creditrelease;
+		$o8 = $startship;
+		$o9 = $endship;
+		$o10 = $routeby;
+		$o11 = $mustarrive;
+		$o12 = $cancelleddate;
+		$p1 = $wavenum;
+		$p2 = $wavedate;
+		$p3 = $invneeded;
+		$p4 = $invpulled;
+		$p5 = $invpacked;
+		if (is_integer($shipper) || ctype_digit($shipper)) $s1 = $shipper; else $s1 = null;
+		$s2 = $bol;
+		$s3 = $rrc;
+		$s4 = $loadid;
+		$s5 = $routed;
+		$s6 = $pickup;
+		$s7 = $invloaded;
+		$s8 = $boldate;
+		$s9 = $ordershipped;
+		$i1 = $invoicenum;
+		$i2 = $invoicedate;
+		$i3 = $paiddate;
+		if (is_integer($shipfrom) || ctype_digit($shipfrom)) $o13 = $shipfrom; else $o13 = null;
+		if (is_integer($shipto) || ctype_digit($shipto)) $o14 = $shipto; else $o14 = null;
+		if (is_integer($remitto) || ctype_digit($remitto)) $i4 = $remitto; else $i4 = null;
+		$h14 = ($rev_enabled=='true')?'Y':'N';
 		if ($rev_number<1) $rev_number = 1;
-		$p13 = $rev_number;
-		$p14 = $_SESSION['dbuserid'];
-		$p16 = $_SESSION['dbuserid'];
+		$h15 = $rev_number;
+		$h16 = $_SESSION['dbuserid'];
+		$h17 = $_SESSION['dbuserid'];
 		$result = $stmt->execute();
 		if ($result!==false) {
 			echo 'inserted|'.$this->dbconn->insert_id;
