@@ -53,7 +53,8 @@ class Toolbar {
 				case 2028:
 				case 3028: $mod="'Consumers'"; break;
 				case 2044: 
-				case 3044: $mod="'SalesOrders'"; break;
+				case 3044: 
+				case 4044: $mod="'SalesOrders'"; break;
 			}
 			if ($cs >= 1 && $cs < 1000 && array_search($cs,$subscreens)==false) {
 				// Submenu or search
@@ -72,7 +73,10 @@ class Toolbar {
 				$html .= '<LABEL class="toolbarLabel" id="currentRecordNumber">'.$_SESSION['idarray'][2].'</LABEL>';
 				$html .= '<BUTTON class="toolbarButton" id="nextButton" title="Next" onClick="viewRecord('.$mod.','.$_SESSION['idarray'][3].');">&gt;</BUTTON>';
 				$html .= '<BUTTON class="toolbarButton" id="lastButton" title="Last" onClick="viewRecord('.$mod.','.$_SESSION['idarray'][4].');">&gt;&gt;</BUTTON>';
-				$html .= '<BUTTON class="toolbarButton" id="listResults" title="Results" onClick="returnToResultsList('.($cs-1000).')">L</BUTTON>';
+				$html .= '<BUTTON class="toolbarButton" id="listResultsButton" title="Results" onClick="returnToResultsList('.($cs-1000).')">L</BUTTON>';
+				$html .= '&nbsp;';
+				$html .= '<BUTTON class="toolbarButton" id="editRecordButton" title="Edit Record" onClick="editRecord('.$mod.','.$_SESSION['idarray'][2].');">E</BUTTON>'; 
+				$html .= '&nbsp;';
 			}
 			if (!in_array($cs,$subscreens))
 				$html .= '<BUTTON class="toolbarButton" id="newRecordButton" title="New Record" onClick="newRecord();">N</BUTTON>';
@@ -80,6 +84,13 @@ class Toolbar {
 				// Create record
 				$html .= '<BUTTON class="toolbarButton" id="newSearchButton" title="New Search" onClick="newSearch('.$mod.');">8</BUTTON>';
 				$html .= '&nbsp;';
+				$html .= '<BUTTON class="toolbarButton" id="saveButton" title="Save" onClick="saveRecord('.$mod.');">S</BUTTON>';
+			}
+			if ($cs >= 4000 && $cs < 5000) {
+				// Update record
+				if (!isset($_SESSION['idarray']) || count($_SESSION['idarray'])<5) $_SESSION['idarray'] = array(0,0,0,0,0);
+				$html .= '<BUTTON class="toolbarButton" id="viewRecordButton" title="View Record" onClick="viewRecord('.$mod.','.$_SESSION['idarray'][2].');">V</BUTTON>';
+				$html .= '<BUTTON class="toolbarButton" id="undoButton" title="Undo Changes" onClick="editRecord('.$mod.','.$_SESSION['idarray'][2].');">U</BUTTON>'; 
 				$html .= '<BUTTON class="toolbarButton" id="saveButton" title="Save" onClick="saveRecord('.$mod.');">S</BUTTON>';
 			}
 		}

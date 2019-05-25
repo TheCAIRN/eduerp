@@ -307,6 +307,58 @@ function jquery() {
 		}
 		$modObject->newRecord();
 	/**************************************************************************
+	 * DISPLAY EDIT RECORD FORM
+	 **************************************************************************/
+	} elseif ($command=='editRecord') {
+		$modObject = null;
+		if (!isset($_SESSION['currentScreen'])) {
+			$messagebar->addError("Please select a module first.");
+			$link->close();
+			return;
+		}
+		$module = $_POST['module'];
+		$id = $_POST['id'];
+		$modObject = null;
+		if ($module=='Entity') {
+			$modObject = new Entity($link);
+		} elseif ($module=='ItemManager') {
+			$modObject = new ItemManager($link);
+		} elseif ($module=='Addresses') {
+			$modObject = new Addresses($link);
+		} elseif ($module=='Vendor') {
+			$modObject = new Vendor($link);
+		} elseif ($module=='VendorCatalog') {
+			$modObject = new VendorCatalog($link);
+		} elseif ($module=='EntityResource') {
+			$modObject = new EntityResource($link);
+		} elseif ($module=='BOM') {
+			$modObject = new BOM($link);
+		} elseif ($module=='CustomerTypes') {
+			$modObject = new CustomerTYpes($link);
+		} elseif ($module=='Customer') {
+			$modObject = new Customer($link);
+		} elseif ($module=='CustomerDC') {
+			$modObject = new CustomerDC($link);
+		} elseif ($module=='CustomerStoreTypes') {
+			$modObject = new CustomerStoreTypes($link);
+		} elseif ($module=='CustomerStores') {
+			$modObject = new CustomerStores($link);
+		} elseif ($module=='Consumers') {
+			$modObject = new Consumers($link);
+		} elseif ($module=='SalesOrders') {
+			$modObject = new SalesOrders($link);
+		} else {
+			$messagebar->addWarning("The selected module has not been installed in this system.");
+			$link->close();
+			return;			
+		}
+		if (is_null($modObject)) {
+			$messagebar->addWarning("The selected module is not available at the moment.  Please wait a few minutes and try again.");
+			$link->close();
+			return;
+		}
+		$modObject->editRecord($id);
+	/**************************************************************************
 	 * COMMIT INSERTED OR UPDATED RECORD
 	 **************************************************************************/
 	} elseif ($command=='insertRecord' || $command=='updateRecord') {

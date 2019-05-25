@@ -1,5 +1,7 @@
 function logout() {
-	
+	$.post('jq.php',{jquery:'logoff'},function(data) {
+		location.reload(true);
+	});
 } // logout()
 function updateDiv(whichDiv) {
 	$.post('barstatus.php',{jquery:whichDiv},function(data) {
@@ -89,6 +91,13 @@ function returnToResultsList(screen) {
 }
 function newRecord() {
 	$.post('jq.php',{jquery:'newRecord'},function(data) {
+		if (data.length > 0) $("#core").html(data);
+		updateDiv('messagebar');
+		updateDiv('toolbar');
+	});
+}
+function editRecord(whichModule,id) {
+	$.post('jq.php',{jquery:'editRecord',module:whichModule,id:id},function(data) {
 		if (data.length > 0) $("#core").html(data);
 		updateDiv('messagebar');
 		updateDiv('toolbar');

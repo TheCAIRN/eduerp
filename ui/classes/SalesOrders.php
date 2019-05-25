@@ -326,7 +326,7 @@ class SalesOrders extends ERPBase {
 		if (ctype_digit($id)) return true;
 		return false;
 	} // isIDValid()
-	public function display($id) {
+	public function display($id,$edit=false) {
 		if (!$this->isIDValid($id)) return;
 		$readonly = true;
 		$html = '';
@@ -401,7 +401,8 @@ class SalesOrders extends ERPBase {
 			$stmt->fetch();
 			$stmt->close();			
 			$hdata = $this->arrayifyHeader();
-			echo parent::abstractRecord('view','SalesOrders','',$hdata);
+			if ($edit) $view='edit'; else $view='view';
+			echo parent::abstractRecord($view,'SalesOrders','',$hdata);
 			echo '<SCRIPT>$("#sales_header-ordered_edit legend").siblings().hide(); 
 				$("#sales_header-processing_edit legend").siblings().hide(); 
 				$("#sales_header-shipping_edit legend").siblings().hide();
@@ -439,6 +440,10 @@ class SalesOrders extends ERPBase {
 			</SCRIPT>';
 		$_SESSION['currentScreen'] = 3044;
 	} // newRecord()
+	public function editRecord($id) {
+		$this->display($id,true);
+		$_SESSION['currentScreen'] = 4044;
+	}
 	private function insertHeader() {
 		$this->resetHeader();
 		$this->resetDetail();
