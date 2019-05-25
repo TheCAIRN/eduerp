@@ -2,6 +2,7 @@
 class SalesOrders extends ERPBase {
 	private $sales_order_number;
 	private $parent;
+	private $sales_order_type;
 	private $sales_order_status;
 	private $customer_id;
 	private $buyer;
@@ -50,6 +51,10 @@ class SalesOrders extends ERPBase {
 	private $shipping_from;
 	private $shipping_to;
 	private $remit_to;
+	private	$huser_creation;
+	private $hdate_creation;
+	private $huser_modify;
+	private $hdate_modify;
 	private $column_list_header = 'sales_order_number,parent,sales_order_type,sales_order_status,customer_id,buyer,seller,entity_id,division_id,department_id,
 		inventory_entity,currency_code,visible,rev_enabled,rev_number,quote_number,quote_approved_by,quote_given_date,quote_expires_date,
 		customer_purchase_order_number,customer_department,customer_product_group,store_code,terms,order_date,credit_release_date,ship_window_start,ship_window_end,
@@ -153,11 +158,123 @@ class SalesOrders extends ERPBase {
 		$this->resetHeader();
 	} // __construct
 	public function resetHeader() {
-	
+		$this->sales_order_number = null;
+		$this->parent = null;
+		$this->sales_order_type = null;
+		$this->sales_order_status = null;
+		$this->customer_id = null;
+		$this->buyer = null;
+		$this->seller = null;
+		$this->entity_id = null;
+		$this->division_id = null;
+		$this->department_id = null;
+		$this->inventory_entity = null;
+		$this->currency_code = null;
+		$this->visible = null;
+		$this->rev_enabled = null;
+		$this->rev_number = null;
+		$this->quote_number = null;
+		$this->quote_approved_by = null;
+		$this->quote_given_date = null;
+		$this->quote_expires_date = null;
+		$this->customer_purchase_order_number = null;
+		$this->customer_department = null;
+		$this->customer_product_group = null;
+		$this->store_code = null;
+		$this->terms = null;
+		$this->order_date = null;
+		$this->credit_release_date = null;
+		$this->ship_window_start = null;
+		$this->ship_window_end = null;
+		$this->must_route_by = null;
+		$this->must_arrive_by = null;
+		$this->order_cancelled_date = null;
+		$this->wave_number = null;
+		$this->wave_date = null;
+		$this->inventory_needed_by = null;
+		$this->inventory_pulled_complete = null;
+		$this->inventory_packed_complete = null;
+		$this->fv_vendor_id = null;
+		$this->bill_of_lading = null;
+		$this->rrc = null;
+		$this->load_id = null;
+		$this->routing_requested = null;
+		$this->pickup_scheduled_for = null;
+		$this->inventory_loaded_complete = null;
+		$this->bol_date = null;
+		$this->order_shipped_date = null;
+		$this->invoice_number = null;
+		$this->order_invoiced_date = null;
+		$this->invoice_paid_complete = null;
+		$this->shipping_from = null;
+		$this->shipping_to = null;
+		$this->remit_to = null;
 	} // resetHeader()
 	public function resetDetail() {
 		
 	} // resetDetail()
+	public function arrayifyHeader() {
+		return array(
+			'sales_order_number'=>$this->sales_order_number,
+			'parent'=>$this->parent,
+			'sales_order_type'=>$this->sales_order_type,
+			'sales_order_status'=>$this->sales_order_status,
+			'customer_id'=>$this->customer_id,
+			'buyer'=>$this->buyer,
+			'seller'=>$this->seller,
+			'entity_id'=>$this->entity_id,
+			'division_id'=>$this->division_id,
+			'department_id'=>$this->department_id,
+			'inventory_entity'=>$this->inventory_entity,
+			'currency_code'=>$this->currency_code,
+			'visible'=>$this->visible,
+			'rev_enabled'=>$this->rev_enabled,
+			'rev_number'=>$this->rev_number,
+			'quote_number'=>$this->quote_number,
+			'quote_approved_by'=>$this->quote_approved_by,
+			'quote_given_date'=>$this->quote_given_date,
+			'quote_expires_date'=>$this->quote_expires_date,
+			'customer_purchase_order_number'=>$this->customer_purchase_order_number,
+			'customer_department'=>$this->customer_department,
+			'customer_product_group'=>$this->customer_product_group,
+			'store_code'=>$this->store_code,
+			'terms'=>$this->terms,
+			'order_date'=>$this->order_date,
+			'credit_release_date'=>$this->credit_release_date,
+			'ship_window_start'=>$this->ship_window_start,
+			'ship_window_end'=>$this->ship_window_end,
+			'must_route_by'=>$this->must_route_by,
+			'must_arrive_by'=>$this->must_arrive_by,
+			'order_cancelled_date'=>$this->order_cancelled_date,
+			'wave_number'=>$this->wave_number,
+			'wave_date'=>$this->wave_date,
+			'inventory_needed_by'=>$this->inventory_needed_by,
+			'inventory_pulled_complete'=>$this->inventory_pulled_complete,
+			'inventory_packed_complete'=>$this->inventory_packed_complete,
+			'fv_vendor_id'=>$this->fv_vendor_id,
+			'bill_of_lading'=>$this->bill_of_lading,
+			'rrc'=>$this->rrc,
+			'load_id'=>$this->load_id,
+			'routing_requested'=>$this->routing_requested,
+			'pickup_scheduled_for'=>$this->pickup_scheduled_for,
+			'inventory_loaded_complete'=>$this->inventory_loaded_complete,
+			'bol_date'=>$this->bol_date,
+			'order_shipped_date'=>$this->order_shipped_date,
+			'invoice_number'=>$this->invoice_number,
+			'order_invoiced_date'=>$this->order_invoiced_date,
+			'invoice_paid_complete'=>$this->invoice_paid_complete,
+			'shipping_from'=>$this->shipping_from,
+			'shipping_to'=>$this->shipping_to,
+			'remit_to'=>$this->remit_to,
+			'huser_creation'=>$this->huser_creation,
+			'hdate_creation'=>$this->hdate_creation,
+			'huser_modify'=>$this->huser_modify,
+			'hdate_modify'=>$this->hdate_modify
+		);
+	} // arrayifyHeader
+	public function arrayifyDetail() {
+		
+	} // arrayifyDetail
 	public function _templateSelect($id=0,$readonly=false) {
 		return parent::abstractSelect($id,$readonly,'sales_header','sales_order_number','sales_order_number','SalesOrders');
 	} // _templateSelect()
@@ -183,7 +300,8 @@ class SalesOrders extends ERPBase {
 		parent::abstractSearchPage('SalesOrdersSearch');
 	} // searchPage()
 	public function executeSearch($criteria) {
-		$q = "SELECT * FROM sales_header ";
+		$q = "SELECT sales_order_number,sales_order_status,quote_number,c.customer_name,customer_purchase_order_number,wave_number,bill_of_lading,invoice_number FROM sales_header h
+			LEFT OUTER JOIN cust_master c ON h.customer_id=c.customer_id";
 		// TODO: Add $criteria
 		// TODO: Convert to prepared statements
 		$q .= " ORDER BY sales_order_number";
@@ -191,7 +309,8 @@ class SalesOrders extends ERPBase {
 		if ($result!==false) {
 			$this->recordSet = array();
 			while ($row=$result->fetch_assoc()) {
-				$this->recordSet[$row['sales_order_number']] = array();
+				$this->recordSet[$row['sales_order_number']] = array('status'=>$row['sales_order_status'],'quote'=>$row['quote_number'],'customer'=>$row['customer_name'],
+					'PO'=>$row['customer_purchase_order_number'],'Wave'=>$row['wave_number'],'BOL'=>$row['bill_of_lading'],'Invoice'=>$row['invoice_number']);
 			} // while rows
 		} // if query succeeded
 		$this->listRecords();
@@ -211,7 +330,7 @@ class SalesOrders extends ERPBase {
 		if (!$this->isIDValid($id)) return;
 		$readonly = true;
 		$html = '';
-		$q = "SELECT *
+		$q = "SELECT {$this->column_list_header},h.created_by,h.creation_date,h.last_update_by,h.last_update_date 
 			FROM sales_header h 
 			WHERE sales_order_number=?";
 		$stmt = $this->dbconn->prepare($q);
@@ -225,19 +344,80 @@ class SalesOrders extends ERPBase {
 		// TODO: What if another user deletes the record while it's still in my search results?
 		if ($result!==false) {
 			$stmt->bind_result(
-			
+				$this->sales_order_number,
+				$this->parent,
+				$this->sales_order_type,
+				$this->sales_order_status,
+				$this->customer_id,
+				$this->buyer,
+				$this->seller,
+				$this->entity_id,
+				$this->division_id,
+				$this->department_id,
+				$this->inventory_entity,
+				$this->currency_code,
+				$this->visible,
+				$this->rev_enabled,
+				$this->rev_number,
+				$this->quote_number,
+				$this->quote_approved_by,
+				$this->quote_given_date,
+				$this->quote_expires_date,
+				$this->customer_purchase_order_number,
+				$this->customer_department,
+				$this->customer_product_group,
+				$this->store_code,
+				$this->terms,
+				$this->order_date,
+				$this->credit_release_date,
+				$this->ship_window_start,
+				$this->ship_window_end,
+				$this->must_route_by,
+				$this->must_arrive_by,
+				$this->order_cancelled_date,
+				$this->wave_number,
+				$this->wave_date,
+				$this->inventory_needed_by,
+				$this->inventory_pulled_complete,
+				$this->inventory_packed_complete,
+				$this->fv_vendor_id,
+				$this->bill_of_lading,
+				$this->rrc,
+				$this->load_id,
+				$this->routing_requested,
+				$this->pickup_scheduled_for,
+				$this->inventory_loaded_complete,
+				$this->bol_date,
+				$this->order_shipped_date,
+				$this->invoice_number,
+				$this->order_invoiced_date,
+				$this->invoice_paid_complete,
+				$this->shipping_from,
+				$this->shipping_to,
+				$this->remit_to,
+				$this->huser_creation,$this->hdate_creation,$this->huser_modify,$this->hdate_modify
 			);
+			$stmt->store_result();
 			$stmt->fetch();
+			$stmt->close();			
+			$hdata = $this->arrayifyHeader();
+			echo parent::abstractRecord('view','SalesOrders','',$hdata);
+			echo '<SCRIPT>$("#sales_header-ordered_edit legend").siblings().hide(); 
+				$("#sales_header-processing_edit legend").siblings().hide(); 
+				$("#sales_header-shipping_edit legend").siblings().hide();
+				$("#sales_header-invoicing_edit legend").siblings().hide();
+				</SCRIPT>';
+			/*
 			if ($readonly) $cls = 'RecordView'; else $cls = 'RecordEdit';
 			if ($readonly) $inputtextro = ' readonly="readonly"'; else $inputtextro = '';
 			$html .= '<FIELDSET id="SalesOrdersRecord" class="'.$cls.'">';
 			$html .= '<LABEL for="SalesOrdersid">SalesOrders ID:</LABEL><B id="SalesOrdersid">'.$id.'</B>';
-			$html .= $this->statusSelect($status,$readonly);
-			$html .= parent::displayRecordAudit($inputtextro,$crevyn,$crevnumber,$cuser_creation,$cdate_creation,$cuser_modify,$cdate_modify);
+			$html .= $this->statusSelect($this->sales_order_status,$readonly);
+			$html .= parent::displayRecordAudit($inputtextro,$this->rev_enabled,$this->rev_number,$this->huser_creation,$this->hdate_creation,$this->huser_modify,$this->hdate_modify);
 			$html .= '</FIELDSET>';
+			*/
 		} // if result
-		$stmt->close();			
-		echo $html;
+		//echo $html;
 		$_SESSION['currentScreen'] = 2044;
 		if (!isset($_SESSION['searchResults']) && !isset($_SESSION['searchResults']['SalesOrders']))
 			$_SESSION['idarray'] = array(0,0,$id,0,0);
@@ -251,7 +431,7 @@ class SalesOrders extends ERPBase {
 		}		
 	} // display()
 	public function newRecord() {
-		echo parent::abstractNewRecord('SalesOrders');
+		echo parent::abstractRecord('new','SalesOrders');
 		echo '<SCRIPT>$("#sales_header-ordered_edit legend").siblings().hide(); 
 			$("#sales_header-processing_edit legend").siblings().hide(); 
 			$("#sales_header-shipping_edit legend").siblings().hide();

@@ -75,7 +75,7 @@ function jquery() {
 			'People','Addresses','ItemSetup','ItemAttributes','ItemCategories','ItemTypes','GTINMaster','InventoryLookup','BillofMaterials','VendorCatalog',
 			'EntityResource','CustomerCatalog','CustomerTypes','Customer','CustomerDC','CustomerStoreTypes','CustomerStores','Consumers','Insights','DashboardSetup',
 			'ReportSetup','Dashboards','Reports','Accounting','ChartOfAccounts','GLPeriods','GLAccounts','GLBalances','GLJournal','FreightVendorTypes','FreightVendors',
-			'InboundFreight','OutboundFreight','SalesOrders','SalesPayments','SalesOrderTypes'
+			'InboundFreight','OutboundFreight','SalesOrders','SalesPayments','SalesOrderTypes','Admin','SystemOptions','UserAccounts','SecurityGroups','Permissions'
 			);
 		$setcs = array_search($module,$cs); // Set the current screen to the index # of the $cs array.
 		if (is_integer($setcs)) $ws->setCurrentScreen($setcs);

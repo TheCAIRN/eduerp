@@ -65,8 +65,9 @@ class ERPBase {
 		$html .= '</FIELDSET>';
 		echo $html;
 	} // function abstractSearchPage
-	protected function abstractNewRecord($module,$prefix='') {
-		// TODO: Make sure the user has the rights to create a new record for this module.
+	protected function abstractRecord($view,$module,$prefix='',$hdata=null,$ddata=null) {
+		// $hdata = header data array; $ddata = 2d array of detail data.
+		// TODO: If $view==new, make sure the user has the rights to create a new record for this module.
 		$html = '';
 		$intable = false;
 		$embedded = false;
@@ -74,10 +75,11 @@ class ERPBase {
 		$tablecolumn = 0;
 		$tableheader = "";
 		$tableentry = "";
+		if ($view=='view') $cls = 'RecordView'; else $cls = 'RecordEdit';
 		foreach ($this->entryFields as $field) {
 			if (count($field)>=4) {
 				if ($field[3]=='fieldset') {
-					$html .= '<FIELDSET class="RecordEdit" id="'.$field[0].$field[1].'_edit">';
+					$html .= '<FIELDSET class="'.$cls.'" id="'.$field[0].$field[1].'_edit">';
 					$html .= '<LEGEND onClick="$(this).siblings().toggle();">'.$field[2].'</LEGEND>';
 				} elseif ($field[3]=='endfieldset') {
 					$html .= '</FIELDSET>';
@@ -91,7 +93,7 @@ class ERPBase {
 					if (!$intable) $html .= '</FIELDSET>';
 					$embedded = false;
 				} elseif ($field[3]=='fieldtable') {
-					$html .= '<FIELDSET class="RecordEdit" id="'.$field[0].'_edit">';
+					$html .= '<FIELDSET class="'.$cls.'" id="'.$field[0].'_edit">';
 					$html .= '<LEGEND onClick="$(this).siblings().toggle();">'.$field[2].'</LEGEND>';
 					$html .= '<TABLE id="'.$field[0].'_table">';
 					$intable = true;
@@ -116,7 +118,9 @@ class ERPBase {
 							$html .= '<LABEL for="'.$prefix.$field[1].'">'.$field[2].'</LABEL>';
 							$html .= '<SELECT id="'.$prefix.$field[1].'"><OPTION value="">&nbsp;</OPTION>';
 							while ($option = $result->fetch_row()) {
-								$html .= '<OPTION value="'.$option[0].'">'.$option[1].'</OPTION>';
+								$selected='';
+								if (is_array($hdata) && strpos($field[0],'_header')!==false && isset($hdata[$field[1]]) && $hdata[$field[1]]==$option[0]) $selected=' selected="selected"';
+								if ($view!='view' || $selected!='') $html .= '<OPTION value="'.$option[0].'"'.$selected.'>'.$option[1].'</OPTION>';
 							}
 							$html .= '</SELECT>';
 							$html .= '</DIV>';
@@ -129,14 +133,16 @@ class ERPBase {
 							$tableentry .= '</SELECT></TD>';
 						}
 						$result->free();
-					}
+					} else $html .= $this->dbconn->error;
 				} elseif ($field[3]=='dropdown' && count($field)>=5 && is_array($field[4])) {
 					if (!$intable) {
 						$html .= '<DIV class="labeldiv">';
 						$html .= '<LABEL for="'.$prefix.$field[1].'">'.$field[2].'</LABEL>';						
 						$html .= '<SELECT id="'.$prefix.$field[1].'"><OPTION value="">&nbsp;</OPTION>';
 						foreach ($field[4] as $option) {
-							$html .= '<OPTION value="'.$option[0].'">'.$option[1].'</OPTION>';
+							$selected='';
+							if (is_array($hdata) && strpos($field[0],'_header')!==false && isset($hdata[$field[1]]) && $hdata[$field[1]]==$option[0]) $selected=' selected="selected"';
+							$html .= '<OPTION value="'.$option[0].'"'.$selected.'>'.$option[1].'</OPTION>';
 						}
 						$html .= '</SELECT></DIV>';
 					} else {
@@ -162,22 +168,40 @@ class ERPBase {
 				} elseif ($intable) {
 					$tableheader .= '<TH>'.$field[2].'</TH>';
 				}
-				if ($field[3]=='textbox') 
-					if (!$intable) $html .= '<INPUT type="text" id="'.$prefix.$field[1].'" />';
+				if ($field[3]=='textbox') {
+					$readonly = '';
+					if ($view=='view') $readonly = ' readonly="readonly"';
+					$val = '';
+					if (is_array($hdata) && strpos($field[0],'_header')!==false && isset($hdata[$field[1]])) $val=' value="'.$hdata[$field[1]].'"';
+					if (!$intable) $html .= '<INPUT type="text" id="'.$prefix.$field[1].'"'.$readonly.$val.' />';
 					else {
 						$tableentry .= '<TD id="row'.$tablerow.'-'.$prefix.$field[1].'"><INPUT type="text" id="'.$prefix.$field[1].'" /></TD>';
 					}
-				if ($field[3]=='integerid') 
-					if (!$intable) $html .= '<INPUT type="number" id="'.$prefix.$field[1].'" min="0" step="1" readonly="readonly" />';
+				}
+				if ($field[3]=='integerid') {
+					$val = '';
+					if (is_array($hdata) && strpos($field[0],'_header')!==false && isset($hdata[$field[1]])) $val=' value="'.$hdata[$field[1]].'"';
+					if (!$intable && ($view!='view' || $val=='')) $html .= '<INPUT type="number" id="'.$prefix.$field[1].'" min="0" step="1" readonly="readonly"'.$val.' />';
+					elseif (!$intable && $val!='') $html .= '<B id="'.$prefix.$field[1].'">'.$hdata[$field[1]].'</B>';
 					else {
 						$tableentry .= '<TD id="row'.$tablerow.'-'.$prefix.$field[1].'"><INPUT type="number" id="'.$prefix.$field[1].'" min="0" step="1" readonly="readonly"/></TD>';
 					}
-				if ($field[3]=='integer') 
-					if (!$intable) $html .= '<INPUT type="number" id="'.$prefix.$field[1].'" min="0" step="1" />';
+				}
+				if ($field[3]=='integer') {
+					$readonly = '';
+					if ($view=='view') $readonly = ' readonly="readonly"';
+					$val = '';
+					if (is_array($hdata) && strpos($field[0],'_header')!==false && isset($hdata[$field[1]])) $val=' value="'.$hdata[$field[1]].'"';
+					if (!$intable) $html .= '<INPUT type="number" id="'.$prefix.$field[1].'" min="0" step="1"'.$readonly.$val.' />';
 					else {
 						$tableentry .= '<TD id="row'.$tablerow.'-'.$prefix.$field[1].'"><INPUT type="number" id="'.$field[1].'" min="0" step="1" /></TD>';
 					}
+				}
 				if ($field[3]=='decimal') {
+					$readonly = '';
+					if ($view=='view') $readonly = ' readonly="readonly"';
+					$val = '';
+					if (is_array($hdata) && strpos($field[0],'_header')!==false && isset($hdata[$field[1]])) $val=' value="'.$hdata[$field[1]].'"';
 					$places = 5;
 					$decimals = 2;
 					if (count($field)>5) {
@@ -186,16 +210,21 @@ class ERPBase {
 					}
 					$step = 1 / (pow(10,$decimals));
 					$max = pow(10,$places-($decimals+1))-$step;
-					if (!$intable) $html .= '<INPUT type="number" id="'.$prefix.$field[1].'" min="0" max="'.$max.'" step="'.$step.'" />';
+					if (!$intable) $html .= '<INPUT type="number" id="'.$prefix.$field[1].'" min="0" max="'.$max.'" step="'.$step.'"'.$readonly.$val.' />';
 					else {
 						$tableentry .= '<TD id="row'.$tablerow.'-'.$prefix.$field[1].'"><INPUT type="number" id="'.$prefix.$field[1].'" min="0" max="'.$max.'" step="'.$step.'" /></TD>';
 					}
 				}
-				if ($field[3]=='checkbox') 
-					if (!$intable) $html .= '<INPUT type="checkbox" id="'.$prefix.$field[1].'" indeterminate="true" />';
+				if ($field[3]=='checkbox') {
+					$readonly = '';
+					if ($view=='view') $readonly = ' disabled="disabled"';
+					$checked = '';
+					if (is_array($hdata) && strpos($field[0],'_header')!==false && isset($hdata[$field[1]]) && $hdata[$field[1]]=='Y') $checked=' checked="checked"';
+					if (!$intable) $html .= '<INPUT type="checkbox" id="'.$prefix.$field[1].'" indeterminate="true"'.$readonly.$checked.' />';
 					else {
 						$tableentry .= '<TD id="row'.$tablerow.'-'.$prefix.$field[1].'"><INPUT type="checkbox" id="'.$prefix.$field[1].'" indeterminate="true" /></TD>';
 					}
+				}
 				if ($field[3]=='datetime') 
 					if (!$intable) {
 						$html .= '<INPUT type="date" id="'.$prefix.$field[1].'-date" /><INPUT type="time" id="'.$prefix.$field[1].'-time" />';
@@ -203,12 +232,17 @@ class ERPBase {
 						$tableentry .= '<TD id="row'.$tablerow.'-'.$prefix.$field[1].'"><INPUT type="date" id="'.$prefix.$field[1].'-date" />'.
 							'<INPUT type="time" id="'.$prefix.$field[1].'-time" /></TD>';
 					}
-				if ($field[3]=='date') 
+				if ($field[3]=='date') {
+					$readonly = '';
+					if ($view=='view') $readonly = ' readonly="readonly"';
+					$val = '';
+					if (is_array($hdata) && strpos($field[0],'_header')!==false && isset($hdata[$field[1]])) $val=' value="'.substr($hdata[$field[1]],0,10).'"';
 					if (!$intable) {
-						$html .= '<INPUT type="date" id="'.$prefix.$field[1].'-date" />';
+						$html .= '<INPUT type="date" id="'.$prefix.$field[1].'-date"'.$val.$readonly.' />';
 					} else {
 						$tableentry .= '<TD id="row'.$tablerow.'-'.$prefix.$field[1].'"><INPUT type="date" id="'.$prefix.$field[1].'-date" />';
 					}
+				}
 				if ($field[3]=='time') 
 					if (!$intable) {
 						$html .= '<INPUT type="time" id="'.$prefix.$field[1].'-time" />';
@@ -258,6 +292,9 @@ class ERPBase {
 			} // else, if there are fewer than 4 entries for the field, it is malformed.
 		}
 		return $html;  // This one is returning instead of echoing, because the calling function may need to add some module-specific scripting.
+	} // function abstractRecord()
+	protected function abstractNewRecord($module,$prefix='') {
+		return $this->abstractRecord('new',$module,$prefix);
 	} // function abstractNewRecord()
 	protected function abstractListRecords($module) {
 		$printResultCount = true;

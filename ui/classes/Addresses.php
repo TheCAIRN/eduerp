@@ -253,7 +253,7 @@ class Addresses extends ERPBase {
 			if ($result!==false) {
 				while ($row=$result->fetch_assoc()) {
 					$this->recordSet[$row['address_id']] = array('line1'=>$row['building_number'].' '.$row['street'],
-						'po_box'=>$row['po_box'],'city'=>$row['city'],'state'=>$row['spc_abbrev'],'country'=>$row['country']);
+						'po_box'=>$row['postal_box'],'city'=>$row['city'],'state'=>$row['spc_abbrev'],'country'=>$row['country']);
 				}
 			}
 		} // if criteria does not exist

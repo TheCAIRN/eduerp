@@ -1,3 +1,6 @@
+function logout() {
+	
+} // logout()
 function updateDiv(whichDiv) {
 	$.post('barstatus.php',{jquery:whichDiv},function(data) {
 		if (data!='0') $('#'+whichDiv).html(data);

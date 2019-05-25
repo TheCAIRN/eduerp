@@ -4,11 +4,14 @@ class Toolbar {
 		
 	} // __construct()
 	public function render() {
-		$html = '<BUTTON class="toolbarButton" id="homeButton" title="Home" onClick="mainMenu();">H</BUTTON>';
+		$html = '';
+		$html .= '<BUTTON class="toolbarButton" id="logoutButton" title="Log out" onClick="logout();">[X</BUTTON>';
+		$html .= '<BUTTON class="toolbarButton" id="passwordButton" title="Change Password" onClick="changePassword();">PW</BUTTON>';
+		$html .= '<BUTTON class="toolbarButton" id="homeButton" title="Home" onClick="mainMenu();">|^|</BUTTON>';
 		if (isset($_SESSION['currentScreen'])) {
 			$cs = $_SESSION['currentScreen'];
 			$mod = '';
-			$subscreens = array(0,2,3,4,9,17,29,34);
+			$subscreens = array(0,2,3,4,9,10,17,29,34,47);
 			switch ($cs) {
 				case 1: $mod="'EntitySearch'"; break;
 				case 5: $mod="'VendorSearch'"; break;
@@ -74,7 +77,7 @@ class Toolbar {
 			if (!in_array($cs,$subscreens))
 				$html .= '<BUTTON class="toolbarButton" id="newRecordButton" title="New Record" onClick="newRecord();">N</BUTTON>';
 			if ($cs >= 3000 && $cs < 4000) {
-				// Edit record
+				// Create record
 				$html .= '<BUTTON class="toolbarButton" id="newSearchButton" title="New Search" onClick="newSearch('.$mod.');">8</BUTTON>';
 				$html .= '&nbsp;';
 				$html .= '<BUTTON class="toolbarButton" id="saveButton" title="Save" onClick="saveRecord('.$mod.');">S</BUTTON>';

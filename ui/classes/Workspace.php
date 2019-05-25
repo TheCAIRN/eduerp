@@ -58,6 +58,11 @@ class Workspace {
 			case 44: $so = new SalesOrders($this->dbconn); echo $so->searchPage(); break;
 			case 45: $this->notInstalled("Sales Payments"); break;
 			case 46: $this->notInstalled("Sales Order Types"); break;
+			case 47: echo $this->adminSubmenu(); break;
+			case 48: $this->notInstalled("System Options"); break;
+			case 49: $this->notInstalled("User Accounts"); break;
+			case 50: $this->notInstalled("Security Groups"); break;
+			case 51: $this->notInstalled("Permissions"); break;
 			/* 1000-1999: List Records */
 			case 1002: $ent = new Entity($this->dbconn); $ent->listRecords(); break;
 			case 1005: $vend = new Vendor($this->dbconn); $vend->listRecords(); break;
@@ -112,7 +117,7 @@ class Workspace {
 	} // setCurrentScreen()
 	private function dashboard() {
 		// TODO: Only display those modules the user has permissions to.
-		$module_list = ['Entities','Core Lookups','Contacts','Items','Vendors','Freight',
+		$module_list = ['Admin','Entities','Core Lookups','Contacts','Items','Vendors','Freight',
 			'Purchasing','Production','Customers','Sales','Insights','Accounting'];
 		$html = '';
 		foreach ($module_list as $module) {
@@ -120,6 +125,15 @@ class Workspace {
 		}
 		return $html;
 	} // dashboard()
+	private function adminSubmenu() {
+		// TODO: Only display those modules the user has permissions to.
+		$module_list = ['System Options','User Accounts','Security Groups','Permissions'];
+		$html = '';
+		foreach ($module_list as $module) {
+			$html .= '<DIV id="'.str_replace(' ','',$module).'ModuleIcon" class="DashboardIcon" onClick="selectModule(this);">'.$module."</DIV>\r\n";
+		}
+		return $html;
+	}
 	private function coreSubmenu() {
 		// TODO: Only display those modules the user has permissions to.
 		$module_list = ['Currency','Country','Language','State','UOM Types','UOM','UOM Conversions','Terms','Note Types','Attachment Types','Cancellation Reason Codes',
