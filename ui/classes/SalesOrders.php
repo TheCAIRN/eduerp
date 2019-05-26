@@ -326,7 +326,7 @@ class SalesOrders extends ERPBase {
 		if (ctype_digit($id)) return true;
 		return false;
 	} // isIDValid()
-	public function display($id,$edit=false) {
+	public function display($id,$mode='view') {
 		if (!$this->isIDValid($id)) return;
 		$readonly = true;
 		$html = '';
@@ -400,14 +400,16 @@ class SalesOrders extends ERPBase {
 			$stmt->store_result();
 			$stmt->fetch();
 			$stmt->close();			
-			$hdata = $this->arrayifyHeader();
-			if ($edit) $view='edit'; else $view='view';
-			echo parent::abstractRecord($view,'SalesOrders','',$hdata);
-			echo '<SCRIPT>$("#sales_header-ordered_edit legend").siblings().hide(); 
-				$("#sales_header-processing_edit legend").siblings().hide(); 
-				$("#sales_header-shipping_edit legend").siblings().hide();
-				$("#sales_header-invoicing_edit legend").siblings().hide();
-				</SCRIPT>';
+			if ($mode!='update') {
+				$hdata = $this->arrayifyHeader();
+				echo parent::abstractRecord($mode,'SalesOrders','',$hdata);
+				echo '<SCRIPT>$("#sales_header-ordered_edit legend").siblings().hide(); 
+					$("#sales_header-processing_edit legend").siblings().hide(); 
+					$("#sales_header-shipping_edit legend").siblings().hide();
+					$("#sales_header-invoicing_edit legend").siblings().hide();
+					$("#salesOrderStatus").change(function() {onChange_SalesOrderStatus();});
+			</SCRIPT>';
+			}
 			/*
 			if ($readonly) $cls = 'RecordView'; else $cls = 'RecordEdit';
 			if ($readonly) $inputtextro = ' readonly="readonly"'; else $inputtextro = '';
@@ -437,11 +439,13 @@ class SalesOrders extends ERPBase {
 			$("#sales_header-processing_edit legend").siblings().hide(); 
 			$("#sales_header-shipping_edit legend").siblings().hide();
 			$("#sales_header-invoicing_edit legend").siblings().hide();
+			$("#salesOrderStatus").change(function() {onChange_SalesOrderStatus();});
 			</SCRIPT>';
 		$_SESSION['currentScreen'] = 3044;
 	} // newRecord()
 	public function editRecord($id) {
-		$this->display($id,true);
+		$this->display($id,'edit');
+		echo '<SCRIPT>onChange_SalesOrderStatus();</SCRIPT>';
 		$_SESSION['currentScreen'] = 4044;
 	}
 	private function insertHeader() {

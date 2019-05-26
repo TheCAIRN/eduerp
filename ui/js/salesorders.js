@@ -117,7 +117,16 @@ function saveSalesOrdersDetail() {
 function newSalesOrdersDetailRow() {
 	
 }
-function onChange_Status() {
-	var orderstatus = $("#sales_order_status option:selected").val();
-
+function onChange_SalesOrderStatus() {
+	var orderstatus = $("#salesOrderStatus option:selected").val();
+	$("#sales_header-quote_edit legend").siblings().hide(); 
+	$("#sales_header-ordered_edit legend").siblings().hide(); 
+	$("#sales_header-processing_edit legend").siblings().hide(); 
+	$("#sales_header-shipping_edit legend").siblings().hide();
+	$("#sales_header-invoicing_edit legend").siblings().hide();
+	if (orderstatus=='Q') $("#sales_header-quote_edit legend").siblings().show(); 
+	if (orderstatus=='O') $("#sales_header-ordered_edit legend").siblings().show(); 
+	if (orderstatus=='P') $("#sales_header-processing_edit legend").siblings().show(); 
+	if (orderstatus=='S') $("#sales_header-shipping_edit legend").siblings().show();
+	if (orderstatus=='I') $("#sales_header-invoicing_edit legend").siblings().show();
 }
