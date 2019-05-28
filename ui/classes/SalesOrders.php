@@ -420,6 +420,7 @@ class SalesOrders extends ERPBase {
 			$html .= '</FIELDSET>';
 			*/
 		} // if result
+		else $this->sales_order_number = null;
 		//echo $html;
 		$_SESSION['currentScreen'] = 2044;
 		if (!isset($_SESSION['searchResults']) && !isset($_SESSION['searchResults']['SalesOrders']))
@@ -628,8 +629,175 @@ class SalesOrders extends ERPBase {
 	private function updateHeader() {
 		$this->resetHeader();
 		$this->resetDetail();
+		$id = $_POST['h1'];
+		if ((!is_integer($id) && !ctype_digit($id)) || $id<1) {
+			echo 'fail|Invalid sales order number for updating';
+			return;
+		}
+		$this->display($id,'update'); // Display already has the logic for loading the record.  TODO: Refactor into separate function.
+		if (is_null($this->sales_order_number)) {
+			echo 'fail|Invalid sales order number for updating';
+			return;
+		}
+		$update = array();
+		if (isset($_POST['h2']) && $_POST['h2']!=$this->parent) $update['parent'] = array('i',$_POST['h2']);
+		if (isset($_POST['h3']) && $_POST['h3']!=$this->sales_order_type) $update['sales_order_type'] = array('i',$_POST['h3']);
+		if (isset($_POST['h4']) && $_POST['h4']!=$this->sales_order_status) $update['sales_order_status'] = array('s',$_POST['h4']);
+		if (isset($_POST['h5']) && $_POST['h5']!=$this->customer_id) $update['customer_id'] = array('i',$_POST['h5']);
+		if (isset($_POST['h6']) && $_POST['h6']!=$this->buyer) $update['buyer'] = array('i',$_POST['h6']);
+		if (isset($_POST['h7']) && $_POST['h7']!=$this->seller) $update['seller'] = array('i',$_POST['h7']);
+		if (isset($_POST['h8']) && $_POST['h8']!=$this->entity_id) $update['entity_id'] = array('i',$_POST['h8']);
+		if (isset($_POST['h9']) && $_POST['h9']!=$this->division_id) $update['division_id'] = array('i',$_POST['h9']);
+		if (isset($_POST['h10']) && $_POST['h10']!=$this->department_id) $update['department_id'] = array('i',$_POST['h10']);
+		if (isset($_POST['h11']) && $_POST['h11']!=$this->inventory_entity) $update['inventory_entity'] = array('i',$_POST['h11']);
+		if (isset($_POST['h12']) && $_POST['h12']!=$this->currency_code) $update['currency_code'] = array('s',$_POST['h12']);
+		$visible = null;
+		if (isset($_POST['h13'])) $visible = ($_POST['h13']=='true')?'Y':'N';
+		if (!is_null($visible) && $visible!=$this->visible) $update['visible'] = array('s',$visible);
+		$reven = null;
+		if (isset($_POST['h14'])) $reven = ($_POST['h14']=='true')?'Y':'N';
+		if (!is_null($reven) && $reven!=$this->rev_enabled) $update['rev_enabled'] = array('s',$reven);
+		if ((!is_null($reven)) && $reven=='Y' && isset($_POST['h15']) && $_POST['h15']!=$this->rev_number) $update['rev_number'] = array('i',$_POST['h15']);
+		if (isset($_POST['q1']) && $_POST['q1']!=$this->quote_number) $update['quote_number'] = array('s',$_POST['q1']);
+		if (isset($_POST['q2']) && $_POST['q2']!=$this->quote_approved_by) $update['quote_approved_by'] = array('i',$_POST['q2']);
+		if (isset($_POST['q3']) && $_POST['q3']!=substr($this->quote_given_date,0,10)) {
+			$d = new DateTime($_POST['q3']);
+			if (!is_null($d)) $update['quote_given_date'] = array('s',$d->format('Y-m-d'));
+		}
+		if (isset($_POST['q4']) && $_POST['q4']!=substr($this->quote_expires_date,0,10)) {
+			$d = new DateTime($_POST['q4']);
+			if (!is_null($d)) $update['quote_expires_date'] = array('s',$d->format('Y-m-d'));
+		}
+		if (isset($_POST['o1']) && $_POST['o1']!=$this->customer_purchase_order_number) $update['customer_purchase_order_number'] = array('s',$_POST['o1']);
+		if (isset($_POST['o2']) && $_POST['o2']!=$this->customer_department) $update['customer_department'] = array('s',$_POST['o2']);
+		if (isset($_POST['o3']) && $_POST['o3']!=$this->customer_product_group) $update['customer_product_group'] = array('s',$_POST['o3']);
+		if (isset($_POST['o4']) && $_POST['o4']!=$this->store_code) $update['store_code'] = array('i',$_POST['o4']);
+		if (isset($_POST['o5']) && $_POST['o5']!=$this->terms) $update['terms'] = array('i',$_POST['o5']);
+		if (isset($_POST['o6']) && $_POST['o6']!=substr($this->order_date,0,10)) {
+			$d = new DateTime($_POST['o6']);
+			if (!is_null($d)) $update['order_date'] = array('s',$d->format('Y-m-d'));
+		}
+		if (isset($_POST['o7']) && $_POST['o7']!=substr($this->credit_release_date,0,10)) {
+			$d = new DateTime($_POST['o7']);
+			if (!is_null($d)) $update['credit_release_date'] = array('s',$d->format('Y-m-d'));
+		}
+		if (isset($_POST['o8']) && $_POST['o8']!=substr($this->ship_window_start,0,10)) {
+			$d = new DateTime($_POST['o8']);
+			if (!is_null($d)) $update['ship_window_start'] = array('s',$d->format('Y-m-d'));
+		}
+		if (isset($_POST['o9']) && $_POST['o9']!=substr($this->ship_window_end,0,10)) {
+			$d = new DateTime($_POST['o9']);
+			if (!is_null($d)) $update['ship_window_end'] = array('s',$d->format('Y-m-d'));
+		}
+		if (isset($_POST['o10']) && $_POST['o10']!=substr($this->must_route_by,0,10)) {
+			$d = new DateTime($_POST['o10']);
+			if (!is_null($d)) $update['must_route_by'] = array('s',$d->format('Y-m-d'));
+		}
+		if (isset($_POST['o11']) && $_POST['o11']!=substr($this->must_arrive_by,0,10)) {
+			$d = new DateTime($_POST['o11']);
+			if (!is_null($d)) $update['must_arrive_by'] = array('s',$d->format('Y-m-d'));
+		}
+		if (isset($_POST['o12']) && $_POST['o12']!=substr($this->order_cancelled_date,0,10)) {
+			$d = new DateTime($_POST['o12']);
+			if (!is_null($d)) $update['order_cancelled_date'] = array('s',$d->format('Y-m-d'));
+		}
+		if (isset($_POST['p1']) && $_POST['p1']!=$this->wave_number) $update['wave_number'] = array('s',$_POST['p1']);
+		if (isset($_POST['p2']) && $_POST['p2']!=substr($this->wave_date,0,10)) {
+			$d = new DateTime($_POST['p2']);
+			if (!is_null($d)) $update['wave_date'] = array('s',$d->format('Y-m-d'));
+		}
+		if (isset($_POST['p3d']) && isset($_POST['p3t'])) {
+			$d = new DateTime($_POST['p3d'].' '.$_POST['p3t']);
+			if (!is_null($d)) $d = $d->format('Y-m-d H:i:s');
+			if ($d!=substr($this->inventory_needed_by,0,19)) $update['inventory_needed_by'] = array('s',$d);
+		}
+		if (isset($_POST['p4d']) && isset($_POST['p4t'])) {
+			$d = new DateTime($_POST['p4d'].' '.$_POST['p4t']);
+			if (!is_null($d)) $d = $d->format('Y-m-d H:i:s');
+			if ($d!=substr($this->inventory_pulled_complete,0,19)) $update['inventory_pulled_complete'] = array('s',$d);
+		}
+		if (isset($_POST['p5d']) && isset($_POST['p5t'])) {
+			$d = new DateTime($_POST['p5d'].' '.$_POST['p5t']);
+			if (!is_null($d)) $d = $d->format('Y-m-d H:i:s');
+			if ($d!=substr($this->inventory_packed_complete,0,19)) $update['inventory_packed_complete'] = array('s',$d);
+		}
+		if (isset($_POST['s1']) && $_POST['s1']!=$this->fv_vendor_id) $update['fv_vendor_id'] = array('i',$_POST['s1']);
+		if (isset($_POST['s2']) && $_POST['s2']!=$this->bill_of_lading) $update['bill_of_lading'] = array('s',$_POST['s2']);
+		if (isset($_POST['s3']) && $_POST['s3']!=$this->rrc) $update['rrc'] = array('s',$_POST['s3']);
+		if (isset($_POST['s4']) && $_POST['s4']!=$this->load_id) $update['load_id'] = array('s',$_POST['s4']);
+		if (isset($_POST['s5d']) && isset($_POST['s5t'])) {
+			$d = new DateTime($_POST['s5d'].' '.$_POST['s5t']);
+			if (!is_null($d)) $d = $d->format('Y-m-d H:i:s');
+			if ($d!=substr($this->routing_requested,0,19)) $update['routing_requested'] = array('s',$d);
+		}
+		if (isset($_POST['s6d']) && isset($_POST['s6t'])) {
+			$d = new DateTime($_POST['s6d'].' '.$_POST['s6t']);
+			if (!is_null($d)) $d = $d->format('Y-m-d H:i:s');
+			if ($d!=substr($this->pickup_scheduled_for,0,19)) $update['pickup_scheduled_for'] = array('s',$d);
+		}
+		if (isset($_POST['s7d']) && isset($_POST['s7t'])) {
+			$d = new DateTime($_POST['s7d'].' '.$_POST['s7t']);
+			if (!is_null($d)) $d = $d->format('Y-m-d H:i:s');
+			if ($d!=substr($this->inventory_loaded_complete,0,19)) $update['inventory_loaded_complete'] = array('s',$d);
+		}
+		if (isset($_POST['s8']) && $_POST['s8']!=substr($this->bol_date,0,10)) {
+			$d = new DateTime($_POST['s8']);
+			if (!is_null($d)) $update['bol_date'] = array('s',$d->format('Y-m-d'));
+		}
+		if (isset($_POST['s9']) && $_POST['s9']!=substr($this->order_shipped_date,0,10)) {
+			$d = new DateTime($_POST['s9']);
+			if (!is_null($d)) $update['order_shipped_date'] = array('s',$d->format('Y-m-d'));
+		}
+		if (isset($_POST['i1']) && $_POST['i1']!=$this->invoice_number) $update['invoice_number'] = array('i',$_POST['i1']);
+		if (isset($_POST['i2']) && $_POST['i2']!=substr($this->order_invoiced_date,0,10)) {
+			$d = new DateTime($_POST['i2']);
+			if (!is_null($d)) $update['order_invoiced_date'] = array('s',$d->format('Y-m-d'));
+		}
+		if (isset($_POST['i3']) && $_POST['i3']!=substr($this->invoice_paid_complete,0,10)) {
+			$d = new DateTime($_POST['i3']);
+			if (!is_null($d)) $update['invoice_paid_complete'] = array('s',$d->format('Y-m-d'));
+		}
+		if (isset($_POST['o13']) && $_POST['o13']!=$this->shipping_from) $update['shipping_from'] = array('i',$_POST['o13']);
+		if (isset($_POST['o14']) && $_POST['o14']!=$this->shipping_to) $update['shipping_to'] = array('i',$_POST['o14']);
+		if (isset($_POST['i4']) && $_POST['i4']!=$this->remit_to) $update['remit_to'] = array('i',$_POST['i4']);
+
+		// Create UPDATE String
 		
-	}
+		if (count($update)==0) {
+			echo 'fail|Nothing to update';
+			return;
+		}
+		$q = 'UPDATE sales_header SET ';
+		$ctr = 0;
+		$bp_types = '';
+		$bp_values = array_fill(0,count($update),null);
+		foreach ($update as $field=>$data) {
+			if ($ctr > 0) $q .= ',';
+			$q .= "$field=?";
+			$bp_types .= $data[0];
+			$bp_values[$ctr] = $data[1];
+			$ctr++;
+		}
+		$q .= ' WHERE sales_order_number=?';
+		$ctr++;
+		$bp_types .= 'i';
+		$bp_values[$ctr] = $this->sales_order_number;
+		$stmt = $this->dbconn->prepare($q);
+		$bp_args = array_fill(0,count($bp_values)-1,null);
+		echo strlen($bp_types).' '.count($bp_values).' '.count($bp_args).' '.count($update);
+		$stmt->bind_param($bp_types,extract($bp_args));
+		for ($idx=0;$idx<=$ctr;$idx++) $bp_args[$idx]=$bp_values[$idx];
+		$stmt->execute();
+		if ($stmt->affected_rows > 0) {
+			echo 'updated';
+		} else {
+			if ($this->dbconn->error) {
+				echo 'fail|'.$this->dbconn->error;
+				$this->mb->addError($this->dbconn->error);
+			} else echo 'fail|No rows updated';
+		}
+		$stmt->close();
+	} // updateHeader()
 	private function updateDetail() {
 		$this->resetDetail();
 		
