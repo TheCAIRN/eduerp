@@ -783,10 +783,17 @@ class SalesOrders extends ERPBase {
 		$bp_types .= 'i';
 		$bp_values[$ctr] = $this->sales_order_number;
 		$stmt = $this->dbconn->prepare($q);
-		$bp_args = array_fill(0,count($bp_values)-1,null);
-		echo strlen($bp_types).' '.count($bp_values).' '.count($bp_args).' '.count($update);
-		$stmt->bind_param($bp_types,extract($bp_args));
-		for ($idx=0;$idx<=$ctr;$idx++) $bp_args[$idx]=$bp_values[$idx];
+		/* The internet has a lot of material about different ways to pass a variable number of arguments to bind_param.
+		   I feel that using Reflection is the best tool for the job.
+		   Reference: https://www.php.net/manual/en/mysqli-stmt.bind-param.php#107154
+		*/
+		$bp_method = new ReflectionMethod('mysqli_stmt','bind_param');
+		$bp_refs = array();
+		foreach ($bp_values as $key=>$value) {
+			$bp_refs[$key] = &$bp_values[$key];
+		}
+		array_unshift($bp_values,$bp_types);
+		$bp_method->invokeArgs($stmt,$bp_values);
 		$stmt->execute();
 		if ($stmt->affected_rows > 0) {
 			echo 'updated';
