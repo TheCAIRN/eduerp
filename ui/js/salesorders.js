@@ -110,9 +110,82 @@ function saveSalesOrdersHeader() {
 	.fail(function() {
 		$("#messagebar").html('<DIV class="errorMessage">I could not contact the database. Your data has <B>NOT</B> been saved.</DIV>');
 	});
-}
+} // saveSalesOrdersHeader()
+function createNewSalesOrdersDetailLine() {
+	
+} // createNewDetailLine()
 function saveSalesOrdersDetail() {
-
+	var ordernum = $("#sales_order_number").val();
+	var row = $("#sales_detail_table tr:last").attr("id");
+	var linenum = $("#sales_order_line").val();
+	var parentline = $("#parent_line").val();
+	var entity = $("#dentity_id option:selected").val();
+	var division = $("#ddivision_id option:selected").val();
+	var department = $("#ddepartment_id option:selected").val();
+	var custline = $("#customer_line").val();
+	var itemid = $("#item_id").val();
+	var qty1 = $("#quantity_requested").val();
+	var qty2 = $("#quantity_shipped").val();
+	var qty3 = $("#quantity_returned").val();
+	var qty4 = $("#quantity_backordered").val();
+	var qty5 = $("#quantity_cancelled").val();
+	var uom = $("#quantity_uom option:selected").val();
+	var price = $("#price").val();
+	var discpct = $("#discount_percent").val();
+	var discamt = $("#discount_amount").val();
+	var rtlh = $("#retail_high").val();
+	var rtll = $("#retail_low").val();
+	var cred_date = $("#dcredit_release_date-date").val();
+	var wave_date = $("#dwave_date-date").val();
+	var assigned_to = $("#assigned_to option:selected").val();
+	var inv_needed_date = $("#dinventory_needed_by-date").val();
+	var inv_needed_time = $("#dinventory_needed_by-time").val();
+	var inv_location = $("#inventory_location option:selected").val();
+	var inv_pulled_date = $("#dinventory_pulled_complete-date").val();
+	var inv_pulled_time = $("#dinventory_pulled_complete-time").val();
+	var inv_pulled_by = $("#dinventory_pulled_by option:selected").val();
+	var inv_packed_date = $("#dinventory_packed_complete-date").val();
+	var inv_packed_time = $("#dinventory_packed_complete-time").val();
+	var inv_packed_by = $("#dinventory_packed_by option:selected").val();
+	var inv_loaded_date = $("#dinventory_loaded_complete-date").val();
+	var inv_loaded_time = $("#dinventory_loaded_complete-time").val();
+	var inv_loaded_by = $("#dinventorY_loaded_by option:selected").val();
+	var line_shipped = $("#line_shipped_date-date").val();
+	var line_invoiced = $("#line_invoiced_date-date").val();
+	var line_cancelled = $("#line_cancelled_date-date").val();
+	var visible = $("#dvisible").is("checked");
+	var rev_enabled = $("#drev_enabled").is("checked");
+	var rev_number = $("#drev_number").val();
+	
+	// Submit to server
+	var mode;
+	if (linenum==0) mode="insertRecord";
+	else mode="updateRecord";
+	$.post("jq.php",{jquery:mode,module:"salesorders",level:"detail",
+		sales_order_number:ordernum,sales_order_line:linenum,parent_line:parentline,dentity_id:entity,
+		ddivision_id:division,ddepartment_id:department,customer_line:custline,item_id:itemid,
+		quantity_requested:qty1,quantity_shipped:qty2,quantity_returned:qty3,quantity_backordered:qty4,
+		quantity_cancelled:qty5,quantity_uom:uom,price:price,discount_percent:discpct,discount_amount:discamt,
+		dcredit_release_date:cred_date,dwave_date:wave_date,assigned_to:assigned_to,
+		dinventory_needed_by-date:inv_needed_date,dinventory_needed_by-time:inv_needed_time,
+		inventory_location:inv_location,dinventory_pulled_complete-date:inv_pulled_date,dinventory_pulled_complete-time:inv_pulled_time,
+		dinventory_pulled_by:inv_pulled_by,dinventory_packed_complete-date:inv_packed_date,
+		dinventory_packed_complete-time:inv_packed_time,dinventory_packed_by:inv_packed_by,
+		dinventory_loaded_complete-date:inv_loaded_date,dinventory_loaded_complete-time:inv_loaded_time,
+		dinventory_loaded_by:inv_loaded_by,line_shipped_date:line_shipped,line_invoiced_date:line_invoiced,
+		line_cancelled_date:line_cancelled,dvisible:visible,drev_enabled:rev_enabled,drev_number:rev_number,
+		},function(data) {
+		var fields = data.split("|");
+		if (fields[0]=="inserted") {
+			$("#sales_order_line").val(fields[1]);
+			$("#messagebar").html('<DIV class="successMessage">Data saved.</DIV>');
+			createNewSalesOrdersDetailLine();
+		} // if inserted
+	})
+	.fail(function() {
+		$("#messagebar").html('<DIV class="errorMessage">I could not contact the database. Your data has <B>NOT</B> been saved.</DIV>');
+	});
+	
 }
 function newSalesOrdersDetailRow() {
 	

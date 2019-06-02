@@ -55,12 +55,58 @@ class SalesOrders extends ERPBase {
 	private $hdate_creation;
 	private $huser_modify;
 	private $hdate_modify;
+	
+	private $sales_order_line;
+	private $parent_line;
+	private $dentity_id;
+	private $ddivision_id;
+	private $ddepartment_id;
+	private $customer_line;
+	private $edi_raw1;
+	private $edi_raw2;
+	private $item_id;
+	private $quantity_requested;
+	private $quantity_shipped;
+	private $quantity_returned;
+	private $quantity_backordered;
+	private $quantity_cancelled;
+	private $quantity_uom;
+	private $price;
+	private $discount_percent;
+	private $discount_amount;
+	private $dcredit_release_date;
+	private $dwave_date;
+	private $assigned_to;
+	private $dinventory_needed_by;
+	private $dinventory_location;
+	private $dinventory_pulled;
+	private $dinventory_pulled_by;
+	private $dinventory_packed;
+	private $dinventory_packed_by;
+	private $dinventory_loaded;
+	private $dinventory_loaded_by;
+	private $line_shipped_date;
+	private $line_invoiced_date;
+	private $line_cancelled_date;
+	private $dvisible;
+	private $drev_enabled;
+	private $drev_number;
+	private	$duser_creation;
+	private $ddate_creation;
+	private $duser_modify;
+	private $ddate_modify;
+	private $detail_array;
+	
 	private $column_list_header = 'sales_order_number,parent,sales_order_type,sales_order_status,customer_id,buyer,seller,entity_id,division_id,department_id,
 		inventory_entity,currency_code,visible,rev_enabled,rev_number,quote_number,quote_approved_by,quote_given_date,quote_expires_date,
 		customer_purchase_order_number,customer_department,customer_product_group,store_code,terms,order_date,credit_release_date,ship_window_start,ship_window_end,
 		must_route_by,must_arrive_by,order_cancelled_date,wave_number,wave_date,inventory_needed_by,inventory_pulled_complete,inventory_packed_complete,
 		fv_vendor_id,bill_of_lading,rrc,load_id,routing_requested,pickup_scheduled_for,inventory_loaded_complete,bol_date,order_shipped_date,
 		invoice_number,order_invoiced_date,invoice_paid_complete,shipping_from,shipping_to,remit_to';
+	private $column_list_detail = 'sales_order_number,sales_order_line,parent_line,entity_id,division_id,department_id,customer_line,edi_raw1,edi_raw2,item_id,
+		quantity_requested,quantity_shipped,quantity_returned,quantity_backordered,quantity_cancelled,quantity_uom,price,discount_percent,discount_amount,
+		retail_high,retail_low,credit_release_date,wave_date,assigned_to,inventory_needed_by,inventory_location,inventory_pulled,inventory_pulled_by,inventory_packed,
+		inventory_packed_by,inventory_loaded,inventory_loaded_by,line_shipped_date,line_invoiced_date,line_cancelled_date,visible,rev_enabled,rev_number';
 	
 	public function __construct ($link=null) {
 		parent::__construct($link);
@@ -72,6 +118,7 @@ class SalesOrders extends ERPBase {
 		$this->searchFields[] = array('sales_header','wave_number','Wave #','textbox');
 		$this->searchFields[] = array('sales_header','invoice_number','Invoice #','integer');
 		
+		$this->entryFields[] = array('sales_header','','Header','fieldset');
 		$this->entryFields[] = array('sales_header','','Sales Order','fieldset');
 		$this->entryFields[] = array('sales_header','sales_order_number','Sales Order #','integerid');
 		$this->entryFields[] = array('sales_header','parent','Parent Order #','integer');
@@ -141,20 +188,50 @@ class SalesOrders extends ERPBase {
 		$this->entryFields[] = array('sales_header','remit_to','Remit To','embedded');
 		$this->entryFields[] = array('sales_header','remit_to','Remit To','Address');
 		$this->entryFields[] = array('sales_header','','','endembedded');
+		$this->entryFields[] = array('sales_header','','','endfieldset');
 		
+		$this->entryFields[] = array('sales_detail','','Detail','fieldset');
 		$this->entryFields[] = array('sales_detail','','Sales Order Detail','fieldtable');
 		$this->entryFields[] = array('sales_detail','sales_order_line','Line #','integer');
 		$this->entryFields[] = array('sales_detail','parent_line','Parent','integer');
+		$this->entryFields[] = array('sales_detail','dentity_id','Entity','dropdown','ent_entities',array('entity_id','entity_name'));
+		$this->entryFields[] = array('sales_detail','ddivision_id','Division','dropdown','ent_division_master',array('division_id','division_name'));
+		$this->entryFields[] = array('sales_detail','ddepartment_id','Department','dropdown','ent_department_master',array('department_id','department_name'));
 		$this->entryFields[] = array('sales_detail','customer_line','Customer Line #','textbox');
 		$this->entryFields[] = array('sales_detail','','Item','embedded');
 		$this->entryFields[] = array('sales_detail','item_id','Item','Item');
 		$this->entryFields[] = array('sales_detail','','','endembedded');
-		$this->entryFields[] = array('sales_detail','quantity_requested','Quantity','decimal',9,5);
+		$this->entryFields[] = array('sales_detail','quantity_requested','Qty Req','decimal',9,5);
+		$this->entryFields[] = array('sales_detail','quantity_shipped','Qty Ship','decimal',9,5);
+		$this->entryFields[] = array('sales_detail','quantity_returned','Qty Rtn','decimal',9,5);
+		$this->entryFields[] = array('sales_detail','quantity_backordered','Qty BO','decimal',9,5);
+		$this->entryFields[] = array('sales_detail','quantity_cancelled','Qty Xcl','decimal',9,5);
+		$this->entryFields[] = array('sales_detail','quantity_uom','Quantity UOM','dropdown','aa_uom',array('uom_code','uom_description'));
 		$this->entryFields[] = array('sales_detail','price','Price','decimal',17,5);
-		$this->entryFields[] = array('sales_detail','retail_high','Retail','decimal',17,5);
-		$this->entryFields[] = array('sales_detail','rev_enabled','Enable Revision Tracking','checkbox','rev_number');
-		$this->entryFields[] = array('sales_detail','rev_number','Revision number','integer');
+		$this->entryFields[] = array('sales_detail','discount_percent','Disc %','decimal',7,3);
+		$this->entryFields[] = array('sales_detail','discount_amount','Disc $','decimal',17,5);
+		$this->entryFields[] = array('sales_detail','retail_high','Retail H','decimal',17,5);
+		$this->entryFields[] = array('sales_detail','retail_low','Retail L','decimal',17,5);
+		$this->entryFields[] = array('sales_detail','dcredit_release_date','Credit Released','date');
+		$this->entryFields[] = array('sales_detail','dwave_date','Wave date','date');
+		$this->entryFields[] = array('sales_detail','assigned_to','Assigned','dropdown','v_sec_users',array('user_id','human_name'));
+		$this->entryFields[] = array('sales_detail','dinventory_needed_by','Inventory needed by','datetime');
+		$this->entryFields[] = array('sales_detail','inventory_location','Inventory Location','dropdown','ent_entities',array('entity_id','entity_name'),'INV');
+		$this->entryFields[] = array('sales_detail','dinventory_pulled_complete','Inventory Pulled','datetime');
+		$this->entryFields[] = array('sales_detail','dinventory_pulled_by','Inv pulled by','dropdown','v_sec_users',array('user_id','human_name'));
+		$this->entryFields[] = array('sales_detail','dinventory_packed_complete','Inventory Packed','datetime');
+		$this->entryFields[] = array('sales_detail','dinventory_packed_by','Inv packed by','dropdown','v_sec_users',array('user_id','human_name'));
+		$this->entryFields[] = array('sales_detail','dinventory_loaded_complete','Inventory Loaded','datetime');
+		$this->entryFields[] = array('sales_detail','dinventory_loaded_by','Inv loaded by','dropdown','v_sec_users',array('user_id','human_name'));
+		$this->entryFields[] = array('sales_detail','line_shipped_date','Line shipped','date');
+		$this->entryFields[] = array('sales_detail','line_invoiced_date','Line invoiced','date');
+		$this->entryFields[] = array('sales_detail','line_cancelled_date','Line cancelled','date');
+		$this->entryFields[] = array('sales_detail','dvisible','Visible','checkbox');
+		$this->entryFields[] = array('sales_detail','drev_enabled','Enable Revision Tracking','checkbox','rev_number');
+		$this->entryFields[] = array('sales_detail','drev_number','Revision number','integer');
+		$this->entryFields[] = array('sales_detail','','Add Row','newlinebutton','newSalesOrdersDetailRow();');
 		$this->entryFields[] = array('sales_detail','','','endfieldtable');
+		$this->entryFields[] = array('sales_detail','','','endfieldset');
 		$this->resetHeader();
 	} // __construct
 	public function resetHeader() {
@@ -209,9 +286,48 @@ class SalesOrders extends ERPBase {
 		$this->shipping_from = null;
 		$this->shipping_to = null;
 		$this->remit_to = null;
+		$this->detail_array = array();
 	} // resetHeader()
 	public function resetDetail() {
-		
+		$this->sales_order_line = null;
+		$this->parent_line = null;
+		$this->dentity_id = null;
+		$this->ddivision_id = null;
+		$this->ddepartment_id = null;
+		$this->customer_line = null;
+		$this->edi_raw1 = null;
+		$this->edi_raw2 = null;
+		$this->item_id = null;
+		$this->quantity_requested = null;
+		$this->quantity_shipped = null;
+		$this->quantity_returned = null;
+		$this->quantity_backordered = null;
+		$this->quantity_cancelled = null;
+		$this->quantity_uom = null;
+		$this->price = null;
+		$this->discount_percent = null;
+		$this->discount_amount = null;
+		$this->dcredit_release_date = null;
+		$this->dwave_date = null;
+		$this->assigned_to = null;
+		$this->dinventory_needed_by = null;
+		$this->dinventory_location = null;
+		$this->dinventory_pulled = null;
+		$this->dinventory_pulled_by = null;
+		$this->dinventory_packed = null;
+		$this->dinventory_packed_by = null;
+		$this->dinventory_loaded = null;
+		$this->dinventory_loaded_by = null;
+		$this->line_shipped_date = null;
+		$this->line_invoiced_date = null;
+		$this->line_cancelled_date = null;
+		$this->dvisible = null;
+		$this->drev_enabled = null;
+		$this->drev_number = null;
+		$this->duser_creation = null;
+		$this->ddate_creation = null;
+		$this->duser_modify = null;
+		$this->ddate_modify = null;
 	} // resetDetail()
 	public function arrayifyHeader() {
 		return array(
@@ -273,7 +389,50 @@ class SalesOrders extends ERPBase {
 		);
 	} // arrayifyHeader
 	public function arrayifyDetail() {
-		
+		return array(
+			'sales_order_number'=>$this->sales_order_number,
+			'sales_order_line'=>$this->sales_order_line,
+			'parent_line'=>$this->parent_line,
+			'entity_id'=>$this->dentity_id,
+			'division_id'=>$this->ddivision_id,
+			'department_id'=>$this->ddepartment_id,
+			'customer_line'=>$this->customer_line,
+			'edi_raw1'=>$this->edi_raw1,
+			'edi_raw2'=>$this->edi_raw2,
+			'item_id'=>$this->item_id,
+			'quantity_requested'=>$this->quantity_requested,
+			'quantity_shipped'=>$this->quantity_shipped,
+			'quantity_returned'=>$this->quantity_returned,
+			'quantity_backordered'=>$this->quantity_backordered,
+			'quantity_cancelled'=>$this->quantity_cancelled,
+			'quantity_uom'=>$this->quantity_uom,
+			'price'=>$this->price,
+			'discount_percent'=>$this->discount_percent,
+			'discount_amount'=>$this->discount_amount,
+			'retail_high'=>$this->retail_high,
+			'retail_low'=>$this->retail_low,
+			'credit_release_date'=>$this->dcredit_release_date,
+			'wave_date'=>$this->dwave_date,
+			'assigned_to'=>$this->assigned_to,
+			'inventory_needed_by'=>$this->dinventory_needed_by,
+			'inventory_location'=>$this->dinventory_location,
+			'inventory_pulled'=>$this->dinventory_pulled,
+			'inventory_pulled_by'=>$this->dinventory_pulled_by,
+			'inventory_packed'=>$this->dinventory_packed,
+			'inventory_packed_by'=>$this->dinventory_packed_by,
+			'inventory_loaded'=>$this->dinventory_loaded,
+			'inventory_loaded_by'=>$this->dinventory_loaded_by,
+			'line_shipped_date'=>$this-line_shipped_date,
+			'line_invoiced_date'=>$this->line_invoiced_date,
+			'line_cancelled_date'=>$this->line_cancelled_date,
+			'visible'=>$this->dvisible,
+			'rev_enabled'=>$this->drev_enabled,
+			'rev_number'=>$this->drev_number,
+			'duser_creation'=>$this->duser_creation,
+			'ddate_creation'=>$this->ddate_creation,
+			'duser_modify'=>$this->duser_modify,
+			'ddate_modify'=>$this->ddate_modify
+		);
 	} // arrayifyDetail
 	public function _templateSelect($id=0,$readonly=false) {
 		return parent::abstractSelect($id,$readonly,'sales_header','sales_order_number','sales_order_number','SalesOrders');
@@ -399,10 +558,72 @@ class SalesOrders extends ERPBase {
 			);
 			$stmt->store_result();
 			$stmt->fetch();
-			$stmt->close();			
+			$stmt->close();		
+
+			$q = "SELECT {$this->column_list_detail},d.created_by,d.creation_date,d.last_update_by,d.last_update_date 
+				FROM sales_detail d 
+				WHERE sales_order_number=?";
+			$stmt = $this->dbconn->prepare($q);
+			if ($stmt===false) {
+				echo $this->dbconn->error;
+				return;
+			}
+			$stmt->bind_param('i',$SalesOrdersid);
+			$SalesOrdersid = $id;
+			$dresult = $stmt->execute();
+			if ($dresult!==false) {
+				$stmt->bind_result(
+					$this->sales_order_number,
+					$this->sales_order_line,
+					$this->parent_line,
+					$this->dentity_id,
+					$this->ddivision_id,
+					$this->ddepartment_id,
+					$this->customer_line,
+					$this->edi_raw1,
+					$this->edi_raw2,
+					$this->item_id,
+					$this->quantity_requested,
+					$this->quantity_shipped,
+					$this->quantity_returned,
+					$this->quantity_backordered,
+					$this->quantity_cancelled,
+					$this->quantity_uom,
+					$this->price,
+					$this->discount_percent,
+					$this->discount_amount,
+					$this->dcredit_release_date,
+					$this->dwave_date,
+					$this->assigned_to,
+					$this->dinventory_needed_by,
+					$this->dinventory_location,
+					$this->dinventory_pulled,
+					$this->dinventory_pulled_by,
+					$this->dinventory_packed,
+					$this->dinventory_packed_by,
+					$this->dinventory_loaded,
+					$this->dinventory_loaded_by,
+					$this->line_shipped_date,
+					$this->line_invoiced_date,
+					$this->line_cancelled_date,
+					$this->dvisible,
+					$this->drev_enabled,
+					$this->drev_number,
+					$this->duser_creation,
+					$this->ddate_creation,
+					$this->duser_modify,
+					$this->ddate_modify
+				);
+				$stmt->store_result();
+				while ($stmt->fetch()) {
+					$this->detail_array[$this->sales_order_line] = $this->arrayifyDetail();
+				}
+				$stmt->close();
+			}
+			
 			if ($mode!='update') {
 				$hdata = $this->arrayifyHeader();
-				echo parent::abstractRecord($mode,'SalesOrders','',$hdata);
+				echo parent::abstractRecord($mode,'SalesOrders','',$hdata,$this->detail_array);
 				echo '<SCRIPT>$("#sales_header-ordered_edit legend").siblings().hide(); 
 					$("#sales_header-processing_edit legend").siblings().hide(); 
 					$("#sales_header-shipping_edit legend").siblings().hide();
@@ -410,15 +631,6 @@ class SalesOrders extends ERPBase {
 					$("#salesOrderStatus").change(function() {onChange_SalesOrderStatus();});
 			</SCRIPT>';
 			}
-			/*
-			if ($readonly) $cls = 'RecordView'; else $cls = 'RecordEdit';
-			if ($readonly) $inputtextro = ' readonly="readonly"'; else $inputtextro = '';
-			$html .= '<FIELDSET id="SalesOrdersRecord" class="'.$cls.'">';
-			$html .= '<LABEL for="SalesOrdersid">SalesOrders ID:</LABEL><B id="SalesOrdersid">'.$id.'</B>';
-			$html .= $this->statusSelect($this->sales_order_status,$readonly);
-			$html .= parent::displayRecordAudit($inputtextro,$this->rev_enabled,$this->rev_number,$this->huser_creation,$this->hdate_creation,$this->huser_modify,$this->hdate_modify);
-			$html .= '</FIELDSET>';
-			*/
 		} // if result
 		else $this->sales_order_number = null;
 		//echo $html;
@@ -626,9 +838,49 @@ class SalesOrders extends ERPBase {
 		}
 		$stmt->close();
 	} // insertHeader()
+	private function insertDetail() {
+		$this->resetDetail();
+		$this->sales_order_line = isset($_POST['sales_order_line'])?$_POST['sales_order_line']:1;
+		$this->parent_line = isset($_POST['parent_line'])?$_POST['parent_line']:null;
+		$this->dentity_id = isset($_POST['dentity_id'])?$_POST['dentity_id']:null;
+		$this->ddivision_id = isset($_POST['ddivision_id'])?$_POST['ddivision_id']:null;
+		$this->ddepartment_id = isset($_POST['ddepartment_id'])?$_POST['ddepartment_id']:null;
+		$this->customer_line = isset($_POST['customer_line'])?$_POST['customer_line']:null;
+		$this->edi_raw1 = isset($_POST['edi_raw1'])?$_POST['edi_raw1']:null;
+		$this->edi_raw2 = isset($_POST['edi_raw2'])?$_POST['edi_raw2']:null;
+		$this->item_id = isset($_POST['item_id'])?$_POST['item_id']:null;
+		$this->quantity_requested = isset($_POST['quantity_requested'])?$_POST['quantity_requested']:0;
+		$this->quantity_shipped = isset($_POST['quantity_shipped'])?$_POST['quantity_shipped']:0;
+		$this->quantity_returned = isset($_POST['quantity_returned'])?$_POST['quantity_returned']:0;
+		$this->quantity_backordered = isset($_POST['quantity_backordered'])?$_POST['quantity_backordered']:0;
+		$this->quantity_cancelled = isset($_POST['quantity_cancelled'])?$_POST['quantity_cancelled']:0;
+		$this->quantity_uom = isset($_POST['quantity_uom'])?$_POST['quantity_uom']:null;
+		$this->price = isset($_POST['price'])?$_POST['price']:null;
+		$this->discount_percent = isset($_POST['discount_percent'])?$_POST['discount_percent']:0.00;
+		$this->discount_amount = isset($_POST['discount_amount'])?$_POST['discount_amount']:0.00;
+		$this->dcredit_release_date = isset($_POST['dcredit_release_date'])?$_POST['dcredit_release_date']:null;
+		$this->dwave_date = isset($_POST['dwave_date'])?$_POST['dwave_date']:null;
+		$this->assigned_to = isset($_POST['assigned_to'])?$_POST['assigned_to']:null;
+		$this->dinventory_needed_by = isset($_POST['dinventory_needed_by'])?$_POST['dinventory_needed_by']:null;
+		$this->dinventory_location = isset($_POST['dinventory_location'])?$_POST['dinventory_location']:null;
+		$this->dinventory_pulled = isset($_POST['dinventory_pulled'])?$_POST['dinventory_pulled']:null;
+		$this->dinventory_pulled_by = isset($_POST['dinventory_pulled_by'])?$_POST['dinventory_pulled_by']:null;
+		$this->dinventory_packed = isset($_POST['dinventory_packed'])?$_POST['dinventory_packed']:null;
+		$this->dinventory_packed_by = isset($_POST['dinventory_packed_by'])?$_POST['dinventory_packed_by']:null;
+		$this->dinventory_loaded = isset($_POST['dinventory_loaded'])?$_POST['dinventory_loaded']:null;
+		$this->dinventory_loaded_by = isset($_POST['dinventory_loaded_by'])?$_POST['dinventory_loaded_by']:null;
+		$this->line_shipped_date = isset($_POST['line_shipped_date'])?$_POST['line_shipped_date']:null;
+		$this->line_invoiced_date = isset($_POST['line_invoiced_date'])?$_POST['line_invoiced_date']:null;
+		$this->line_cancelled_date = isset($_POST['line_cancelled_date'])?$_POST['line_cancelled_date']:null;
+		$this->dvisible = isset($_POST['dvisible'])?$_POST['dvisible']:null;
+		$this->drev_enabled = isset($_POST['drev_enabled'])?$_POST['drev_enabled']:null;
+		$this->drev_number = isset($_POST['drev_number'])?$_POST['drev_number']:null;
+		
+	}
 	private function updateHeader() {
 		$this->resetHeader();
 		$this->resetDetail();
+		$now = new DateTime();
 		$id = $_POST['h1'];
 		if ((!is_integer($id) && !ctype_digit($id)) || $id<1) {
 			echo 'fail|Invalid sales order number for updating';
@@ -760,7 +1012,9 @@ class SalesOrders extends ERPBase {
 		if (isset($_POST['o13']) && $_POST['o13']!=$this->shipping_from) $update['shipping_from'] = array('i',$_POST['o13']);
 		if (isset($_POST['o14']) && $_POST['o14']!=$this->shipping_to) $update['shipping_to'] = array('i',$_POST['o14']);
 		if (isset($_POST['i4']) && $_POST['i4']!=$this->remit_to) $update['remit_to'] = array('i',$_POST['i4']);
-
+		$update['last_update_date'] = array('s',$now->format('Y-m-d H:i:s'));
+		$update['last_update_by'] = array('i',$_SESSION['dbuserid']);
+		
 		// Create UPDATE String
 		
 		if (count($update)==0) {
