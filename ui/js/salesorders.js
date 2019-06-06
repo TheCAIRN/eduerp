@@ -115,7 +115,10 @@ function createNewSalesOrdersDetailLine() {
 	
 } // createNewDetailLine()
 function saveSalesOrdersDetail() {
-	var ordernum = $("#sales_order_number").val();
+	// In some browsers, the value of the control doesn't become persistent until after this function completes.
+	var ordernum = sales_orderkey;
+	if (ordernum==null || ordernum==0)
+		ordernum = $("#sales_order_number").val();
 	var row = $("#sales_detail_table tr:last").attr("id");
 	var linenum = $("#sales_order_line").val();
 	var parentline = $("#parent_line").val();
@@ -123,7 +126,7 @@ function saveSalesOrdersDetail() {
 	var division = $("#ddivision_id option:selected").val();
 	var department = $("#ddepartment_id option:selected").val();
 	var custline = $("#customer_line").val();
-	var itemid = $("#item_id").val();
+	var itemid = $("#item_id-product_id").val();
 	var qty1 = $("#quantity_requested").val();
 	var qty2 = $("#quantity_shipped").val();
 	var qty3 = $("#quantity_returned").val();
@@ -167,11 +170,11 @@ function saveSalesOrdersDetail() {
 		quantity_requested:qty1,quantity_shipped:qty2,quantity_returned:qty3,quantity_backordered:qty4,
 		quantity_cancelled:qty5,quantity_uom:uom,price:price,discount_percent:discpct,discount_amount:discamt,
 		dcredit_release_date:cred_date,dwave_date:wave_date,assigned_to:assigned_to,
-		dinventory_needed_by-date:inv_needed_date,dinventory_needed_by-time:inv_needed_time,
-		inventory_location:inv_location,dinventory_pulled_complete-date:inv_pulled_date,dinventory_pulled_complete-time:inv_pulled_time,
-		dinventory_pulled_by:inv_pulled_by,dinventory_packed_complete-date:inv_packed_date,
-		dinventory_packed_complete-time:inv_packed_time,dinventory_packed_by:inv_packed_by,
-		dinventory_loaded_complete-date:inv_loaded_date,dinventory_loaded_complete-time:inv_loaded_time,
+		dinventory_needed_bydate:inv_needed_date,dinventory_needed_bytime:inv_needed_time,
+		inventory_location:inv_location,dinventory_pulled_completedate:inv_pulled_date,dinventory_pulled_completetime:inv_pulled_time,
+		dinventory_pulled_by:inv_pulled_by,dinventory_packed_completedate:inv_packed_date,
+		dinventory_packed_completetime:inv_packed_time,dinventory_packed_by:inv_packed_by,
+		dinventory_loaded_completedate:inv_loaded_date,dinventory_loaded_completetime:inv_loaded_time,
 		dinventory_loaded_by:inv_loaded_by,line_shipped_date:line_shipped,line_invoiced_date:line_invoiced,
 		line_cancelled_date:line_cancelled,dvisible:visible,drev_enabled:rev_enabled,drev_number:rev_number,
 		},function(data) {

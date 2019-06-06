@@ -74,6 +74,8 @@ class SalesOrders extends ERPBase {
 	private $price;
 	private $discount_percent;
 	private $discount_amount;
+	private $retail_high;
+	private $retail_low;
 	private $dcredit_release_date;
 	private $dwave_date;
 	private $assigned_to;
@@ -307,6 +309,8 @@ class SalesOrders extends ERPBase {
 		$this->price = null;
 		$this->discount_percent = null;
 		$this->discount_amount = null;
+		$this->retail_high = null;
+		$this->retail_low = null;
 		$this->dcredit_release_date = null;
 		$this->dwave_date = null;
 		$this->assigned_to = null;
@@ -422,7 +426,7 @@ class SalesOrders extends ERPBase {
 			'inventory_packed_by'=>$this->dinventory_packed_by,
 			'inventory_loaded'=>$this->dinventory_loaded,
 			'inventory_loaded_by'=>$this->dinventory_loaded_by,
-			'line_shipped_date'=>$this-line_shipped_date,
+			'line_shipped_date'=>$this->line_shipped_date,
 			'line_invoiced_date'=>$this->line_invoiced_date,
 			'line_cancelled_date'=>$this->line_cancelled_date,
 			'visible'=>$this->dvisible,
@@ -840,42 +844,137 @@ class SalesOrders extends ERPBase {
 	} // insertHeader()
 	private function insertDetail() {
 		$this->resetDetail();
-		$this->sales_order_line = isset($_POST['sales_order_line'])?$_POST['sales_order_line']:1;
-		$this->parent_line = isset($_POST['parent_line'])?$_POST['parent_line']:null;
-		$this->dentity_id = isset($_POST['dentity_id'])?$_POST['dentity_id']:null;
-		$this->ddivision_id = isset($_POST['ddivision_id'])?$_POST['ddivision_id']:null;
-		$this->ddepartment_id = isset($_POST['ddepartment_id'])?$_POST['ddepartment_id']:null;
-		$this->customer_line = isset($_POST['customer_line'])?$_POST['customer_line']:null;
-		$this->edi_raw1 = isset($_POST['edi_raw1'])?$_POST['edi_raw1']:null;
-		$this->edi_raw2 = isset($_POST['edi_raw2'])?$_POST['edi_raw2']:null;
-		$this->item_id = isset($_POST['item_id'])?$_POST['item_id']:null;
-		$this->quantity_requested = isset($_POST['quantity_requested'])?$_POST['quantity_requested']:0;
-		$this->quantity_shipped = isset($_POST['quantity_shipped'])?$_POST['quantity_shipped']:0;
-		$this->quantity_returned = isset($_POST['quantity_returned'])?$_POST['quantity_returned']:0;
-		$this->quantity_backordered = isset($_POST['quantity_backordered'])?$_POST['quantity_backordered']:0;
-		$this->quantity_cancelled = isset($_POST['quantity_cancelled'])?$_POST['quantity_cancelled']:0;
-		$this->quantity_uom = isset($_POST['quantity_uom'])?$_POST['quantity_uom']:null;
-		$this->price = isset($_POST['price'])?$_POST['price']:null;
-		$this->discount_percent = isset($_POST['discount_percent'])?$_POST['discount_percent']:0.00;
-		$this->discount_amount = isset($_POST['discount_amount'])?$_POST['discount_amount']:0.00;
-		$this->dcredit_release_date = isset($_POST['dcredit_release_date'])?$_POST['dcredit_release_date']:null;
-		$this->dwave_date = isset($_POST['dwave_date'])?$_POST['dwave_date']:null;
-		$this->assigned_to = isset($_POST['assigned_to'])?$_POST['assigned_to']:null;
-		$this->dinventory_needed_by = isset($_POST['dinventory_needed_by'])?$_POST['dinventory_needed_by']:null;
-		$this->dinventory_location = isset($_POST['dinventory_location'])?$_POST['dinventory_location']:null;
-		$this->dinventory_pulled = isset($_POST['dinventory_pulled'])?$_POST['dinventory_pulled']:null;
-		$this->dinventory_pulled_by = isset($_POST['dinventory_pulled_by'])?$_POST['dinventory_pulled_by']:null;
-		$this->dinventory_packed = isset($_POST['dinventory_packed'])?$_POST['dinventory_packed']:null;
-		$this->dinventory_packed_by = isset($_POST['dinventory_packed_by'])?$_POST['dinventory_packed_by']:null;
-		$this->dinventory_loaded = isset($_POST['dinventory_loaded'])?$_POST['dinventory_loaded']:null;
-		$this->dinventory_loaded_by = isset($_POST['dinventory_loaded_by'])?$_POST['dinventory_loaded_by']:null;
-		$this->line_shipped_date = isset($_POST['line_shipped_date'])?$_POST['line_shipped_date']:null;
-		$this->line_invoiced_date = isset($_POST['line_invoiced_date'])?$_POST['line_invoiced_date']:null;
-		$this->line_cancelled_date = isset($_POST['line_cancelled_date'])?$_POST['line_cancelled_date']:null;
-		$this->dvisible = isset($_POST['dvisible'])?$_POST['dvisible']:null;
-		$this->drev_enabled = isset($_POST['drev_enabled'])?$_POST['drev_enabled']:null;
-		$this->drev_number = isset($_POST['drev_number'])?$_POST['drev_number']:null;
-		
+		if (!isset($_POST['sales_order_number']) /*|| $_POST['sales_order_number']!=$this->sales_order_number*/) {
+			$this->mb->addError("Details cannot be inserted when the sales order number is zero, or the header and detail don't match.");
+			echo 'fail|Header-detail mismatch {'.$_POST['sales_order_number'].'}';
+			return;
+		}
+		$this->sales_order_number = $_POST['sales_order_number'];
+		$this->sales_order_line = !empty($_POST['sales_order_line'])?$_POST['sales_order_line']:0;
+		if (empty($this->sales_order_line)) {
+			$sq = 'SELECT MAX(sales_order_line) AS linenum FROM sales_detail WHERE sales_order_number=?;';
+			$sst = $this->dbconn->prepare($sq);
+			$sst->bind_param('i',$son);
+			$son = $this->sales_order_number;
+			$sres = $sst->execute();
+			if ($sres!==false) {
+				$sst->store_result();
+				if ($sst->num_rows>0) {
+					$sst->bind_result($this->sales_order_line);
+					$sst->fetch();
+					if (empty($this->sales_order_line)) $this->sales_order_line = 1;
+				} else $this->sales_order_line = 1;
+			} else $this->sales_order_line=1;
+		}
+		$this->parent_line = !empty($_POST['parent_line'])?$_POST['parent_line']:null;
+		$this->dentity_id = !empty($_POST['dentity_id'])?$_POST['dentity_id']:null;
+		$this->ddivision_id = !empty($_POST['ddivision_id'])?$_POST['ddivision_id']:null;
+		$this->ddepartment_id = !empty($_POST['ddepartment_id'])?$_POST['ddepartment_id']:null;
+		$this->customer_line = !empty($_POST['customer_line'])?$_POST['customer_line']:null;
+		$this->edi_raw1 = !empty($_POST['edi_raw1'])?$_POST['edi_raw1']:null;
+		$this->edi_raw2 = !empty($_POST['edi_raw2'])?$_POST['edi_raw2']:null;
+		$this->item_id = !empty($_POST['item_id'])?$_POST['item_id']:null;
+		$this->quantity_requested = !empty($_POST['quantity_requested'])?$_POST['quantity_requested']:0;
+		$this->quantity_shipped = !empty($_POST['quantity_shipped'])?$_POST['quantity_shipped']:0;
+		$this->quantity_returned = !empty($_POST['quantity_returned'])?$_POST['quantity_returned']:0;
+		$this->quantity_backordered = !empty($_POST['quantity_backordered'])?$_POST['quantity_backordered']:0;
+		$this->quantity_cancelled = !empty($_POST['quantity_cancelled'])?$_POST['quantity_cancelled']:0;
+		$this->quantity_uom = !empty($_POST['quantity_uom'])?$_POST['quantity_uom']:null;
+		$this->price = !empty($_POST['price'])?$_POST['price']:null;
+		$this->discount_percent = !empty($_POST['discount_percent'])?$_POST['discount_percent']:0.00;
+		$this->discount_amount = !empty($_POST['discount_amount'])?$_POST['discount_amount']:0.00;
+		$this->retail_high = !empty($_POST['retail_high'])?$_POST['retail_high']:null;
+		$this->retail_low = !empty($_POST['retail_low'])?$_POST['retail_low']:null;
+		$this->dcredit_release_date = !empty($_POST['dcredit_release_date'])?$_POST['dcredit_release_date']:null;
+		$this->dwave_date = !empty($_POST['dwave_date'])?$_POST['dwave_date']:null;
+		$this->assigned_to = !empty($_POST['assigned_to'])?$_POST['assigned_to']:null;
+		$this->dinventory_needed_by = (!empty($_POST['dinventory_needed_bydate']) && !empty($_POST['dinventory_needed_bytime']))?(new DateTime($_POST['dinventory_needed_bydate'].' '.$_POST['dinventory_needed_bytime'])):null;
+		$this->dinventory_location = !empty($_POST['dinventory_location'])?$_POST['dinventory_location']:null;
+		$this->dinventory_pulled = (!empty($_POST['dinventory_pulleddate']) && !empty($_POST['dinventory_pulledtime']))?(new DateTime($_POST['dinventory_pulleddate'].' '.$_POST['dinventory_pulledtime'])):null;
+		$this->dinventory_pulled_by = !empty($_POST['dinventory_pulled_by'])?$_POST['dinventory_pulled_by']:null;
+		$this->dinventory_packed = (!empty($_POST['dinventory_packeddate']) && !empty($_POST['dinventory_packedtime']))?(new DateTime($_POST['dinventory_packeddate'].' '.$_POST['dinventory_packedtime'])):null;
+		$this->dinventory_packed_by = !empty($_POST['dinventory_packed_by'])?$_POST['dinventory_packed_by']:null;
+		$this->dinventory_loaded = (!empty($_POST['dinventory_loadeddate']) && !empty($_POST['dinventory_loadedtime']))?(new DateTime($_POST['dinventory_loadeddate'].' '.$_POST['dinventory_loadedtime'])):null;
+		$this->dinventory_loaded_by = !empty($_POST['dinventory_loaded_by'])?$_POST['dinventory_loaded_by']:null;
+		$this->line_shipped_date = !empty($_POST['line_shipped_date'])?$_POST['line_shipped_date']:null;
+		$this->line_invoiced_date = !empty($_POST['line_invoiced_date'])?$_POST['line_invoiced_date']:null;
+		$this->line_cancelled_date = !empty($_POST['line_cancelled_date'])?$_POST['line_cancelled_date']:null;
+		$this->dvisible = !empty($_POST['dvisible'])?$_POST['dvisible']:null;
+		$this->drev_enabled = !empty($_POST['drev_enabled'])?$_POST['drev_enabled']:null;
+		$this->drev_number = !empty($_POST['drev_number'])?$_POST['drev_number']:null;
+//var_dump($this->arrayifyDetail());
+		$q = 'INSERT INTO sales_detail ('.$this->column_list_detail.',created_by,creation_date,last_update_by,last_update_date) VALUES 
+			(?,?,?,?,?,?,?,?,?,?,
+			?,?,?,?,?,?,?,?,?,?,?,
+			?,?,?,?,?,?,?,?,?,?,?,?,?,?,
+			?,?,?,?,NOW(),?,NOW());';
+		$stmt = $this->dbconn->prepare($q);
+		$stmt->bind_param('iiiiiisssi'.'dddddsddddd'.'ssisisisisisss'.'ssiii',
+			$p1,$p2,$p3,$p4,$p5,$p6,$p7,$p8,$p9,$p10,
+			$p11,$p12,$p13,$p14,$p15,$p16,$p17,$p18,$p19,$p20,$p21,
+			$p22,$p23,$p24,$p25,$p26,$p27,$p28,$p29,$p30,$p31,$p32,$p33,$p34,$p35,
+			$p36,$p37,$p38,$p39,$p41);
+		if ($this->sales_order_number==0) {
+			$this->mb->addError("Details cannot be inserted when the sales order number is zero.");
+			echo 'fail|Sales Order Number is zero.';
+			$stmt->close();
+			return;
+		}
+		$p1 = $this->sales_order_number;
+		$p2 = $this->sales_order_line;
+		$p3 = $this->parent_line;
+		$p4 = $this->dentity_id;
+		$p5 = $this->ddivision_id;
+		$p6 = $this->ddepartment_id;
+		$p7 = $this->customer_line;
+		$p8 = $this->edi_raw1;
+		$p9 = $this->edi_raw2;
+		$p10 = $this->item_id;
+		$p11 = $this->quantity_requested;
+		$p12 = $this->quantity_shipped;
+		$p13 = $this->quantity_returned;
+		$p14 = $this->quantity_backordered;
+		$p15 = $this->quantity_cancelled;
+		$p16 = $this->quantity_uom;
+		$p17 = $this->price;
+		$p18 = $this->discount_percent;
+		$p19 = $this->discount_amount;
+		$p20 = $this->retail_high;
+		$p21 = $this->retail_low;
+		$d22 = is_null($this->dcredit_release_date)?null:new DateTime($this->dcredit_release_date);
+		$p22 = is_null($d22)?null:$d22->format('Y-m-d');
+		$d23 = is_null($this->dwave_date)?null:new DateTime($this->dwave_date);
+		$p23 = is_null($d23)?null:$d23->format('Y-m-d');
+		$p24 = $this->assigned_to;
+		$p25 = is_null($this->dinventory_needed_by)?null:$this->dinventory_needed_by->format('Y-m-d H:i:s');
+		$p26 = $this->dinventory_location;
+		$p27 = is_null($this->dinventory_pulled)?null:$this->dinventory_pulled->format('Y-m-d H:i:s');
+		$p28 = $this->dinventory_pulled_by;
+		$p29 = is_null($this->dinventory_packed)?null:$this->dinventory_packed->format('Y-m-d H:i:s');
+		$p30 = $this->dinventory_packed_by;
+		$p31 = is_null($this->dinventory_loaded)?null:$this->dinventory_loaded->format('Y-m-d H:i:s');
+		$p32 = $this->dinventory_loaded_by;
+		$d33 = is_null($this->line_shipped_date)?null:new DateTime($this->line_shipped_date);
+		$p33 = is_null($d33)?null:$d33->format('Y-m-d');
+		$d34 = is_null($this->line_invoiced_date)?null:new DateTime($this->line_invoiced_date);
+		$p34 = is_null($d34)?null:$d34->format('Y-m-d');
+		$d35 = is_null($this->line_cancelled_date)?null:new DateTime($this->line_cancelled_date);
+		$p35 = is_null($d35)?null:$d35->format('Y-m-d');
+		$p36 = ($this->dvisible=='true')?'Y':'N';
+		$p37 = ($this->drev_enabled=='true')?'Y':'N';
+		if ($this->drev_number < 1) $this->drev_number = 1;
+		$p38 = $this->drev_number;
+		$p39 = $_SESSION['dbuserid'];
+		$p41 = $_SESSION['dbuserid'];
+		$result = $stmt->execute();
+		if ($result!==false) {
+			echo 'inserted|'.$this->sales_order_line;
+		} else {
+			echo 'fail|'.$this->dbconn->error;
+			$this->mb->addError($this->dbconn->error);
+		}
+		$stmt->close();
+
 	}
 	private function updateHeader() {
 		$this->resetHeader();
