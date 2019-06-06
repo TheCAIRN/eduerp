@@ -68,7 +68,7 @@ var currentScreen = 0;
 <LI>Add functionality to Entities: <UL><LI>production capacity</LI><LI>create new entity</LI><LI>Modify entity</LI></UL></LI>
 <LI>&#x2714; Lookup customers</LI>
 <LI>&#x2714; Lookup / add addresses</LI>
-<LI>Create sales orders</LI>
+<LI>&#x2714; Create sales orders</LI>
 <LI>Update sales orders for shipping</LI>
 <LI>Create shipment</LI>
 <LI>Create invoice</LI>

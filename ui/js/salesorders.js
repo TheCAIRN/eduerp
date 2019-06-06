@@ -126,7 +126,7 @@ function saveSalesOrdersDetail() {
 	var division = $("#ddivision_id option:selected").val();
 	var department = $("#ddepartment_id option:selected").val();
 	var custline = $("#customer_line").val();
-	var itemid = $("#item_id-product_id").val();
+	var itemid = $("#item_id-product_id").text();
 	var qty1 = $("#quantity_requested").val();
 	var qty2 = $("#quantity_shipped").val();
 	var qty3 = $("#quantity_returned").val();
@@ -159,7 +159,10 @@ function saveSalesOrdersDetail() {
 	var visible = $("#dvisible").is("checked");
 	var rev_enabled = $("#drev_enabled").is("checked");
 	var rev_number = $("#drev_number").val();
-	
+	if (itemid=="") {
+		$("#messagebar").html('<DIV class="errorMessage">You must select an item to save this order. Your data has <B>NOT</B> been saved.</DIV>');
+		return;
+	}
 	// Submit to server
 	var mode;
 	if (linenum==0) mode="insertRecord";
