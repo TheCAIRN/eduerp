@@ -75,14 +75,17 @@ class ERPBase {
 		$tablecolumn = 0;
 		$tableheader = "";
 		$tableentry = "";
+		$fieldsetlevel = 0;
 		if ($view=='view') $cls = 'RecordView'; else $cls = 'RecordEdit';
 		foreach ($this->entryFields as $field) {
 			if (count($field)>=4) {
 				if ($field[3]=='fieldset') {
 					$html .= '<FIELDSET class="'.$cls.'" id="'.$field[0].$field[1].'_edit">';
 					$html .= '<LEGEND onClick="$(this).siblings().toggle();">'.$field[2].'</LEGEND>';
+					$fieldsetlevel++;
 				} elseif ($field[3]=='endfieldset') {
 					$html .= '</FIELDSET>';
+					$fieldsetlevel--;
 				} elseif ($field[3]=='embedded') {
 					if (!$intable) {
 						$html .= '<FIELDSET class="RecordEdit embedded" id="'.$field[0].'_'.$field[1].'_edit">';
@@ -120,6 +123,7 @@ class ERPBase {
 							while ($option = $result->fetch_row()) {
 								$selected='';
 								if (is_array($hdata) && strpos($field[0],'_header')!==false && isset($hdata[$field[1]]) && $hdata[$field[1]]==$option[0]) $selected=' selected="selected"';
+								if ($view=='new' && $selected=='' && count($field)>=7 && $field[6]==$option[0]) $selected=' selected="selected"';
 								if ($view!='view' || $selected!='') $html .= '<OPTION value="'.$option[0].'"'.$selected.'>'.$option[1].'</OPTION>';
 							}
 							$html .= '</SELECT>';
@@ -220,6 +224,10 @@ class ERPBase {
 					if ($view=='view') $readonly = ' disabled="disabled"';
 					$checked = '';
 					if (is_array($hdata) && strpos($field[0],'_header')!==false && isset($hdata[$field[1]]) && $hdata[$field[1]]=='Y') $checked=' checked="checked"';
+					if ($view=='new' && count($field)>=6) {
+						if ($field[5]) $checked=' checked="checked"';
+						else $checked='';
+					}
 					if (!$intable) $html .= '<INPUT type="checkbox" id="'.$prefix.$field[1].'" indeterminate="true"'.$readonly.$checked.' />';
 					else {
 						$tableentry .= '<TD id="row'.$tablerow.'-'.$prefix.$field[1].'"><INPUT type="checkbox" id="'.$prefix.$field[1].'" indeterminate="true" /></TD>';

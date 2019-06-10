@@ -31,3 +31,11 @@ CREATE TABLE IF NOT EXISTS sec_users (
 
 INSERT INTO sec_groups VALUES (1,'Global Admins');
 INSERT INTO sec_users VALUES (1,1,1,'','','','Y','','A',NULL,NULL,1,NOW(),1,NOW());
+
+CREATE VIEW v_sec_users AS
+SELECT sec.user_id,sec.human_id,sec.group_id,gp.group_name,h.title,h.given_name,h.middle,h.middle_2,h.family_name,h.suffix,h.alias,h.degrees,h.sex,CONCAT(h.title,' ',h.given_name,' ',h.middle,' ',h.family_name,' ',h.suffix) AS human_name
+,(SELECT CONCAT(email_user,'@',email_domain) AS email_address FROM cx_emails JOIN cx_email_associations ON cx_emails.email_id=cx_email_associations.email_id WHERE cx_email_associations.human_id=sec.human_id ORDER BY priority LIMIT 1)
+,(SELECT phone_number FROM cx_phones JOIN cx_phone_associations ON cx_phones.phone_id=cx_phone_associations.phone_id WHERE cx_phone_associations.human_id=sec.human_id ORDER BY priority LIMIT 1)
+FROM sec_users sec
+LEFT OUTER JOIN sec_groups gp ON sec.group_id=gp.group_id
+INNER JOIN cx_humans h ON sec.human_id=h.human_id

@@ -133,9 +133,9 @@ class SalesOrders extends ERPBase {
 		$this->entryFields[] = array('sales_header','division_id','Division','dropdown','ent_division_master',array('division_id','division_name'));
 		$this->entryFields[] = array('sales_header','department_id','Department','dropdown','ent_department_master',array('department_id','department_name'));
 		$this->entryFields[] = array('sales_header','inventory_entity','Inventory Entity','dropdown','ent_entities',array('entity_id','entity_name'),'INV');
-		$this->entryFields[] = array('sales_header','currency_code','Currency','dropdown','aa_currency',array('code','code'));
-		$this->entryFields[] = array('sales_header','visible','Visible','checkbox');
-		$this->entryFields[] = array('sales_header','rev_enabled','Enable Revision Tracking','checkbox','rev_number');
+		$this->entryFields[] = array('sales_header','currency_code','Currency','dropdown','aa_currency',array('code','code'),'USD');
+		$this->entryFields[] = array('sales_header','visible','Visible','checkbox',null,true);
+		$this->entryFields[] = array('sales_header','rev_enabled','Enable Revision Tracking','checkbox','rev_number',false);
 		$this->entryFields[] = array('sales_header','rev_number','Revision number','integer');
 		$this->entryFields[] = array('sales_header','','','endfieldset');
 		$this->entryFields[] = array('sales_header','-quote','Pre-sales','fieldset');
@@ -228,8 +228,8 @@ class SalesOrders extends ERPBase {
 		$this->entryFields[] = array('sales_detail','line_shipped_date','Line shipped','date');
 		$this->entryFields[] = array('sales_detail','line_invoiced_date','Line invoiced','date');
 		$this->entryFields[] = array('sales_detail','line_cancelled_date','Line cancelled','date');
-		$this->entryFields[] = array('sales_detail','dvisible','Visible','checkbox');
-		$this->entryFields[] = array('sales_detail','drev_enabled','Enable Revision Tracking','checkbox','rev_number');
+		$this->entryFields[] = array('sales_detail','dvisible','Visible','checkbox',null,true);
+		$this->entryFields[] = array('sales_detail','drev_enabled','Enable Revision Tracking','checkbox','rev_number',false);
 		$this->entryFields[] = array('sales_detail','drev_number','Revision number','integer');
 		$this->entryFields[] = array('sales_detail','','Add Row','newlinebutton','newSalesOrdersDetailRow();');
 		$this->entryFields[] = array('sales_detail','','','endfieldtable');
@@ -657,6 +657,13 @@ class SalesOrders extends ERPBase {
 			$("#sales_header-shipping_edit legend").siblings().hide();
 			$("#sales_header-invoicing_edit legend").siblings().hide();
 			$("#salesOrderStatus").change(function() {onChange_SalesOrderStatus();});
+			$("#entity_id").change(function() {onChange_SalesOrdersHeaderEntity();});
+			$("#department_id").change(function() {onChange_SalesOrdersHeaderDepartment();});
+			$("#division_id").change(function() {onChange_SalesOrdersHeaderDivision();});
+			$("#credit_release_date-date").change(function() {onChange_SalesOrdersHeaderCreditReleaseDate();});
+			$("#wave_date-date").change(function() {onChange_SalesOrdersHeaderWaveDate();});
+			$("#inventory_needed_by-date").change(function() {onChange_SalesOrdersHeaderInventoryNeededBy();});
+			$("#inventory_needed_by-time").change(function() {onChange_SalesOrdersHeaderInventoryNeededBy();});
 			</SCRIPT>';
 		$_SESSION['currentScreen'] = 3044;
 	} // newRecord()
@@ -852,7 +859,7 @@ class SalesOrders extends ERPBase {
 		$this->sales_order_number = $_POST['sales_order_number'];
 		$this->sales_order_line = !empty($_POST['sales_order_line'])?$_POST['sales_order_line']:0;
 		if (empty($this->sales_order_line)) {
-			$sq = 'SELECT MAX(sales_order_line) AS linenum FROM sales_detail WHERE sales_order_number=?;';
+			$sq = 'SELECT MAX(sales_order_line)+1 AS linenum FROM sales_detail WHERE sales_order_number=?;';
 			$sst = $this->dbconn->prepare($sq);
 			$sst->bind_param('i',$son);
 			$son = $this->sales_order_number;
