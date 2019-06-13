@@ -107,11 +107,32 @@ function saveRecord(whichModule) {
 	if (whichModule=="Purchasing") {
 		savePurchasingHeader();
 	}
+	if (whichModule=="Addresses") {
+		saveAddressesHeader('');
+	}
 	if (whichModule=="BOM") {
 		saveBOMHeader();
 	}
+	if (whichModule=="EntityResource") {
+		saveEntityResourceHeader();
+	}
+	if (whichModule=="CustomerTypes") {
+		saveCustomerTypesHeader();
+	}
 	if (whichModule=="Customer") {
 		saveCustomerHeader();
+	}
+	if (whichModule=="CustomerDC") {
+		saveCustomerDCHeader();
+	}
+	if (whichModule=="CustomerStoreTypes") {
+		saveCustomerStoreTypesHeader();
+	}
+	if (whichModule=="CustomerStores") {
+		saveCustomerStoresHeader();
+	}
+	if (whichModule=="Consumers") {
+		saveConsumersHeader();
 	}
 	if (whichModule=="SalesOrders") {
 		saveSalesOrdersHeader();

@@ -270,7 +270,7 @@ class Addresses extends ERPBase {
 		if (ctype_digit($id)) return true;
 		return false;
 	} // isIDValid()
-	public function display($id) {
+	public function display($id,$mode='view') {
 		if (!$this->isIDValid($id)) return;
 		$readonly = true;
 		$html = '';
@@ -280,12 +280,13 @@ class Addresses extends ERPBase {
 		$p1 = $id;
 		$result = $stmt->execute();
 		if ($result!==false) {
-			$stmt->store_result();
 			$stmt->bind_result($this->id,$this->building_number,$this->street,$this->attention,$this->apartment,$this->postal_box,$this->line2,$this->line3,
 				$this->city,$this->spc_abbrev,$this->postal_code,$this->country,$this->county,$this->maidenhead,$this->latitude,$this->longitude,$this->osm_id,
 				$this->last_validated);
 			$stmt->fetch();
+			$stmt->store_result();
 			$this->last_validated = new DateTime($this->last_validated);
+/*
 			if ($readonly) $cls = 'RecordView'; else $cls = 'RecordEdit';
 			if ($readonly) $inputtextro = ' readonly="readonly"'; else $inputtextro = '';
 			$html .= '<FIELDSET id="AddressRecord" class="'.$cls.'">';
@@ -306,9 +307,16 @@ class Addresses extends ERPBase {
 			$html .= '</FIELDSET>';			
 			// TODO: Display map object
 			// TODO: List all table records where address is applied.
-		}
+*/		}
 		$stmt->close();			
-		echo $html;
+		if ($mode!='update') {
+			$hdata = $this->arrayify();
+			echo '<FIELDSET id="AddressRecord" class="Record'.ucwords($mode).'">';
+			echo parent::abstractRecord($mode,'Addresses','',$hdata,null);
+			echo '</FIELDSET>';
+			
+		}
+		//echo $html;
 		$_SESSION['currentScreen'] = 2012;
 		if (!isset($_SESSION['searchResults']) && !isset($_SESSION['searchResults']['Addresses']))
 			$_SESSION['idarray'] = array(0,0,$id,0,0);
@@ -328,6 +336,10 @@ class Addresses extends ERPBase {
 		echo '</FIELDSET';
 		$_SESSION['currentScreen'] = 3012;
 	} // newRecord()
+	public function editRecord($id) {
+		$this->display($id,'edit');
+		$_SESSION['currentScreen'] = 4012;
+	}
 	private function insertHeader($embed=false) {
 		$this->resetHeader();
 		if (!isset($_POST['data'])) {
@@ -380,7 +392,7 @@ class Addresses extends ERPBase {
 			}
 		} else {
 			if ($result!==false) {
-				echo 'inserted|'.$this->dbconn->insert_id.($return_date?'|'.$p2:'');
+				echo 'inserted|'.$this->dbconn->insert_id;
 			} else {
 				echo 'fail|'.$this->dbconn->error;
 				$this->mb->addError($this->dbconn->error);
@@ -389,7 +401,80 @@ class Addresses extends ERPBase {
 		$stmt->close();		
 	} // insertHeader()
 	private function updateHeader($embed=false) {
-	
+		$this->resetHeader();
+		$now = new DateTime();
+		$data=$_POST['data'];
+		$id = $data['id'];
+		if ((!is_integer($id) && !ctype_digit($id)) || $id<1) {
+			echo 'fail|Invalid address id for updating';
+			return;
+		}
+		$this->id = $id;
+		$this->display($id,'update'); // Display already has the logic for loading the record.  TODO: Refactor into separate function.
+		$update = array();
+		if (isset($data['building_number']) && $data['building_number']!=$this->building_number) $update['building_number'] = array('s',$data['building_number']);
+		if (isset($data['street']) && $data['street']!=$this->street) $update['street'] = array('s',$data['street']);
+		if (isset($data['attention']) && $data['attention']!=$this->attention) $update['attention'] = array('s',$data['attention']);
+		if (isset($data['apartment']) && $data['apartment']!=$this->apartment) $update['apartment'] = array('s',$data['apartment']);
+		if (isset($data['postal_box']) && $data['postal_box']!=$this->postal_box) $update['postal_box'] = array('s',$data['postal_box']);
+		if (isset($data['line2']) && $data['line2']!=$this->line2) $update['line2'] = array('s',$data['line2']);
+		if (isset($data['line3']) && $data['line3']!=$this->line3) $update['line3'] = array('s',$data['line3']);
+		if (isset($data['city']) && $data['city']!=$this->city) $update['city'] = array('s',$data['city']);
+		if (isset($data['spc_abbrev']) && $data['spc_abbrev']!=$this->spc_abbrev) $update['spc_abbrev'] = array('s',$data['spc_abbrev']);
+		if (isset($data['postal_code']) && $data['postal_code']!=$this->postal_code) $update['postal_code'] = array('s',$data['postal_code']);
+		if (isset($data['country']) && $data['country']!=$this->country) $update['country'] = array('s',$data['country']);
+		if (isset($data['county']) && $data['county']!=$this->county) $update['county'] = array('s',$data['county']);
+		if (isset($data['maidenhead']) && $data['maidenhead']!=$this->maidenhead) $update['maidenhead'] = array('s',$data['maidenhead']);
+		if (isset($data['latitude']) && (float)$data['latitude']!=$this->latitude) $update['latitude'] = array('d',(float)$data['latitude']);
+		if (isset($data['longitude']) && (float)$data['longitude']!=$this->longitude) $update['longitude'] = array('d',(float)$data['longitude']);
+		if (isset($data['osm_id']) && (int)$data['osm_id']!=$this->osm_id) $update['osm_id'] = array('i',(int)$data['osm_id']);
+		// Create UPDATE String
+		
+		if (count($update)==0) {
+			echo 'fail|Nothing to update';
+			return;
+		}
+		$q = 'UPDATE cx_addresses SET ';
+		$ctr = 0;
+		$bp_types = '';
+		$bp_values = array_fill(0,count($update),null);
+		foreach ($update as $field=>$data) {
+			if ($ctr > 0) $q .= ',';
+			$q .= "$field=?";
+			$bp_types .= $data[0];
+			$bp_values[$ctr] = $data[1];
+			$ctr++;
+		}
+		$q .= ' WHERE address_id=?';
+		$ctr++;
+		$bp_types .= 'i';
+		$bp_values[$ctr] = $this->id;
+		$stmt = $this->dbconn->prepare($q);
+		if ($stmt===false) {
+			echo 'fail|'.$this->dbconn->error;
+			return;
+		}
+		/* The internet has a lot of material about different ways to pass a variable number of arguments to bind_param.
+		   I feel that using Reflection is the best tool for the job.
+		   Reference: https://www.php.net/manual/en/mysqli-stmt.bind-param.php#107154
+		*/
+		$bp_method = new ReflectionMethod($stmt,'bind_param');
+		$bp_refs = array();
+		foreach ($bp_values as $key=>$value) {
+			$bp_refs[$key] = &$bp_values[$key];
+		}
+		array_unshift($bp_values,$bp_types);
+		$bp_method->invokeArgs($stmt,$bp_values);
+		$stmt->execute();
+		if ($stmt->affected_rows > 0) {
+			echo 'updated|'.$id;
+		} else {
+			if ($this->dbconn->error) {
+				echo 'fail|'.$this->dbconn->error;
+				$this->mb->addError($this->dbconn->error);
+			} else echo 'fail|No rows updated';
+		}
+		$stmt->close();		
 	} // updateHeader()
 	public function insertRecord() {
 		if (isset($_POST['level']) && $_POST['level']=='header') $this->insertHeader(false);

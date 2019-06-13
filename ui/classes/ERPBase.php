@@ -122,7 +122,7 @@ class ERPBase {
 							$html .= '<SELECT id="'.$prefix.$field[1].'"><OPTION value="">&nbsp;</OPTION>';
 							while ($option = $result->fetch_row()) {
 								$selected='';
-								if (is_array($hdata) && strpos($field[0],'_header')!==false && isset($hdata[$field[1]]) && $hdata[$field[1]]==$option[0]) $selected=' selected="selected"';
+								if (is_array($hdata) && strpos($field[0],'_detail')===false && isset($hdata[$field[1]]) && $hdata[$field[1]]==$option[0]) $selected=' selected="selected"';
 								if ($view=='new' && $selected=='' && count($field)>=7 && $field[6]==$option[0]) $selected=' selected="selected"';
 								if ($view!='view' || $selected!='') $html .= '<OPTION value="'.$option[0].'"'.$selected.'>'.$option[1].'</OPTION>';
 							}
@@ -145,7 +145,7 @@ class ERPBase {
 						$html .= '<SELECT id="'.$prefix.$field[1].'"><OPTION value="">&nbsp;</OPTION>';
 						foreach ($field[4] as $option) {
 							$selected='';
-							if (is_array($hdata) && strpos($field[0],'_header')!==false && isset($hdata[$field[1]]) && $hdata[$field[1]]==$option[0]) $selected=' selected="selected"';
+							if (is_array($hdata) && strpos($field[0],'_detail')===false && isset($hdata[$field[1]]) && $hdata[$field[1]]==$option[0]) $selected=' selected="selected"';
 							$html .= '<OPTION value="'.$option[0].'"'.$selected.'>'.$option[1].'</OPTION>';
 						}
 						$html .= '</SELECT></DIV>';
@@ -176,7 +176,7 @@ class ERPBase {
 					$readonly = '';
 					if ($view=='view') $readonly = ' readonly="readonly"';
 					$val = '';
-					if (is_array($hdata) && strpos($field[0],'_header')!==false && isset($hdata[$field[1]])) $val=' value="'.$hdata[$field[1]].'"';
+					if (is_array($hdata) && strpos($field[0],'_detail')===false && isset($hdata[$field[1]])) $val=' value="'.$hdata[$field[1]].'"';
 					if (!$intable) $html .= '<INPUT type="text" id="'.$prefix.$field[1].'"'.$readonly.$val.' />';
 					else {
 						$tableentry .= '<TD id="row'.$tablerow.'-'.$prefix.$field[1].'"><INPUT type="text" id="'.$prefix.$field[1].'" /></TD>';
@@ -184,7 +184,7 @@ class ERPBase {
 				}
 				if ($field[3]=='integerid') {
 					$val = '';
-					if (is_array($hdata) && strpos($field[0],'_header')!==false && isset($hdata[$field[1]])) $val=' value="'.$hdata[$field[1]].'"';
+					if (is_array($hdata) && strpos($field[0],'_detail')===false && isset($hdata[$field[1]])) $val=' value="'.$hdata[$field[1]].'"';
 					if (!$intable && ($view!='view' || $val=='')) $html .= '<INPUT type="number" id="'.$prefix.$field[1].'" min="0" step="1" readonly="readonly"'.$val.' />';
 					elseif (!$intable && $val!='') $html .= '<B id="'.$prefix.$field[1].'">'.$hdata[$field[1]].'</B>';
 					else {
@@ -195,7 +195,7 @@ class ERPBase {
 					$readonly = '';
 					if ($view=='view') $readonly = ' readonly="readonly"';
 					$val = '';
-					if (is_array($hdata) && strpos($field[0],'_header')!==false && isset($hdata[$field[1]])) $val=' value="'.$hdata[$field[1]].'"';
+					if (is_array($hdata) && strpos($field[0],'_detail')===false && isset($hdata[$field[1]])) $val=' value="'.$hdata[$field[1]].'"';
 					if (!$intable) $html .= '<INPUT type="number" id="'.$prefix.$field[1].'" min="0" step="1"'.$readonly.$val.' />';
 					else {
 						$tableentry .= '<TD id="row'.$tablerow.'-'.$prefix.$field[1].'"><INPUT type="number" id="'.$field[1].'" min="0" step="1" /></TD>';
@@ -205,7 +205,7 @@ class ERPBase {
 					$readonly = '';
 					if ($view=='view') $readonly = ' readonly="readonly"';
 					$val = '';
-					if (is_array($hdata) && strpos($field[0],'_header')!==false && isset($hdata[$field[1]])) $val=' value="'.$hdata[$field[1]].'"';
+					if (is_array($hdata) && strpos($field[0],'_detail')===false && isset($hdata[$field[1]])) $val=' value="'.$hdata[$field[1]].'"';
 					$places = 5;
 					$decimals = 2;
 					if (count($field)>5) {
@@ -223,7 +223,7 @@ class ERPBase {
 					$readonly = '';
 					if ($view=='view') $readonly = ' disabled="disabled"';
 					$checked = '';
-					if (is_array($hdata) && strpos($field[0],'_header')!==false && isset($hdata[$field[1]]) && $hdata[$field[1]]=='Y') $checked=' checked="checked"';
+					if (is_array($hdata) && strpos($field[0],'_detail')===false && isset($hdata[$field[1]]) && $hdata[$field[1]]=='Y') $checked=' checked="checked"';
 					if ($view=='new' && count($field)>=6) {
 						if ($field[5]) $checked=' checked="checked"';
 						else $checked='';
@@ -244,7 +244,7 @@ class ERPBase {
 					$readonly = '';
 					if ($view=='view') $readonly = ' readonly="readonly"';
 					$val = '';
-					if (is_array($hdata) && strpos($field[0],'_header')!==false && isset($hdata[$field[1]])) $val=' value="'.substr($hdata[$field[1]],0,10).'"';
+					if (is_array($hdata) && strpos($field[0],'_detail')===false && isset($hdata[$field[1]])) $val=' value="'.substr($hdata[$field[1]],0,10).'"';
 					if (!$intable) {
 						$html .= '<INPUT type="date" id="'.$prefix.$field[1].'-date"'.$val.$readonly.' />';
 					} else {

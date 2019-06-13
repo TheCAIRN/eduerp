@@ -19,6 +19,28 @@ function getAddressInputFields(prefix) {
 		,osm_id:$("#"+prefix+"osm_id").val()
 	};
 }
+function saveAddressesHeader(prefix) {
+	var inputs = getAddressInputFields(prefix);
+	var mode;
+	if (inputs.id==0) mode='insertRecord';
+	else mode='updateRecord';
+	$.post("jq.php",{jquery:mode,module:'addresses',level:'header',data:inputs},function(data) {
+		var fields = data.split("|");
+		if (fields[0]=="inserted") {
+			$("#"+prefix+"id").val(fields[1]);
+			$("#messagebar").html('<DIV class="successMessage">Data saved.</DIV>');
+		}
+		if (fields[0]=="updated") {
+			$("#messagebar").html('<DIV class="successMessage">Data saved.</DIV>');
+		}
+		if (fields[0]=="fail") {
+			$("#messagebar").html('<DIV class="errorMessage">'+fields[1]+'</DIV>');
+		}		
+	})
+	.fail(function() {
+		$("#messagebar").html('<DIV class="errorMessage">I could not contact the database. Your data has <B>NOT</B> been saved.</DIV>');
+	});
+} // saveAddressesHeader()
 function embeddedAddressSearch(id) {
 	$.post('jq.php',{jquery:'embedded',module:'addresses',mode:'lookup',id:id,data:$("#"+id).val()},function(data) {
 		$("#"+id+"-div").html(data);

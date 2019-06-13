@@ -33,7 +33,8 @@ class Toolbar {
 				case 2007: 
 				case 3007: $mod="'Purchasing'"; break;
 				case 2012:
-				case 3012: $mod="'Addresses'"; break;
+				case 3012: 
+				case 4012: $mod="'Addresses'"; break;
 				case 2013: 
 				case 3013: $mod="'ItemManager'"; break;
 				case 2019:

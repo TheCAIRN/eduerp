@@ -67,10 +67,6 @@ function saveSalesOrdersHeader() {
 	// TODO: Add validations
 	var message;
 	
-	
-	var mode;
-	if (ordernum<=0) mode = "insertRecord";
-	else mode = "updateRecord";
 	var mode;
 	if (ordernum<=0) mode = "insertRecord";
 	else mode = "updateRecord";
