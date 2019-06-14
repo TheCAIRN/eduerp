@@ -4,7 +4,9 @@ class ItemManager extends ERPBase {
 	private $division_id;
 	private $department_id;
 	private $item_type_code;
+	private $item_type_description;
 	private $item_category_id;
+	private $item_category_description;
 	private $product_id;
 	private $product_code;
 	private $product_description;
@@ -66,6 +68,7 @@ class ItemManager extends ERPBase {
 		$this->entryFields[] = array('item_master','product_catalog_title','Catalog Title','textbox');
 		$this->entryFields[] = array('item_master','product_uom','Product UOM','dropdown','aa_uom',array('uom_code','uom_description'));
 		$this->entryFields[] = array('item_master','gtin','GTIN','textbox');
+		$this->entryFields[] = array('item_master','gtin','Assign GTIN','button','gtinAssign();');
 		$this->entryFields[] = array('item_master','standard_cost','Cost','decimal',24,5);
 		$this->entryFields[] = array('item_master','suggested_retail','MSRP','decimal',24,5);
 		$this->entryFields[] = array('item_master','wholesale_price','Wholesale','decimal',24,5);
@@ -94,7 +97,9 @@ class ItemManager extends ERPBase {
 		$this->division_id = 0;
 		$this->department_id = 0;
 		$this->item_type_code = '';
+		$this->item_type_description = '';
 		$this->item_category_id = 0;
+		$this->item_category_description = '';
 		$this->product_id = 0;
 		$this->product_code = '';
 		$this->product_description = '';
@@ -254,49 +259,46 @@ class ItemManager extends ERPBase {
 		parent::abstractListRecords('ItemManager');
 	} // function listRecords()
 	public function executeSearch($criteria) {
-		// TODO: Now using unified_search.
-		$searchParameters = array();
-		if (isset($_POST['searchParameters']) && is_array($_POST['searchParameters'])) $searchParameters = $_POST['searchParameters'];
+		$result = null;
 		$q = "SELECT product_id,product_code,product_description,gtin,item_type_description,item_category_description,product_catalog_title,i.visible 
 			FROM item_master i
 			LEFT OUTER JOIN item_types t ON i.item_type_code=t.item_type_code
 			LEFT OUTER JOIN item_categories c ON i.item_category_id=c.item_category_id ";
 		// Add $criteria
-		$criteria = array();
-		foreach($searchParameters as $sp) {
-			if (!is_array($sp) || count($sp)<2) continue;
-			$field = $sp[0];
-			$value = $sp[1];
-			$op = '=';
-			if (in_array($field,array('product_id','product_code','product_description','gtin','entity_id','division_id','department_id','item_type_code','item_category_id','product_catalog_title','visible'))) {
-				// TODO: Add support for lists
-				// TODO: Add support for ranges
-				// TODO: Add support for complex expressions
-				if (strpos($value,'*')!==false || strpos($value,'?')!==false || strpos($value,'%')!==false || strpos($value,'_')!==false) {
-					$op = 'LIKE';
-					$criteria[] = "$field $op '".$this->dbconn->real_escape_string(str_replace('?','_',str_replace('*','%',$value)))."'";
-					continue;
-				} elseif (substr($value,0,2)=='<>' || substr($value,0,2)=='!=') $op='<>';
-				elseif (substr($value,0,1)=='<' || substr($value,0,2)=='>') $op=substr($value,0,1);
-				$criteria[] = "$field $op '".$this->dbconn->real_escape_string($value)."'";
+		if (!is_null($criteria) && is_array($criteria) && count($criteria)>0) {
+			// The only key for Addresses is unified_search.
+			if (is_array($criteria[0]) && count($criteria[0])>=2 && $criteria[0][0]=='unified_search') $criteria = $criteria[0][1];
+			else $criteria='';
+			$q .= " WHERE item_category_description LIKE ? OR product_id = ? OR product_code LIKE ? OR product_description LIKE ? OR product_catalog_title LIKE ? or gtin=?";
+			$stmt = $this->dbconn->prepare($q);
+			$stmt->bind_param('sissss',$p1,$p2,$p3,$p4,$p5,$p6);
+			$p1 = $p3 = $p4 = $p5 = '%'.$criteria.'%';
+			$p6 = $criteria;
+			$p2 = ctype_digit($criteria)?$criteria:-99999;
+			$result = $stmt->execute();
+			if ($result !== false) {
+				$stmt->store_result();
+				$stmt->bind_result($this->product_id,$this->product_code,$this->product_description,$this->gtin,$this->item_type_description,
+					$this->item_category_description,$this->product_catalog_title,$this->visible);
+				while ($stmt->fetch()) {
+					$this->recordSet[$this->product_id] = array('code'=>$this->product_code,'description'=>$this->product_description,'gtin'=>$this->gtin,
+						'type'=>$this->item_type_description,'category'=>$this->item_category_description,'catalog'=>$this->product_catalog_title,
+						'visible'=>($this->visible==0?'N':'Y'));
+				}
 			}
-		}
-		if (count($criteria)>0) $q .= 'WHERE';
-		for ($i=0;$i<count($criteria);$i++) {
-			$q .= ($i>0?' AND ':' ').$criteria[$i];
-		}
-		// TODO: Convert to prepared statements
-		$q .= " ORDER BY product_id";
-		// For Testing: $this->mb->addInfo($q);
-		$result = $this->dbconn->query($q);
-		if ($result!==false) {
-			$this->recordSet = array();
-			while ($row=$result->fetch_assoc()) {
-				$this->recordSet[$row['product_id']] = array('code'=>$row['product_code'],'description'=>$row['product_description'],'gtin'=>$row['gtin'],
-					'type'=>$row['item_type_description'],'category'=>$row['item_category_description'],'catalog'=>$row['product_catalog_title'],
-					'visible'=>$row['visible']==0?'N':'Y');
-			} // while rows
-		} // if query succeeded
+		// if criteria exists
+		} else {
+			$q .= " ORDER BY product_id";
+			$result = $this->dbconn->query($q);
+			if ($result!==false) {
+				$this->recordSet = array();
+				while ($row=$result->fetch_assoc()) {
+					$this->recordSet[$row['product_id']] = array('code'=>$row['product_code'],'description'=>$row['product_description'],'gtin'=>$row['gtin'],
+						'type'=>$row['item_type_description'],'category'=>$row['item_category_description'],'catalog'=>$row['product_catalog_title'],
+						'visible'=>$row['visible']==0?'N':'Y');
+				} // while rows
+			} // if query succeeded
+		} // if criteria does not exist
 		$this->listRecords();
 		$_SESSION['currentScreen'] = 1013;
 		$_SESSION['lastCriteria'] = $criteria;

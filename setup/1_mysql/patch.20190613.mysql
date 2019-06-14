@@ -1,0 +1,14 @@
+ALTER TABLE item_gtin_master
+ADD item_type_code char(2) AFTER department_id;
+
+UPDATE item_gtin_master SET item_type_code='SI' WHERE manufacturer_id='4000000';
+UPDATE item_gtin_master SET item_type_code='PI' WHERE manufacturer_id='4000001';
+UPDATE item_gtin_master SET item_type_code='SI',division_id=2 WHERE manufacturer_id='4000002';
+
+UPDATE item_gtin_master SET last_gtin=(SELECT MAX(SUBSTRING(gtin,10,4)) FROM item_master WHERE SUBSTRING(gtin,1,9)='004000000') WHERE manufacturer_id='4000000';
+UPDATE item_gtin_master SET last_gtin=(SELECT MAX(SUBSTRING(gtin,10,4)) FROM item_master WHERE SUBSTRING(gtin,1,9)='004000001') WHERE manufacturer_id='4000001';
+UPDATE item_gtin_master SET last_gtin=(SELECT MAX(SUBSTRING(gtin,10,4)) FROM item_master WHERE SUBSTRING(gtin,1,9)='004000002') WHERE manufacturer_id='4000002';
+
+ALTER TABLE item_gtin_master
+MODIFY item_type_code char(2) not null
+,ADD FOREIGN KEY (item_type_code) REFERENCES item_types(item_type_code);

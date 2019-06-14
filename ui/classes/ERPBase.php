@@ -168,7 +168,9 @@ class ERPBase {
 					}
 				} elseif (!$intable && !$embedded) {
 					$html .= '<DIV class="labeldiv">';
-					$html .= '<LABEL for="'.$prefix.$field[1].'">'.$field[2].'</LABEL>';
+					if ($field[3]!='button') {
+						$html .= '<LABEL for="'.$prefix.$field[1].'">'.$field[2].'</LABEL>';
+					}
 				} elseif ($intable) {
 					$tableheader .= '<TH>'.$field[2].'</TH>';
 				}
@@ -265,6 +267,14 @@ class ERPBase {
 						$tableentry .= '<BUTTON id="newlinebutton"'.((count($field)>=5)?' onClick="'.$field[4].'"':'').'>'.$field[2].'</BUTTON>';
 						$tableentry .= '</TD>';
 					}
+				if ($field[3]=='button')
+					if (!$intable) {
+						$html .= '<BUTTON id="'.$prefix.$field[1].'button"'.((count($field)>=5)?' onClick="'.$field[4].'"':'').'>'.$field[2].'</BUTTON>';
+					} else {
+						$tableentry .= '<TD id="row'.$tablerow.'-'.$prefix.$field[1].'">';
+						$tableentry .= '<BUTTON id="'.$prefix.$field[1].'button"'.((count($field)>=5)?' onClick="'.$field[4].'"':'').'>'.$field[2].'</BUTTON>';
+						$tableentry .= '</TD>';
+					}					
 				if ($field[3]=='function' && count($field)>=6 && is_object($field[4]) && method_exists($field[4],$field[5])) {
 					if (!$intable) {
 						$html .= $field[4]->{$field[5]}();
