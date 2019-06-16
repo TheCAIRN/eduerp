@@ -92,6 +92,19 @@ class ItemManager extends ERPBase {
 		$this->entryFields[] = array('item_master','rev_number','Revision number','integer');
 		$this->resetHeader();
 	} // constructor
+	public function jquery() {
+		if (isset($_POST['mode'])) {
+			if ($_POST['mode']=='gtinAssign') {
+				if (!isset($_POST['entity_id']) || !isset($_POST['division_id']) || !isset($_POST['department_id']) || !isset($_POST['item_type_code'])) {
+					echo 'fail|POST is missing necessary information.';
+					return;
+				}
+				$gtinmanager = new GTINManager($this->dbconn);
+				// assignOneGTIN echoes the result directly
+				$gtinmanager->assignOneGTIN($_POST['entity_id'],$_POST['division_id'],$_POST['department_id'],$_POST['item_type_code']);
+			}
+		}
+	} // itemjq
 	public function resetHeader() {
 		$this->entity_id = 0;
 		$this->division_id = 0;

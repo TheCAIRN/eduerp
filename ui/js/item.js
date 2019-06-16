@@ -2,7 +2,14 @@ function gtinCheck() {
 
 } // gtinCheck()
 function gtinAssign() {
-
+	var entity = $("#entity_id option:selected").val();
+	var division = $("#division_id option:selected").val();
+	var department = $("#department_id option:selected").val();
+	var itemtype = $("#item_type_code option:selected").val();
+	$.post('jq.php',{jquery:'itemjq',mode:'gtinAssign',entity_id:entity,division_id:division,department_id:department,item_type_code:itemtype},function(data) {
+		var fields = data.split("|");
+		$("#gtin").val(fields[1]);
+	});
 } // gtinAssign()
 function getItemInputFields(prefix) {
 	

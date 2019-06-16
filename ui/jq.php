@@ -61,6 +61,12 @@ function jquery() {
 		}
 		// Workspace::setCurrentScreen renders immediately.
 	/**************************************************************************
+	 * FARM OUT JQUERY COMMANDS TO MODULES
+	 **************************************************************************/
+	} elseif ($command=='itemjq') {
+		$modObj = new ItemManager($link);
+		$modObj->jquery();
+	/**************************************************************************
 	 * PRESENT SEARCH FORM OR SUBMENU
 	 **************************************************************************/
 	} elseif ($command=='moduleSearchSpace') {

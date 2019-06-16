@@ -1,8 +1,9 @@
 <?php
-class _template extends ERPBase {
+class GTINManager extends ERPBase {
 	private $entity_id;
 	private $division_id;
 	private $department_id;
+	private $item_type_code;
 	private $manufacturer_id;
 	private $description;
 	private $first_used;
@@ -29,7 +30,23 @@ class _template extends ERPBase {
 	
 	} // resetHeader()
 	public function calculateGTIN14CheckDigit($data) {
-		
+		if (strlen($data)==12) $data = '0'.$data;
+		if (strlen($data)!=11 && strlen($data)!=13) {
+			echo 'fail|Invalid GTIN length';
+			return 'X';
+		}
+		if (!ctype_digit($data)) {
+			echo 'fail|GTIN must be numeric only';
+			return 'X';
+		}
+		$sum = 0;
+		for ($i=0;$i<strlen($data);$i+=2)
+			$sum += 3*substr($data,$i,1);
+		for ($i=1;$i<strlen($data);$i+=2)
+			$sum += 1*substr($data,$i,1);
+		$check = 10 - ($sum % 10);
+		if ($check==10) $check = 0;
+		return $check;
 	} // calculateGTIN14CheckDigit()
 	public function calculateBOL17CheckDigit($data) {
 		
@@ -37,14 +54,52 @@ class _template extends ERPBase {
 	public function calculateSSCC18CheckDigit($data) {
 		
 	} // calculateSSCC18CheckDigit()
-	public function assignOneGTIN($entity,$division,$department) {
+	public function assignOneGTIN($entity,$division,$department,$itemtype) {
 		$this->resetHeader();
 		if (is_integer($entity) || ctype_digit($entity)) $this->entity_id = $entity;
 		if (is_integer($division) || ctype_digit($division)) $this->division_id = $division;
 		if (is_integer($department) || ctype_digit($department)) $this->department_id = $department;
 		$q = 'SELECT manufacturer_id,description,first_used,last_used,last_gtin,last_carton,last_bol FROM item_gtin_master WHERE
-			visible=1 AND entity=? AND division=? AND department=?';
-			
+			visible=1 AND entity_id=? AND division_id=? AND department_id=? AND item_type_code=?';
+		$stmt = $this->dbconn->prepare($q);
+		$stmt->bind_param('iiis',$p1,$p2,$p3,$p4);
+		$p1 = $entity;
+		$p2 = $division;
+		$p3 = $department;
+		$p4 = $itemtype;
+		$result = $stmt->execute();
+		$stmt->store_result();
+		if ($result!==false && $stmt->num_rows > 0) {
+			$stmt->bind_result($this->manufacturer_id,$this->description,$this->first_used,$this->last_used,$this->last_gtin,$this->last_carton,$this->last_bol);
+			$stmt->fetch();
+			$this->entity_id = $entity;
+			$this->division_id = $division;
+			$this->department_id = $department;
+			$this->item_type_code = $itemtype;
+			$newgtin = '00'.$this->manufacturer_id;
+			$digitsneeded = 13-strlen($newgtin);
+			$newgtin .= sprintf('%0'.$digitsneeded.'d',($this->last_gtin)+1);
+			if (strlen($newgtin)!=13) {
+				// TODO: Look for unused numbers
+				// TODO: Go to next resolution
+				echo 'fail|All numbers have been used.';
+				return;
+			}
+			$newgtin .= $this->calculateGTIN14CheckDigit($newgtin);
+			$stmt->close();
+			// TODO: Verify the chosen number isn't already used.
+			// Update all entries using the same manufacturer_id
+			$updq = 'UPDATE item_gtin_master SET last_gtin = last_gtin + 1,last_used=NOW() WHERE 
+				visible=1 AND manufacturer_id=?';
+			$stmt = $this->dbconn->prepare($updq);
+			$stmt->bind_param('s',$p1);
+			$p1 = $this->manufacturer_id;
+			$result = $stmt->execute();
+			echo 'success|'.$newgtin;
+		} else {
+			echo 'fail|No GTIN resolution. Try using a different entity or item type.';
+			return;
+		}
 	} // assignOneGTIN()
 	public function _templateSelect($id=0,$readonly=false) {
 		return parent::abstractSelect($id,$readonly,'zzzz_master','zzzz_id','zzzz_name','zzzz');
@@ -161,5 +216,5 @@ class _template extends ERPBase {
 	public function saveRecord() {
 	
 	} // saveRecord()
-} // class _template
+} // class GTINManager
 ?>
