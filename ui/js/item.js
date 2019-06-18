@@ -14,6 +14,28 @@ function gtinAssign() {
 function getItemInputFields(prefix) {
 	
 } // getItemInputFields()
+function saveItemHeader(prefix) {
+	var inputs = getItemInputFields(prefix);
+	var mode;
+	if (inputs.id==0) mode='insertRecord';
+	else mode='updateRecord';
+	$.post("jq.php",{jquery:mode,module:'itemmanager',level:'header',data:inputs},function(data) {
+		var fields = data.split("|");
+		if (fields[0]=="inserted") {
+			$("#"+prefix+"product_id").val(fields[1]);
+			$("#messagebar").html('<DIV class="successMessage">Data saved.</DIV>');
+		}
+		if (fields[0]=="updated") {
+			$("#messagebar").html('<DIV class="successMessage">Data saved.</DIV>');
+		}
+		if (fields[0]=="fail") {
+			$("#messagebar").html('<DIV class="errorMessage">'+fields[1]+'</DIV>');
+		}		
+	})
+	.fail(function() {
+		$("#messagebar").html('<DIV class="errorMessage">I could not contact the database. Your data has <B>NOT</B> been saved.</DIV>');
+	});	
+}
 function embeddedItemSearch(id) {
 	$.post('jq.php',{jquery:'embedded',module:'ItemManager',mode:'lookup',id:id,data:$("#"+id).val()},function(data) {
 		$("#"+id+"-div").html(data);

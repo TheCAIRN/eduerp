@@ -110,6 +110,9 @@ function saveRecord(whichModule) {
 	if (whichModule=="Addresses") {
 		saveAddressesHeader('');
 	}
+	if (whichModule=="ItemManager") {
+		saveItemHeader('');
+	}
 	if (whichModule=="BOM") {
 		saveBOMHeader();
 	}
