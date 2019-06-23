@@ -17,7 +17,7 @@ class ItemManager extends ERPBase {
 	private $standard_cost;
 	private $suggested_retail;
 	private $wholesale_price;
-	private $currency;
+	private $currency_code;
 	private $length;
 	private $width;
 	private $height;
@@ -123,7 +123,7 @@ class ItemManager extends ERPBase {
 		$this->standard_cost = 0.00;
 		$this->suggested_retail = 0.00;
 		$this->wholesale_price = 0.00;
-		$this->currency = '';
+		$this->currency_code = '';
 		$this->length = 0.00;
 		$this->width = 0.00;
 		$this->height = 0.00;
@@ -141,7 +141,7 @@ class ItemManager extends ERPBase {
 		$this->visible = 1;
 		$this->rev_enabled = 'Y';
 		$this->rev_number = 1;
-		$this->column_list = 'entity_id, division_id, department_id, item_type_code, item_category_id, product_code, 
+		$this->column_list = 'entity_id, division_id, department_id, item_type_code, item_category_id, product_id, product_code, 
 			product_description, product_catalog_title, product_uom, gtin, standard_cost, suggested_retail, wholesale_price, 
 			currency, length, width, height, lwh_uom, weight, weight_uom, harmonized_tariff_code, tariff_revision, 
 			promotion_start_date, promotion_end_date, product_launch_date, product_sunset_date, product_end_of_support_date, 
@@ -149,7 +149,17 @@ class ItemManager extends ERPBase {
 			visible, rev_enabled, rev_number, created_by, creation_date, last_update_by, last_update_date';
 	} // resetHeader()
 	public function arrayify() {
-		
+		return array('entity_id'=>$this->entity_id, 'division_id'=>$this->division_id, 'department_id'=>$this->department_id, 'item_type_code'=>$this->item_type_code, 
+			'item_category_id'=>$this->item_category_id, 'product_id'=>$this->product_id, 'product_code'=>$this->product_code, 
+			'product_description'=>$this->product_description, 'product_catalog_title'=>$this->product_catalog_title, 'product_uom'=>$this->product_uom, 
+			'gtin'=>$this->gtin, 'standard_cost'=>$this->standard_cost, 'suggested_retail'=>$this->suggested_retail, 'wholesale_price'=>$this->wholesale_price, 
+			'currency_code'=>$this->currency_code, 'length'=>$this->length, 'width'=>$this->width, 'height'=>$this->height, 'lwh_uom'=>$this->lwh_uom, 
+			'weight'=>$this->weight, 'weight_uom'=>$this->weight_uom, 'harmonized_tariff_code'=>$this->harmonized_tariff_code, 'tariff_revision'=>$this->tariff_revision, 
+			'promotion_start_date'=>$this->promotion_start_date, 'promotion_end_date'=>$this->promotion_end_date, 'product_launch_date'=>$this->product_launch_date, 
+			'product_sunset_date'=>$this->product_sunset_date, 'product_end_of_support_date'=>$this->product_end_of_support_date, 
+			'product_end_of_extended_support_date'=>$this->product_end_extended_support_date, 
+			'visible'=>$this->visible, 'rev_enabled'=>$this->rev_enabled, 'rev_number'=>$this->rev_number, 'created_by'=>$this->created_by, 
+			'creation_date'=>$this->creation_date, 'last_update_by'=>$this->last_update_by, 'last_update_date'=>$this->last_update_date);
 	} // arrayify
 	/*
 	 * Item fields are linked from many different tables within the ERP system.  As a result, many other modules need to have access to 
@@ -326,11 +336,12 @@ class ItemManager extends ERPBase {
 		if (ctype_digit($id)) return true;
 		return false;
 	}
-	public function display($id) {
+	public function display($id,$mode='view') {
 		if (!($this->isIDValid($id))) return;
 		$readonly = true;
 		$html = '';
-		$q = "SELECT i.entity_id, i.division_id, i.department_id, i.item_type_code, i.item_category_id, i.product_code, 
+		$q = "SELECT {$this->column_list} FROM item_master WHERE product_id=?;";
+/*		$q = "SELECT i.entity_id, i.division_id, i.department_id, i.item_type_code, i.item_category_id, i.product_code, 
 		i.product_description, i.product_catalog_title, i.product_uom, i.gtin, i.standard_cost, i.suggested_retail, i.wholesale_price, 
 		i.currency, i.length, i.width, i.height, i.lwh_uom, i.weight, i.weight_uom, i.harmonized_tariff_code, i.tariff_revision, 
 		i.promotion_start_date, i.promotion_end_date, i.product_launch_date, i.product_sunset_date, i.product_end_of_support_date, 
@@ -341,7 +352,7 @@ class ItemManager extends ERPBase {
 		LEFT OUTER JOIN item_types t ON i.item_type_code=t.item_type_code
 		LEFT OUTER JOIN item_categories c ON i.item_category_id=c.item_category_id
 		WHERE i.product_id=?";
-		$stmt = $this->dbconn->prepare($q);
+*/		$stmt = $this->dbconn->prepare($q);
 		if ($stmt===false) {
 			echo $this->dbconn->error;
 			return;
@@ -350,13 +361,15 @@ class ItemManager extends ERPBase {
 		$productid = $id;
 		$result = $stmt->execute();
 		if ($result!==false) {
+			$stmt->bind_result($this->entity_id, $this->division_id, $this->department_id, $this->item_type_code, $this->item_category_id, $this->product_id, $this->product_code, 
+				$this->product_description, $this->product_catalog_title, $this->product_uom, $this->gtin, $this->standard_cost, $this->suggested_retail, $this->wholesale_price, 
+				$this->currency_code, $this->length, $this->width, $this->height, $this->lwh_uom, $this->weight, $this->weight_uom, $this->harmonized_tariff_code, $this->tariff_revision, 
+				$this->promotion_start_date, $this->promotion_end_date, $this->product_launch_date, $this->product_sunset_date, $this->product_end_of_support_date, 
+				$this->product_end_extended_support_date, 
+				$this->visible, $this->rev_enabled, $this->rev_number, $this->created_by, $this->creation_date, $this->last_update_by, $this->last_update_date);
 			$stmt->store_result();
-			$stmt->bind_result($entid,$divid,$deptid,$typecode,$categoryid,$productcode,$description,$catalog,$productuom,
-			$gtin,$stdcost,$msrp,$wholesale,$currency,$length,$width,$height,$lwhuom,$weight,$weightuom,$htc,$tariffrevision,
-			$promotion_start_date,$promotion_end_date,$product_launch_date,$product_sunset_date,$product_end_of_support_date,
-			$product_end_extended_support_date,$typedescription,$categorydescription,
-			$visible,$revyn,$revnum,$createdby,$createddate,$updateby,$updatedate);
 			$stmt->fetch();
+/*
 			if ($readonly) $cls = 'RecordView'; else $cls = 'RecordEdit';
 			if ($readonly) $inputtextro = ' readonly="readonly"'; else $inputtextro = '';
 			$ent = new Entity($this->dbconn);
@@ -405,9 +418,16 @@ class ItemManager extends ERPBase {
 			$html .= '<DIV class="labeldiv"><LABEL for="modifiedon">Modified On:</LABEL><INPUT type="date" id="modifiedon" value="'.$updatedate.'" readonly="readonly" /></DIV>';			
 			$html .= '</DIV>';
 			$html .= '</FIELDSET>';
+*/
 		}
 		$stmt->close();
-		echo $html;
+		if ($mode!='update') {
+			$hdata = $this->arrayify();
+			echo '<FIELDSET id="ItemRecord" class="Record'.ucwords($mode).'">';
+			echo parent::abstractRecord($mode,'ItemManager','',$hdata,null);
+			echo '</FIELDSET>';
+		}
+//		echo $html;
 		$_SESSION['currentScreen'] = 2013;
 		if (!isset($_SESSION['searchResults']) && !isset($_SESSION['searchResults']['Item']))
 			$_SESSION['idarray'] = array(0,0,$id,0,0);
@@ -433,9 +453,202 @@ class ItemManager extends ERPBase {
 			$this->mb->addError("No data was submitted.  Item save failed.");
 		}
 		$data = $_POST['data'];
+		$this->entity_id = isset($data['entity_id'])?$data['entity_id']:0;
+		$this->division_id = isset($data['division_id'])?$data['division_id']:0;
+		$this->department_id = isset($data['department_id'])?$data['department_id']:0;
+		$this->item_type_code = isset($data['item_type_code'])?$data['item_type_code']:null;
+		$this->item_category_id = isset($data['item_category_id'])?$data['item_category_id']:null;
+		$this->product_id = isset($data['product_id'])?$data['product_id']:0;
+		$this->product_code = isset($data['product_code'])?$data['product_code']:null;
+		$this->product_description = isset($data['product_description'])?$data['product_description']:'';
+		$this->product_catalog_title = isset($data['product_catalog_title'])?$data['product_catalog_title']:'';
+		$this->product_uom = isset($data['product_uom'])?$data['product_uom']:null;
+		$this->gtin = isset($data['gtin'])?$data['gtin']:'';
+		$this->standard_cost = isset($data['standard_cost'])?$data['standard_cost']:0.00;
+		$this->suggested_retail = isset($data['suggested_retail'])?$data['suggested_retail']:0.00;
+		$this->wholesale_price = isset($data['wholesale_price'])?$data['wholesale_price']:0.00;
+		$this->currency_code = isset($data['currency_code'])?$data['currency_code']:null;
+		$this->length = isset($data['length'])?$data['length']:0.00;
+		$this->width = isset($data['width'])?$data['width']:0.00;
+		$this->height = isset($data['height'])?$data['height']:0.00;
+		$this->lwh_uom = isset($data['lwh_uom'])?$data['lwh_uom']:null;
+		$this->weight = isset($data['weight'])?$data['weight']:0.00;
+		$this->weight_uom = isset($data['weight_uom'])?$data['weight_uom']:null;
+		$this->harmonized_tariff_code = isset($data['harmonized_tariff_code'])?$data['harmonized_tariff_code']:null;
+		$this->tariff_revision = isset($data['tariff_revision'])?$data['tariff_revision']:1;
+		if (!empty($data['promotion_start_dated']) && !empty($data['promotion_start_datet'])) {
+			$this->promotion_start_date = new DateTime($data['promotion_start_dated'].' '.$data['promotion_start_datet']);
+		} else $this->promotion_start_date = null;
+		if (!empty($data['promotion_end_dated']) && !empty($data['promotion_end_datet'])) {
+			$this->promotion_end_date = new DateTime($data['promotion_end_dated'].' '.$data['promotion_end_datet']);
+		} else $this->promotion_end_date = null;
+		$this->product_launch_date = !empty($data['product_launch_dated'])?(new DateTime($data['product_launch_dated'])):null;
+		$this->product_sunset_date = !empty($data['product_sunset_dated'])?(new DateTime($data['product_sunset_dated'])):null;
+		$this->product_end_of_support_date = !empty($data['product_end_of_support_dated'])?(new DateTime($data['product_end_of_support_dated'])):null;
+		$this->product_end_extended_support_date = !empty($data['product_end_of_extended_support_dated'])?(new DateTime($data['product_end_of_extended_support_dated'])):null;
+		$this->visible = isset($data['visible'])?($data['visible']=='true'?1:0):1;
+		$this->rev_enabled = isset($data['rev_enabled'])?($data['rev_enabled']=='true'?'Y':'N'):'Y';
+		$this->rev_number = isset($data['rev_number'])?$data['rev_number']:1;
+		$q = "INSERT INTO item_master ({$this->column_list}) VALUES (?,?,?,?,?,NULL,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,NOW(),?,NOW());";
+		$stmt = $this->dbconn->prepare($q);
+		if (!$stmt) {
+			echo 'fail|'.$this->dbconn->error;
+		}
+		$stmt->bind_param('iiisisssssdddsdddsdsiissssssisiii',
+			$p1,$p2,$p3,$p4,$p5,
+			$p6,$p7,$p8,$p9,$p10,
+			$p11,$p12,$p13,$p14,
+			$p15,$p16,$p17,$p18,
+			$p19,$p20,$p21,$p22,
+			$p23,$p24,$p25,$p26,$p27,$p28,
+			$p29,$p30,$p31,$p32,$p33
+		);
+		$p1 = $this->entity_id;
+		$p2 = $this->division_id;
+		$p3 = $this->department_id;
+		$p4 = $this->item_type_code;
+		$p5 = $this->item_category_id;
+		$p6 = $this->product_code;
+		$p7 = $this->product_description;
+		$p8 = $this->product_catalog_title;
+		$p9 = $this->product_uom;
+		$p10 = $this->gtin;
+		$p11 = $this->standard_cost;
+		$p12 = $this->suggested_retail;
+		$p13 = $this->wholesale_price;
+		$p14 = $this->currency_code;
+		$p15 = $this->length;
+		$p16 = $this->width;
+		$p17 = $this->height;
+		$p18 = $this->lwh_uom;
+		$p19 = $this->weight;
+		$p20 = $this->weight_uom;
+		$p21 = $this->harmonized_tariff_code;
+		$p22 = $this->tariff_revision;
+		$p23 = is_null($this->promotion_start_date)?null:$this->promotion_start_date->format('Y-m-d H:i:s');
+		$p24 = is_null($this->promotion_end_date)?null:$this->promotion_end_date->format('Y-m-d H:i:s');
+		$p25 = is_null($this->product_launch_date)?null:$this->product_launch_date->format('Y-m-d');
+		$p26 = is_null($this->product_sunset_date)?null:$this->product_sunset_date->format('Y-m-d');
+		$p27 = is_null($this->product_end_of_support_date)?null:$this->product_end_of_support_date->format('Y-m-d');
+		$p28 = is_null($this->product_end_extended_support_date)?null:$this->product_end_extended_support_date->format('Y-m-d');
+		$p29 = $this->visible;
+		$p30 = $this->rev_enabled;
+		$p31 = $this->rev_number;
+		$p32 = $_SESSION['dbuserid'];
+		$p33 = $_SESSION['dbuserid'];
+		$result = $stmt->execute();
+		if ($result!==false) {
+			echo 'inserted|'.$this->dbconn->insert_id;
+		} else {
+			echo 'fail|'.$this->dbconn->error;
+			$this->mb->addError($this->dbconn->error);
+		}
+		$stmt->close();		
 	} // insertHeader()
 	private function updateHeader($embed=false) {
-	
+		$this->resetHeader();
+		$now = new DateTime();
+		$data = $_POST['data'];
+		$id = $data['product_id'];
+		if ((!is_integer($id) && !ctype_digit($id)) || $id<1) {
+			echo 'fail|Invalid product id for updating';
+			return;
+		}
+		$this->product_id = $id;
+		$this->display($id,'update'); // Display already has the logic for loading the record.  TODO: Refactor into separate function.
+		$update = array();
+		if (isset($data['entity_id'])) if ($data['entity_id']!=$this->entity_id) $update['entity_id'] = array('i',$data['entity_id']);
+		if (isset($data['division_id'])) if ($data['division_id']!=$this->division_id) $update['division_id'] = array('i',$data['division_id']);
+		if (isset($data['department_id'])) if ($data['department_id']!=$this->department_id) $update['department_id'] = array('i',$data['department_id']);
+		if (isset($data['item_type_code'])) if ($data['item_type_code']!=$this->item_type_code) $update['item_type_code'] = array('s',$data['item_type_code']);
+		if (isset($data['item_category_id'])) if ($data['item_category_id']!=$this->item_category_id) $update['item_category_id'] = array('i',$data['item_category_id']);
+		if (isset($data['product_code'])) if ($data['product_code']!=$this->product_code) $update['product_code'] = array('s',$data['product_code']);
+		if (isset($data['product_description'])) if ($data['product_description']!=$this->product_description) $update['product_description'] = array('s',$data['product_description']);
+		if (isset($data['product_catalog_title'])) if ($data['product_catalog_title']!=$this->product_catalog_title) $update['product_catalog_title'] = array('s',$data['product_catalog_title']);
+		if (isset($data['product_uom'])) if ($data['product_uom']!=$this->product_uom) $update['product_uom'] = array('s',$data['product_uom']);
+		if (isset($data['gtin'])) if ($data['gtin']!=$this->gtin) $update['gtin'] = array('s',$data['gtin']);
+		if (isset($data['standard_cost'])) if ($data['standard_cost']!=$this->standard_cost) $update['standard_cost'] = array('d',$data['standard_cost']);
+		if (isset($data['suggested_retail'])) if ($data['suggested_retail']!=$this->suggested_retail) $update['suggested_retail'] = array('d',$data['suggested_retail']);
+		if (isset($data['wholesale_price'])) if ($data['wholesale_price']!=$this->wholesale_price) $update['wholesale_price'] = array('d',$data['wholesale_price']);
+		if (isset($data['currency_code'])) if ($data['currency_code']!=$this->currency_code) $update['currency_code'] = array('s',$data['currency_code']);
+		if (isset($data['length'])) if ($data['length']!=$this->length) $update['length'] = array('d',$data['length']);
+		if (isset($data['width'])) if ($data['width']!=$this->width) $update['width'] = array('d',$data['width']);
+		if (isset($data['height'])) if ($data['height']!=$this->height) $update['height'] = array('d',$data['height']);
+		if (isset($data['lwh_uom'])) if ($data['lwh_uom']!=$this->lwh_uom) $update['lwh_uom'] = array('s',$data['lwh_uom']);
+		if (isset($data['weight'])) if ($data['weight']!=$this->weight) $update['weight'] = array('d',$data['weight']);
+		if (isset($data['weight_uom'])) if ($data['weight_uom']!=$this->weight_uom) $update['weight_uom'] = array('s',$data['weight_uom']);
+		if (isset($data['harmonized_tariff_code'])) if ($data['harmonized_tariff_code']!=$this->harmonized_tariff_code) $update['harmonized_tariff_code'] = array('i',$data['harmonized_tariff_code']);
+		if (isset($data['tariff_revision'])) if ($data['tariff_revision']!=$this->tariff_revision) $update['tariff_revision'] = array('i',$data['tariff_revision']);
+		$dt1 = null;
+		$dt2 = null;
+		if (!empty($data['promotion_start_dated']) && !empty($data['promotion_start_datet'])) {
+			$dt1 = new DateTime($data['promotion_start_dated'].' '.$data['promotion_start_datet']);
+		} else $this->promotion_start_date = null;
+		if (!empty($data['promotion_end_dated']) && !empty($data['promotion_end_datet'])) {
+			$dt2 = new DateTime($data['promotion_end_dated'].' '.$data['promotion_end_datet']);
+		} else $this->promotion_end_date = null;
+		$dt3 = !empty($data['product_launch_dated'])?(new DateTime($data['product_launch_dated'])):null;
+		$dt4 = !empty($data['product_sunset_dated'])?(new DateTime($data['product_sunset_dated'])):null;
+		$dt5 = !empty($data['product_end_of_support_dated'])?(new DateTime($data['product_end_of_support_dated'])):null;
+		$dt6 = !empty($data['product_end_of_extended_support_dated'])?(new DateTime($data['product_end_of_extended_support_dated'])):null;
+		if ($dt1!=$this->promotion_start_date) $update['promotion_start_date'] = array('s',empty($dt1)?null:$dt1->format('Y-m-d H:i:s'));
+		if ($dt2!=$this->promotion_end_date) $update['promotion_end_date'] = array('s',empty($dt2)?null:$dt2->format('Y-m-d H:i:s'));
+		if ($dt3!=$this->product_launch_date) $update['product_launch_date'] = array('s',empty($dt3)?null:$dt3->format('Y-m-d'));
+		if ($dt4!=$this->product_sunset_date) $update['product_sunset_date'] = array('s',empty($dt4)?null:$dt4->format('Y-m-d'));
+		if ($dt5!=$this->product_end_of_support_date) $update['product_end_of_support_date'] = array('s',empty($dt5)?null:$dt5->format('Y-m-d'));
+		if ($dt6!=$this->product_end_extended_support_date) $update['product_end_extended_support_date'] = array('s',empty($dt6)?null:$dt6->format('Y-m-d'));
+		$vis = isset($data['visible'])?($data['visible']=='true'?1:0):1;
+		$rev = isset($data['rev_enabled'])?($data['rev_enabled']=='true'?'Y':'N'):'Y';
+		if ($vis!=$this->visible) $update['visible'] = array('i',$vis);
+		if ($rev!=$this->rev_enabled) $update['rev_enabled'] = array('s',$rev);
+		if (isset($data['rev_number'])) if ($data['rev_number']!=$this->rev_number) $update['rev_number'] = array('i',$data['rev_number']);
+		if (count($update)==0) {
+			echo 'fail|Nothing to update';
+			return;
+		}
+		$update['last_update_by'] = array('i',$_SESSION['dbuserid']);
+		$update['last_update_date'] = array('s',$now->format('Y-m-d H:i:s'));
+		$q = 'UPDATE item_master SET ';
+		$ctr = 0;
+		$bp_types = '';
+		$bp_values = array_fill(0,count($update),null);
+		foreach ($update as $field=>$data) {
+			if ($ctr > 0) $q .= ',';
+			$q .= "$field=?";
+			$bp_types .= $data[0];
+			$bp_values[$ctr] = $data[1];
+			$ctr++;
+		}
+		$q .= ' WHERE product_id=?';
+		$ctr++;
+		$bp_types .= 'i';
+		$bp_values[$ctr] = $this->product_id;
+		$stmt = $this->dbconn->prepare($q);
+		if ($stmt===false) {
+			echo 'fail|'.$this->dbconn->error;
+			return;
+		}
+		/* The internet has a lot of material about different ways to pass a variable number of arguments to bind_param.
+		   I feel that using Reflection is the best tool for the job.
+		   Reference: https://www.php.net/manual/en/mysqli-stmt.bind-param.php#107154
+		*/
+		$bp_method = new ReflectionMethod($stmt,'bind_param');
+		$bp_refs = array();
+		foreach ($bp_values as $key=>$value) {
+			$bp_refs[$key] = &$bp_values[$key];
+		}
+		array_unshift($bp_values,$bp_types);
+		$bp_method->invokeArgs($stmt,$bp_values);
+		$stmt->execute();
+		if ($stmt->affected_rows > 0) {
+			echo 'updated|'.$id;
+		} else {
+			if ($this->dbconn->error) {
+				echo 'fail|'.$this->dbconn->error;
+				$this->mb->addError($this->dbconn->error);
+			} else echo 'fail|No rows updated';
+		}
+		$stmt->close();		
 	} // updateHeader()
 	public function insertRecord() {
 		if (isset($_POST['level']) && $_POST['level']=='header') $this->insertHeader(false);

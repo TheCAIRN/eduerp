@@ -12,12 +12,47 @@ function gtinAssign() {
 	});
 } // gtinAssign()
 function getItemInputFields(prefix) {
-	
+	return {
+		entity_id:$("#"+prefix+"entity_id option:selected").val()
+		,division_id:$("#"+prefix+"division_id option:selected").val()
+		,department_id:$("#"+prefix+"department_id option:selected").val()
+		,item_type_code:$("#"+prefix+"item_type_code option:selected").val()
+		,item_category_id:$("#"+prefix+"item_category_id option:selected").val()
+		,product_id:$("#"+prefix+"product_id").val()
+		,product_code:$("#"+prefix+"product_code").val()
+		,product_description:$("#"+prefix+"product_description").val()
+		,product_catalog_title:$("#"+prefix+"product_catalog_title").val()
+		,product_uom:$("#"+prefix+"product_uom option:selected").val()
+		,gtin:$("#"+prefix+"gtin").val()
+		,standard_cost:$("#"+prefix+"standard_cost").val()
+		,suggested_retail:$("#"+prefix+"suggested_retail").val()
+		,wholesale_price:$("#"+prefix+"wholesale_price").val()
+		,currency_code:$("#"+prefix+"currency_code option:selected").val()
+		,length:$("#"+prefix+"length").val()
+		,width:$("#"+prefix+"width").val()
+		,height:$("#"+prefix+"height").val()
+		,lwh_uom:$("#"+prefix+"lwh_uom option:selected").val()
+		,weight:$("#"+prefix+"weight").val()
+		,weight_uom:$("#"+prefix+"weight_uom option:selected").val()
+		,harmonized_tariff_code:$("#"+prefix+"harmonized_tariff_code").val()
+		,tariff_revision:$("#"+prefix+"tariff_revision").val()
+		,promotion_start_dated:$("#"+prefix+"promotion_start_date-date").val()
+		,promotion_start_datet:$("#"+prefix+"promotion_start_date-time").val()
+		,promotion_end_dated:$("#"+prefix+"promotion_end_date-date").val()
+		,promotion_end_datet:$("#"+prefix+"promotion_end_date-time").val()
+		,product_launch_dated:$("#"+prefix+"product_launch_date-date").val()
+		,product_sunset_dated:$("#"+prefix+"product_sunset_date-date").val()
+		,product_end_of_support_dated:$("#"+prefix+"product_end_of_support_date-date").val()
+		,product_end_of_extended_support_dated:$("#"+prefix+"product_end_of_support_date-date").val()
+		,visible:$("#"+prefix+"visible").is("checked")
+		,rev_enabled:$("#"+prefix+"rev_enabled").is("checked")
+		,rev_number:$("#"+prefix+"rev_number").val()
+	};
 } // getItemInputFields()
 function saveItemHeader(prefix) {
 	var inputs = getItemInputFields(prefix);
 	var mode;
-	if (inputs.id==0) mode='insertRecord';
+	if (inputs.product_id==0 || inputs.product_id=='') mode='insertRecord';
 	else mode='updateRecord';
 	$.post("jq.php",{jquery:mode,module:'itemmanager',level:'header',data:inputs},function(data) {
 		var fields = data.split("|");
