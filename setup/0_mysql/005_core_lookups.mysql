@@ -134,7 +134,15 @@ CREATE TABLE IF NOT EXISTS aa_attachment_types (
 	,attachment_type_description varchar(128)
 	,UNIQUE (attachment_type_code)
 ) ENGINE=InnoDB;
-
+INSERT INTO aa_attachment_types VALUES 
+(1,'IMAGE','Images of any kind, supported by the HTML IMG tag.')
+,(2,'PDF','PDF documents.')
+,(3,'CSV','Spreadsheet data in plain text.')
+,(4,'XML','Hierarchical data in markup language.')
+,(5,'JSON','Hierarchical data in JSON format.')
+,(6,'OFIS','An office style document (DOC,XLS,PPT,etc).')
+,(7,'MD','Documentation in markdown language.')
+;
 -- Attachments
 CREATE TABLE IF NOT EXISTS aa_attachments (
 	attachment_id int not null auto_increment PRIMARY KEY

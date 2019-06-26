@@ -262,7 +262,11 @@ CREATE TABLE IF NOT EXISTS item_family_components (
 	,UNIQUE (product_family_id,product_id)
 ) ENGINE=InnoDB;
 
--- TODO:
 CREATE TABLE IF NOT EXISTS item_attachments (
-	
+	product_id int not null
+	,attachment_id int not null
+	,FOREIGN KEY (product_id) REFERENCES item_master(product_id)
+	,FOREIGN KEY (attachment_id) REFERENCES aa_attachments(attachment_id)
+	,UNIQUE (product_id,attachment_id)	
 ) ENGINE=InnoDB;
+

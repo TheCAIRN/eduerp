@@ -1,3 +1,4 @@
+var NewRecordAttachmentPane = '';
 function logout() {
 	$.post('jq.php',{jquery:'logoff'},function(data) {
 		location.reload(true);
@@ -81,28 +82,28 @@ function viewRecord(whichModule,id) {
 		updateDiv('messagebar');
 		updateDiv('toolbar');
 	});
-}
+} // viewRecord()
 function returnToResultsList(screen) {
 	$.post('jq.php',{jquery:'listResultsAgain',cs:screen},function(data) {
 		if (data.length > 0) $("#core").html(data);
 		updateDiv('messagebar');
 		updateDiv('toolbar');
 	});
-}
+} // returnToResultsList()
 function newRecord() {
 	$.post('jq.php',{jquery:'newRecord'},function(data) {
 		if (data.length > 0) $("#core").html(data);
 		updateDiv('messagebar');
 		updateDiv('toolbar');
 	});
-}
+} // newRecord()
 function editRecord(whichModule,id) {
 	$.post('jq.php',{jquery:'editRecord',module:whichModule,id:id},function(data) {
 		if (data.length > 0) $("#core").html(data);
 		updateDiv('messagebar');
 		updateDiv('toolbar');
 	});
-}
+} // editRecord()
 function saveRecord(whichModule) {
 	if (whichModule=="Purchasing") {
 		savePurchasingHeader();
@@ -140,7 +141,7 @@ function saveRecord(whichModule) {
 	if (whichModule=="SalesOrders") {
 		saveSalesOrdersHeader();
 	}
-}
+} // saveRecord()
 function addDetailRow(whichModule) {
 	if (whichModule=="Purchasing") {
 		newPurchasingDetailRow();
@@ -151,4 +152,34 @@ function addDetailRow(whichModule) {
 	if (whichModule=="SalesOrders") {
 		newSalesOrdersDetailRow();
 	}
-}
+} // addDetailRow()
+function showNewRecordAttachmentPane() {
+	
+} // showNewRecordAttachmentPane()
+function onClick_addFile() {
+	// TODO: Change to Drag & Drop: https://makitweb.com/drag-and-drop-file-upload-with-jquery-and-ajax/
+	var attachmentPrimaryKey = $("#attachmentPrimaryKey").val();
+	var supportsAttachments = $("#supportsAttachments").val();
+	var attachmentCurrentRecord = $("#attachmentCurrentRecord").val();
+	var attachmentDescription = $("#attachmentDescription").text();
+	var attachmentType = $("#AttachmentTypesSelect option:selected").val();
+	var fd = new FormData();
+	fd.append('file',$("#attachmentAddFile")[0].files[0]);
+	fd.append('jquery','attachFile');
+	fd.append('primaryKey',attachmentPrimaryKey);
+	fd.append('tablename',supportsAttachments);
+	fd.append('attachmentType',attachmentType);
+	fd.append('description',attachmentDescription);
+	$.ajax({
+		url: 'jq.php'
+		,type: 'post'
+		,data: fd
+		,contentType: false
+		,processData: false
+		,dataType: 'json'
+		,success: function (data) {
+			
+		}
+	});
+	
+} // onClick_addFile()

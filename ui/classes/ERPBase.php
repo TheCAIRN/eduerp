@@ -2,6 +2,7 @@
 class ERPBase {
 	protected $dbconn;
 	protected $currentRecord;
+	protected $primaryKey;
 	protected $recordSet;
 	protected $searchFields;
 	protected $entryFields;
@@ -11,6 +12,7 @@ class ERPBase {
 	public function __construct($link=null) {
 		$this->dbconn = $link;
 		$this->currentRecord = -1;
+		$this->primaryKey = 'id';
 		$this->recordSet = array();
 		$this->searchFields = array();
 		$this->entryFields = array();
@@ -308,7 +310,36 @@ class ERPBase {
 					$html .= '</DIV>';
 				}
 			} // else, if there are fewer than 4 entries for the field, it is malformed.
-		}
+		} // foreach entryfields
+		if (is_string($this->supportsNotes)) {
+			
+		} // supportsNotes
+		if (is_string($this->supportsAttachments) && !$embedded) {
+			$q = 'SELECT aa.attachment_id,aa.attachment_type_id,aa.file_name,aa.uri,aa.description,aa.data FROM '.
+				$this->supportsAttachments.' pr JOIN aa_attachments aa ON pr.attachment_id=aa.attachment_id WHERE '.$this->primaryKey.'='.$this->currentRecord;
+			$result = $this->dbconn->query($q);
+			if ($result!==false) {
+				if ($this->supportsAttachments=='item_attachments') {
+					$html .= '</FIELDSET>';
+				}
+				$html .= '<FIELDSET class="'.$cls.'" id="attachments"><LEGEND onClick="$(this).siblings().toggle();">Attachments</LEGEND>';
+				while ($row = $result->fetch_assoc()) {
+					$html .= '<DIV><A href="getAttachment.php?id='.$row['attachment_id'].'">'.$row['file_name'].'</A><DIV>'.$row['description'].'</DIV></DIV>';
+				}
+				if ($view=='edit') {
+					$at = new AttachmentTypes($this->dbconn);
+					$html .= '<DIV id="newAttachment"><LABEL>Add another attachment:</LABEL><INPUT type="hidden" id="supportsAttachments" value="'.$this->supportsAttachments.'" />'.
+						'<INPUT type="hidden" id="attachmentPrimaryKey" value="'.$this->primaryKey.'" /><INPUT type="hidden" id="attachmentCurrentRecord" value="'.$this->currentRecord.'" />'.
+						'<INPUT type="file" id="attachmentAddFile" />'.
+						$at->AttachmentTypesSelect(0,false).
+						'<LABEL for="attachmentDescription">Description</LABEL>'.
+						'<TEXTAREA id="attachmentDescription" rows="3" columns="30"></TEXTAREA><BUTTON onClick="onClick_addFile();">Attach File</BUTTON></DIV>';
+				} // if view==edit, add new attachment section
+				if ($this->supportsAttachments!='item_attachments') {
+					$html .= '</FIELDSET>';
+				}
+			} else $html .= '<DIV>'.$this->dbconn->error.'</DIV>';
+		} // supportsAttachments
 		return $html;  // This one is returning instead of echoing, because the calling function may need to add some module-specific scripting.
 	} // function abstractRecord()
 	protected function abstractNewRecord($module,$prefix='') {
@@ -351,7 +382,8 @@ class ERPBase {
 		$idfield = str_replace(array("'",";","/","\\","-"),"",$idfield);
 		$idnamefield = str_replace(array("'",";","/","\\","-"),"",$idnamefield);
 		$idlabel = str_replace(array("'",";","/","\\","-"),"",$idlabel);
-		$html = '<LABEL for="'.$idlabel.'Select">'.ucwords($idlabel).':</LABEL><SELECT id="'.$idlabel.'Select">';
+		$html = '<LABEL for="'.$idlabel.'Select">'.ucwords($idlabel).':</LABEL><SELECT id="'.str_replace(' ','',$idlabel).'Select">';
+		if (!$readonly) $html .= '<OPTION value="">&nbsp;</OPTION>';
 		$q = "SELECT $idfield,$idnamefield FROM $table ORDER BY $idnamefield;";
 		$result = $this->dbconn->query($q);
 		if ($result!==false) while ($row = $result->fetch_assoc()) {

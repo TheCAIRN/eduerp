@@ -27,24 +27,30 @@ class Toolbar {
 				case 28: $mod="'ConsumersSearch'"; break;
 				case 44: $mod="'SalesOrdersSearch'"; break;
 				case 2002: 
-				case 3002: $mod="'Entity'"; break;
+				case 3002: 
+				case 4002: $mod="'Entity'"; break;
 				case 2005: 
-				case 3005: $mod="'Vendor'"; break;
+				case 3005: 
+				case 4005: $mod="'Vendor'"; break;
 				case 2007: 
-				case 3007: $mod="'Purchasing'"; break;
+				case 3007: 
+				case 4007: $mod="'Purchasing'"; break;
 				case 2012:
 				case 3012: 
 				case 4012: $mod="'Addresses'"; break;
 				case 2013: 
-				case 3013: $mod="'ItemManager'"; break;
+				case 3013: 
+				case 4013: $mod="'ItemManager'"; break;
 				case 2019:
-				case 3019: $mod="'BOM'"; break;
+				case 3019: 
+				case 4019: $mod="'BOM'"; break;
 				case 2020: 
 				case 3020: $mod="'VendorCatalog'"; break;
 				case 2023:
 				case 3023: $mod="'CustomerTypes'"; break;
 				case 2024:
-				case 3024: $mod="'Customer'"; break;
+				case 3024: 
+				case 4024: $mod="'Customer'"; break;
 				case 2025:
 				case 3025: $mod="'CustomerDC'"; break;
 				case 2026:

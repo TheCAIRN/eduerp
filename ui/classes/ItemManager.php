@@ -38,8 +38,9 @@ class ItemManager extends ERPBase {
 	private $column_list;
 	public function __construct($link=null) {
 		parent::__construct($link);
-		$this->supportsNotes = true;
-		$this->supportsAttachments = true;
+		$this->supportsNotes = 'item_notes';
+		$this->supportsAttachments = 'item_attachments';
+		$this->primaryKey = 'product_id';
 		/*
 		Revised 13 May 2019 to use unified_search instead of field based search (Michael J. Sabal)
 		
@@ -237,7 +238,8 @@ class ItemManager extends ERPBase {
 		}
 		$q = "SELECT product_id,product_code,product_description,gtin FROM item_master WHERE product_id=?";
 		$stmt = $this->dbconn->prepare($q);
-		$stmt->bind_param('i',$data);
+		$stmt->bind_param('i',$p1);
+		$p1 = $data;
 		$return = $stmt->execute();
 		$stmt->store_result();
 		if ($return===false || $stmt->num_rows==0) {
@@ -369,6 +371,7 @@ class ItemManager extends ERPBase {
 				$this->visible, $this->rev_enabled, $this->rev_number, $this->created_by, $this->creation_date, $this->last_update_by, $this->last_update_date);
 			$stmt->store_result();
 			$stmt->fetch();
+			$this->currentRecord = $id;
 /*
 			if ($readonly) $cls = 'RecordView'; else $cls = 'RecordEdit';
 			if ($readonly) $inputtextro = ' readonly="readonly"'; else $inputtextro = '';
@@ -424,6 +427,7 @@ class ItemManager extends ERPBase {
 		if ($mode!='update') {
 			$hdata = $this->arrayify();
 			echo '<FIELDSET id="ItemRecord" class="Record'.ucwords($mode).'">';
+			echo '<LEGEND onClick="$(this).siblings().toggle();">Item</LEGEND>';
 			echo parent::abstractRecord($mode,'ItemManager','',$hdata,null);
 			echo '</FIELDSET>';
 		}
@@ -447,6 +451,10 @@ class ItemManager extends ERPBase {
 		echo '</FIELDSET>';
 		$_SESSION['currentScreen'] = 3013;
 	} // newRecord()
+	public function editRecord($id) {
+		$this->display($id,'edit');
+		$_SESSION['currentScreen'] = 4013;
+	}
 	private function insertHeader($embed=false) {
 		$this->resetHeader();
 		if (!isset($_POST['data'])) {
