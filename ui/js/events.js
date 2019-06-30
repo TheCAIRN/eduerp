@@ -178,7 +178,14 @@ function onClick_addFile() {
 		,processData: false
 		,dataType: 'json'
 		,success: function (data) {
-			
+			var fields = data.split("|");
+			if (fields[0]=='success') {
+				// TODO: Add DIV above entry fields in attachment fieldset.
+			}
+			if (fields[0]=='fail') {
+				$("#messagebar").html('<DIV class="errorMessage">'+fields[1]+'</DIV>');
+			}
+			console.log(data);
 		}
 	});
 	

@@ -400,6 +400,15 @@ function jquery() {
 		else 
 			$modObject->updateRecord();
 	/**************************************************************************
+	 * ATTACH/DETACH FILE
+	 **************************************************************************/
+	} elseif ($command=='attachFile') {
+		$att = new Attachments($link);
+		$att->insertRecord();
+	} elseif ($command=='detachFile') {
+		$att = new Attachments($link);
+		$att->removeRecord();
+	/**************************************************************************
 	 * LOGOFF
 	 **************************************************************************/
 	} elseif ($command=='logoff') {

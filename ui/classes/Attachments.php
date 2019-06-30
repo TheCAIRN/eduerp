@@ -105,6 +105,22 @@ class Attachments extends ERPBase {
 	} // newRecord()
 	private function insertHeader() {
 		$this->resetHeader();
+		if (count($_FILES)==0) {
+			echo 'fail|No files uploaded';
+		}
+		$q1 = 'SELECT attachment_id FROM aa_attachments WHERE file_name=?;'; // TODO: Add hash check to table
+		$stmt1 = $this->dbconn->prepare($q1);
+		$stmt1->bind_param('s',$p1);
+		foreach ($FILES as $file) {
+			// Step 1: Does the file already exist in the attachments table?
+			$hash = md5(file_get_contents($file['tmp_name']));
+			$p1 = $file['name'];
+		
+			// Step 2: Link the file to the requested record.
+
+
+
+		} // foreach $FILES	
 		$q = "INSERT INTO zzzz_master (
 			rev_enabled,rev_number,created_by,creation_date,last_update_by,last_update_date) VALUES 
 			(?,?,?,?,?,?,?,?,?,?,?,?,?,?,NOW(),?,NOW());";
@@ -137,5 +153,8 @@ class Attachments extends ERPBase {
 	public function saveRecord() {
 	
 	} // saveRecord()
+	public function removeRecord() {
+		
+	} // removeRecord()
 } // class Attachments
 ?>
