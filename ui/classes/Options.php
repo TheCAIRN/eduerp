@@ -1,19 +1,38 @@
 <?php
-class Attachments extends ERPBase {
-	private $location;
+class Options extends ERPBase {
+	public static function GetOptionValue($link=null,$option='') {
+		if (!($link instanceof mysqli)) return null;
+		$q = 'SELECT option_value FROM aa_options WHERE option_id=? OR option_code=?;';
+		$stmt = $link->prepare($q);
+		if ($stmt===false) return null;
+		$stmt->bind_param('is',$p1,$p2);
+		if (is_integer($option) || ctype_digit($option)) {
+			$p1 = $option;
+		} else {
+			$p1 = -1;
+		}
+		$p2 = $option;
+		$result = $stmt->execute();
+		if ($result===false) return null;
+		$stmt->bind_result($rtn);
+		$stmt->fetch();
+		$stmt->close();
+		return $rtn;
+	} // GetOptionValue
+	/* TODO: Everything from here on down */
 	public function __construct ($link=null) {
 		parent::__construct($link);
 		$this->supportsNotes = false;
 		$this->supportsAttachments = false;
-		$this->location = Options::GetOptionValue($link,'ATTACHMENT_LOCATION');
+		
 		$this->resetHeader();
 	} // __construct
 	public function resetHeader() {
 	
 	} // resetHeader()
-	public function AttachmentsSelect($id=0,$readonly=false) {
+	public function _templateSelect($id=0,$readonly=false) {
 		return parent::abstractSelect($id,$readonly,'zzzz_master','zzzz_id','zzzz_name','zzzz');
-	} // AttachmentsSelect()
+	} // _templateSelect()
 	public function statusSelect($status='',$readonly=false,$include_label=false) {
 		$html = '';
 		if ($include_label) $html .= '<LABEL for="zzzzStatus">Status:</LABEL>';
@@ -106,67 +125,25 @@ class Attachments extends ERPBase {
 	} // newRecord()
 	private function insertHeader() {
 		$this->resetHeader();
-		if (count($_FILES)==0) {
-			echo 'fail|No files uploaded';
-		}
-		$q1 = 'SELECT attachment_id FROM aa_attachments WHERE file_name=?;'; // TODO: Add hash check to table
-		$stmt1 = $this->dbconn->prepare($q1);
-		$stmt1->bind_param('s',$p1);
-		$q2 = 'INSERT INTO aa_attachments (file_name,attachment_type_id,uri,description) VALUES (?,?,?,?);';
-		$stmt2 = $this->dbconn->prepare($q2);
-		$stmt2->bind_param('siss',$i1,$i2,$i3,$i4);
-		$table_name = $_POST['tablename'];
-		$key_name = $_POST['primaryKey'];
-		$q3 = 'INSERT INTO '.$table_name.' (attachment_id,'.$key_name.') VALUES (?,?);';
-		$stmt3 = $this->dbconn->prepare($q3);
-		if ($stmt3===false) {
+		$q = "INSERT INTO zzzz_master (
+			rev_enabled,rev_number,created_by,creation_date,last_update_by,last_update_date) VALUES 
+			(?,?,?,?,?,?,?,?,?,?,?,?,?,?,NOW(),?,NOW());";
+		$stmt = $this->dbconn->prepare($q);
+		$stmt->bind_param('sssissiisiisiii',$p1,$p2,$p3,$p4,$p5,$p6,$p7,$p8,$p9,$p10,$p11,$p12,$p13,$p14,$p16);
+
+		$p12 = ($rev_enabled=='true')?'Y':'N';
+		if ($rev_number<1) $rev_number = 1;
+		$p13 = $rev_number;
+		$p14 = $_SESSION['dbuserid'];
+		$p16 = $_SESSION['dbuserid'];
+		$result = $stmt->execute();
+		if ($result!==false) {
+			echo 'inserted|'.$this->dbconn->insert_id;
+		} else {
 			echo 'fail|'.$this->dbconn->error;
-			return;
+			$this->mb->addError($this->dbconn->error);
 		}
-		$stmt3->bind_param('ii',$k1,$k2);
-		foreach ($_FILES as $file) {
-			// Step 1: Does the file already exist in the attachments table?
-			$hash = md5(file_get_contents($file['tmp_name']));
-			$p1 = $file['name'];
-			$stmt1->execute();
-			$stmt1->store_result();
-			$stmt1->bind_result($att_id);
-			$stmt1->fetch();
-			if (is_integer($att_id) && $att_id>0) {
-				unlink($file['tmp_name']);
-			} else {
-				$success = move_uploaded_file($file['tmp_name'],$this->location.'/'.basename($file['name']));
-				if (!$success) {
-					echo 'fail|Could not move '.$file['name'];
-					continue;
-				}
-				$i1 = $this->location.'/'.basename($file['name']);
-				$i2 = $_POST['attachmentType'];
-				// TODO: Bug = URI is not capturing the correct path
-				if (strpos($this->location,'./')===0) $uri = 'http'.(isset($_SERVER['HTTPS'])?'s':'').'://'.$_SERVER['SERVER_NAME'].substr($this->location,1).basename($file['name']);
-				elseif (strpos($this->location,'/')===0) $uri = 'http'.(isset($_SERVER['HTTPS'])?'s':'').'://'.$_SERVER['SERVER_NAME'].$this->location.basename($file['name']);
-				else $uri = 'http'.(isset($_SERVER['HTTPS'])?'s':'').'://'.$_SERVER['SERVER_NAME'].'/'.$this->location.basename($file['name']);
-				$i3 = $uri;
-				$i4 = $_POST['description'];
-				$result = $stmt2->execute();
-				$stmt2->store_result();
-				if ($result!==false) {
-					$att_id = $this->dbconn->insert_id;
-				} else {
-					echo 'fail|Error inserting attachments: '.$this->dbconn->error;
-					continue;
-				}
-			}
-			// Step 2: Link the file to the requested record.
-			$k1 = $att_id;
-			$k2 = $_POST['currentRecord'];
-			$result = $stmt3->execute();
-			$stmt3->store_result();
-			if ($result===false) {
-				echo 'fail|Unable to link attachment with record: '.$this->dbconn->error;
-			}
-		} // foreach $FILES	
-		echo 'inserted|success';
+		$stmt->close();
 	} // insertHeader()
 	private function updateHeader() {
 	
@@ -180,8 +157,5 @@ class Attachments extends ERPBase {
 	public function saveRecord() {
 	
 	} // saveRecord()
-	public function removeRecord() {
-		
-	} // removeRecord()
-} // class Attachments
+} // class _template
 ?>

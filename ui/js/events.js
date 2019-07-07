@@ -161,12 +161,13 @@ function onClick_addFile() {
 	var attachmentPrimaryKey = $("#attachmentPrimaryKey").val();
 	var supportsAttachments = $("#supportsAttachments").val();
 	var attachmentCurrentRecord = $("#attachmentCurrentRecord").val();
-	var attachmentDescription = $("#attachmentDescription").text();
-	var attachmentType = $("#AttachmentTypesSelect option:selected").val();
+	var attachmentDescription = $("#attachmentDescription").val();
+	var attachmentType = $("#AttachmentTypeSelect option:selected").val();
 	var fd = new FormData();
 	fd.append('file',$("#attachmentAddFile")[0].files[0]);
 	fd.append('jquery','attachFile');
 	fd.append('primaryKey',attachmentPrimaryKey);
+	fd.append('currentRecord',attachmentCurrentRecord);
 	fd.append('tablename',supportsAttachments);
 	fd.append('attachmentType',attachmentType);
 	fd.append('description',attachmentDescription);

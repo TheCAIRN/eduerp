@@ -17,7 +17,3 @@ INSERT INTO aa_options VALUES
 ,(2,'ATTACHMENT_LOCATION',NULL,'Default location for storing uploaded attachments','./images/',NOW(),1,NOW())
 ;
 
--- Add season code to item_master
-
--- Add hash code to aa_attachments
-
