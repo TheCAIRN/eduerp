@@ -311,9 +311,10 @@ class ERPBase {
 				}
 			} // else, if there are fewer than 4 entries for the field, it is malformed.
 		} // foreach entryfields
-		if (is_string($this->supportsNotes)) {
-			$q = 'SELECT note_id,'.$this->primaryKey.',note_type_id,seq,note_text,rev_enabled,rev_number,created_by,creation_date,last_update_by,last_update_date FROM '.
-				$this->supportsNotes.' WHERE '.$this->primaryKey.'='.$this->currentRecord;
+		if (is_string($this->supportsNotes) && !$embedded) {
+			$q = 'SELECT note_id,'.$this->primaryKey.',n.note_type_id,seq,note_text,rev_enabled,rev_number,created_by,creation_date,'.
+				'last_update_by,last_update_date,note_type_code FROM '.
+				$this->supportsNotes.' n LEFT OUTER JOIN aa_note_types nt ON n.note_type_id=nt.note_type_id WHERE '.$this->primaryKey.'='.$this->currentRecord;
 			$result = $this->dbconn->query($q);
 			if ($result!==false) {
 				if ($this->supportsNotes=='item_notes') {
@@ -321,9 +322,9 @@ class ERPBase {
 				}
 				$html .= '<FIELDSET class="'.$cls.'" id="notes"><LEGEND onClick="$(this).siblings().toggle();">Notes</LEGEND>';
 				while ($row = $result->fetch_assoc()) {
-					$html .= '<DIV>'.$row['file_name'].'<DIV>'.$row['description'].'</DIV></DIV>';
+					$html .= '<DIV class="noteClass" id="note'.$row['note_id'].'">'.$row['note_type_code'].' '.$row['seq'].' '.$row['creation_date'].'<DIV>'.$row['note_text'].'</DIV></DIV>';
 				}
-				if ($view=='edit') {
+				if ($view=='edit' /*|| $view=='new'*/) {
 					$nt = new NoteTypes($this->dbconn);
 					$html .= '<DIV id="newNote"><LABEL>Add another note:</LABEL><INPUT type="hidden" id="supportsNotes" value="'.$this->supportsNotes.'" />'.
 						'<INPUT type="hidden" id="notePrimaryKey" value="'.$this->primaryKey.'" /><INPUT type="hidden" id="noteCurrentRecord" value="'.$this->currentRecord.'" />'.
@@ -350,7 +351,7 @@ class ERPBase {
 				while ($row = $result->fetch_assoc()) {
 					$html .= '<DIV><A href="getAttachment.php?id='.$row['attachment_id'].'">'.$row['file_name'].'</A><DIV>'.$row['description'].'</DIV></DIV>';
 				}
-				if ($view=='edit') {
+				if ($view=='edit' /*|| $view=='new'*/) {
 					$at = new AttachmentTypes($this->dbconn);
 					$html .= '<DIV id="newAttachment"><LABEL>Add another attachment:</LABEL><INPUT type="hidden" id="supportsAttachments" value="'.$this->supportsAttachments.'" />'.
 						'<INPUT type="hidden" id="attachmentPrimaryKey" value="'.$this->primaryKey.'" /><INPUT type="hidden" id="attachmentCurrentRecord" value="'.$this->currentRecord.'" />'.
@@ -406,7 +407,7 @@ class ERPBase {
 		$idfield = str_replace(array("'",";","/","\\","-"),"",$idfield);
 		$idnamefield = str_replace(array("'",";","/","\\","-"),"",$idnamefield);
 		$idlabel = str_replace(array("'",";","/","\\","-"),"",$idlabel);
-		$html = '<LABEL for="'.$idlabel.'Select">'.ucwords($idlabel).':</LABEL><SELECT id="'.str_replace(' ','',$idlabel).'Select">';
+		$html = '<LABEL for="'.str_replace(' ','',$idlabel).'Select">'.ucwords($idlabel).':</LABEL><SELECT id="'.str_replace(' ','',$idlabel).'Select">';
 		if (!$readonly) $html .= '<OPTION value="">&nbsp;</OPTION>';
 		$q = "SELECT $idfield,$idnamefield FROM $table ORDER BY $idnamefield;";
 		$result = $this->dbconn->query($q);

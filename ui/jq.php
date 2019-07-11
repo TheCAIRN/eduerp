@@ -409,6 +409,15 @@ function jquery() {
 		$att = new Attachments($link);
 		$att->removeRecord();
 	/**************************************************************************
+	 * ADD/REMOVE NOTE
+	 **************************************************************************/
+	} elseif ($command=='addNote') {
+		$mod = new Notes($link);
+		$mod->insertRecord();
+	} elseif ($command=='removeNote') {
+		$mod = new Notes($link);
+		$mod->removeRecord();
+	/**************************************************************************
 	 * LOGOFF
 	 **************************************************************************/
 	} elseif ($command=='logoff') {

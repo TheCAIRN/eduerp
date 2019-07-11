@@ -197,10 +197,11 @@ function onClick_addNote() {
 	var noteCurrentRecord = $("#noteCurrentRecord").val();
 	var seq = $("#seq").val();
 	var noteText = $("#noteText").val();
-	$.post("jq.php",{jquery:"addNote",supportsNotes:supportsNotes,notePrimaryKey:notePrimaryKey,noteCurrentRecord:noteCurrentRecord,seq:seq,noteText:noteText},
-		function (data) {
+	var noteType = $("#NoteTypeSelect option:selected").val();
+	$.post("jq.php",{jquery:"addNote",supportsNotes:supportsNotes,notePrimaryKey:notePrimaryKey,noteCurrentRecord:noteCurrentRecord,seq:seq,
+		noteType:noteType,noteText:noteText},function (data) {
 			var fields = data.split("|");
-			if (fields[0]=='success') {
+			if (fields[0]=='inserted') {
 				// TODO: Add DIV above entry fields in notes fieldset.
 			}
 			if (fields[0]=='fail') {

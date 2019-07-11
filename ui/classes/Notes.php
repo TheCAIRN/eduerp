@@ -105,20 +105,72 @@ class Notes extends ERPBase {
 	} // newRecord()
 	private function insertHeader() {
 		$this->resetHeader();
-		$q = "INSERT INTO zzzz_master (
+		$supportsNotes = $_POST['supportsNotes'];
+		$notePrimaryKey = $_POST['notePrimaryKey'];
+		$noteCurrentRecord = $_POST['noteCurrentRecord'];
+		$seq = $_POST['seq'];
+		$noteType = $_POST['noteType'];
+		$noteText = $_POST['noteText'];
+		$rev_enabled = false;
+		$rev_number = 1;
+		// Validate fields
+		if (!is_integer($noteCurrentRecord) && !ctype_digit($noteCurrentRecord)) {
+			echo 'fail|Current record is not a proper ID.';
+			return;
+		}
+		if (!is_integer($seq) && !ctype_digit($seq)) {
+			echo 'fail|Requested sequence number is not an integer.';
+			return;
+		}
+		if (substr($supportsNotes,-6)!='_notes') {
+			echo 'fail|Invalid notes table';
+			return;
+		}
+		if (!in_array($notePrimaryKey,array('product_id','purchase_order_number','pur_detail_id','sales_order_number','sales_detail_id','customer_id'))) {
+			echo 'fail|Invalid note primary key field';
+			return;
+		}
+		// Check sequence number
+		$q = 'SELECT MAX(seq) AS last_seq FROM '.$supportsNotes.' WHERE '.$notePrimaryKey.'=? AND note_type_id=?;';
+		$s1 = $this->dbconn->prepare($q);
+		if ($s1===false) {
+			echo 'fail|'.$this->dbconn->error;
+			return;
+		}
+		$s1->bind_param('ii',$f3,$f4);
+		$f3 = $noteCurrentRecord;
+		$f4 = $noteType;
+		$r1 = $s1->execute();
+		if ($r1!==false) {
+			$s1->bind_result($last_seq);
+			$s1->store_result();
+			$s1->fetch();
+			if (empty($last_seq)) $seq = 1;
+			elseif ($seq <= $last_seq) $seq = $last_seq+1;
+		}
+		$s1->close();
+		// Insert record
+		$q1 = "INSERT INTO $supportsNotes ($notePrimaryKey,note_type_id,seq,note_text,
 			rev_enabled,rev_number,created_by,creation_date,last_update_by,last_update_date) VALUES 
-			(?,?,?,?,?,?,?,?,?,?,?,?,?,?,NOW(),?,NOW());";
-		$stmt = $this->dbconn->prepare($q);
-		$stmt->bind_param('sssissiisiisiii',$p1,$p2,$p3,$p4,$p5,$p6,$p7,$p8,$p9,$p10,$p11,$p12,$p13,$p14,$p16);
-
-		$p12 = ($rev_enabled=='true')?'Y':'N';
+			(?,?,?,?,?,?,?,NOW(),?,NOW());";
+		$stmt = $this->dbconn->prepare($q1);
+		if ($stmt===false) {
+			echo 'fail|'.$this->dbconn->error;
+			return;
+		}
+		$stmt->bind_param('iiissiii',$p3,$p4,$p5,$p6,$p7,$p8,$p9,$p10);
+		$p3 = $noteCurrentRecord;
+		$p4 = $noteType;
+		$p5 = $seq;
+		$p6 = $noteText;
+		$p7 = ($rev_enabled=='true')?'Y':'N';
 		if ($rev_number<1) $rev_number = 1;
-		$p13 = $rev_number;
-		$p14 = $_SESSION['dbuserid'];
-		$p16 = $_SESSION['dbuserid'];
+		$p8 = $rev_number;
+		$p9 = $_SESSION['dbuserid'];
+		$p10 = $_SESSION['dbuserid'];
 		$result = $stmt->execute();
 		if ($result!==false) {
-			echo 'inserted|'.$this->dbconn->insert_id;
+			echo 'inserted|'.$this->dbconn->insert_id.'|'.$seq;
 		} else {
 			echo 'fail|'.$this->dbconn->error;
 			$this->mb->addError($this->dbconn->error);
@@ -137,5 +189,8 @@ class Notes extends ERPBase {
 	public function saveRecord() {
 	
 	} // saveRecord()
+	public function removeRecord() {
+		
+	} // removeRecord()
 } // class Notes
 ?>
