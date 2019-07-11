@@ -1,3 +1,12 @@
+-- Note types aren't exactly entities, but are necessary to support most note-driven activity.
+INSERT INTO aa_note_types (note_type_id,note_type_code,note_type_description) VALUES
+(1,'GEN','General purpose notes')
+,(2,'MFG','Manufacturing instructions')
+,(3,'RELAT','Partner relationship information')
+,(4,'CHAT','Forum conversation for a particular record')
+,(5,'XREF','Notes which contain references to other records or external cross-references')
+,(6,'LEGAL','Notes associated with legal contracts, disclaimers, etc.')
+;
 /*
  * Create entities for a simulated company
  */

@@ -191,3 +191,21 @@ function onClick_addFile() {
 	});
 	
 } // onClick_addFile()
+function onClick_addNote() {
+	var supportsNotes = $("#supportsNotes").val();
+	var notePrimaryKey = $("#notePrimaryKey").val();
+	var noteCurrentRecord = $("#noteCurrentRecord").val();
+	var seq = $("#seq").val();
+	var noteText = $("#noteText").val();
+	$.post("jq.php",{jquery:"addNote",supportsNotes:supportsNotes,notePrimaryKey:notePrimaryKey,noteCurrentRecord:noteCurrentRecord,seq:seq,noteText:noteText},
+		function (data) {
+			var fields = data.split("|");
+			if (fields[0]=='success') {
+				// TODO: Add DIV above entry fields in notes fieldset.
+			}
+			if (fields[0]=='fail') {
+				$("#messagebar").html('<DIV class="errorMessage">'+fields[1]+'</DIV>');
+			}
+			console.log(data);
+	});
+}

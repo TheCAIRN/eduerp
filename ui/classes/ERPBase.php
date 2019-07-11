@@ -312,7 +312,31 @@ class ERPBase {
 			} // else, if there are fewer than 4 entries for the field, it is malformed.
 		} // foreach entryfields
 		if (is_string($this->supportsNotes)) {
-			
+			$q = 'SELECT note_id,'.$this->primaryKey.',note_type_id,seq,note_text,rev_enabled,rev_number,created_by,creation_date,last_update_by,last_update_date FROM '.
+				$this->supportsNotes.' WHERE '.$this->primaryKey.'='.$this->currentRecord;
+			$result = $this->dbconn->query($q);
+			if ($result!==false) {
+				if ($this->supportsNotes=='item_notes') {
+					$html .= '</FIELDSET>';
+				}
+				$html .= '<FIELDSET class="'.$cls.'" id="notes"><LEGEND onClick="$(this).siblings().toggle();">Notes</LEGEND>';
+				while ($row = $result->fetch_assoc()) {
+					$html .= '<DIV>'.$row['file_name'].'<DIV>'.$row['description'].'</DIV></DIV>';
+				}
+				if ($view=='edit') {
+					$nt = new NoteTypes($this->dbconn);
+					$html .= '<DIV id="newNote"><LABEL>Add another note:</LABEL><INPUT type="hidden" id="supportsNotes" value="'.$this->supportsNotes.'" />'.
+						'<INPUT type="hidden" id="notePrimaryKey" value="'.$this->primaryKey.'" /><INPUT type="hidden" id="noteCurrentRecord" value="'.$this->currentRecord.'" />'.
+						$nt->NoteTypesSelect(0,false).
+						'<LABEL for="seq">Sequence</LABEL>'.
+						'<INPUT type="number" id="seq" value="1" />'.
+						'<LABEL for="noteText">Note Text</LABEL>'.
+						'<TEXTAREA id="noteText" rows="3" columns="50"></TEXTAREA><BUTTON onClick="onClick_addNote();">Add Note</BUTTON></DIV>';
+				} // if view==edit, add new note section
+				if ($this->supportsNotes!='item_notes') {
+					$html .= '</FIELDSET>';
+				}
+			} else $html .= '<DIV>'.$this->dbconn->error.'</DIV>';
 		} // supportsNotes
 		if (is_string($this->supportsAttachments) && !$embedded) {
 			$q = 'SELECT aa.attachment_id,aa.attachment_type_id,aa.file_name,aa.uri,aa.description,aa.data FROM '.
