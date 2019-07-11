@@ -39,3 +39,6 @@ SELECT sec.user_id,sec.human_id,sec.group_id,gp.group_name,h.title,h.given_name,
 FROM sec_users sec
 LEFT OUTER JOIN sec_groups gp ON sec.group_id=gp.group_id
 INNER JOIN cx_humans h ON sec.human_id=h.human_id
+
+ALTER TABLE aa_options
+ADD FOREIGN KEY (last_update_by) REFERENCES sec_users (user_id);

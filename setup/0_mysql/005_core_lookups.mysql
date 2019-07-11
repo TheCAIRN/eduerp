@@ -150,9 +150,26 @@ CREATE TABLE IF NOT EXISTS aa_attachments (
 	,file_name varchar(256) not null
 	,uri varchar(1024) not null
 	,description varchar(4096)
+	,hash_code varchar(512)
 	,data longblob
 	,FOREIGN KEY (attachment_type_id) REFERENCES aa_attachment_types (attachment_type_id)
 ) ENGINE=InnoDB;
+
+-- System Options (a.k.a. System Parameters)
+CREATE TABLE aa_options (
+	option_id int not null auto_increment PRIMARY KEY
+	,option_code varchar(64) not null
+	,option_group varchar(64)
+	,description varchar(2048)
+	,option_value varchar(1024)
+	,creation_date datetime not null
+	,last_update_by int not null
+	,last_update_date datetime not null
+) ENGINE=InnoDB;
+INSERT INTO aa_options VALUES
+(1,'OPEN_LOGIN',NULL,'Classrooms will benefit from having all modules open to all users (set to true).  Enterprises require strict security with detailed access controls (set to false).','TRUE',NOW(),1,NOW())
+,(2,'ATTACHMENT_LOCATION',NULL,'Default location for storing uploaded attachments','./images/',NOW(),1,NOW())
+;
 
 -- Cancellation reason codes
 CREATE TABLE IF NOT EXISTS aa_cancellation_reason_codes (
