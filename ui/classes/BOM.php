@@ -2,10 +2,17 @@
 class BOM extends ERPBase {
 	private $bom_id;
 	private $resulting_product;
+	private $resulting_product_code;
+	private $resulting_product_description;
 	private $resulting_product_qty;
 	private $bom_description;
 	private $rev_enabled;
 	private $rev_number;
+	private	$huser_creation;
+	private $hdate_creation;
+	private $huser_modify;
+	private $hdate_modify;
+	private $column_list_header = 'bom_id,resulting_product_id,resulting_quantity,description,rev_enabled,rev_number';
 	
 	private $bom_detail_id;
 	private $step_number;
@@ -16,9 +23,15 @@ class BOM extends ERPBase {
 	private $seconds_to_process;
 	private $sub_bom_id;
 	private $detail_description;
-	private $detail_rev_enabled;
-	private $detail_rev_number;
+	private $drev_enabled;
+	private $drev_number;
+	private	$duser_creation;
+	private $ddate_creation;
+	private $duser_modify;
+	private $ddate_modify;
 	private $detail_array;
+	private $column_list_detail = 'bom_id,bom_detail_id,step_number,step_type,component_product_id,
+		component_quantity_used,bom_step_id,seconds_to_process,sub_bom_id,description,rev_enabled,rev_number';
 	
 	public function __construct($link=null) {
 		parent::__construct($link);
@@ -52,10 +65,16 @@ class BOM extends ERPBase {
 	public function resetHeader() {
 		$this->bom_id = 0;
 		$this->resulting_product = 0; // product_id
+		$this->resulting_product_code = '';
+		$this->resulting_product_description = '';
 		$this->resulting_product_qty = 0.00;
 		$this->bom_description = '';
 		$this->rev_enabled = false;
 		$this->rev_number = 1;
+		$this->huser_creation = null;
+		$this->hdate_creation = null;
+		$this->huser_modify = null;
+		$this->hdate_modify = null;
 		$this->detail_array = array();
 	}
 	public function resetDetail() {
@@ -68,8 +87,45 @@ class BOM extends ERPBase {
 		$this->seconds_to_process = 0;
 		$this->sub_bom_id = 0;
 		$this->detail_description = '';
-		$this->detail_rev_enabled = false;
-		$this->detail_rev_number = 1;
+		$this->drev_enabled = false;
+		$this->drev_number = 1;
+		$this->duser_creation = null;
+		$this->ddate_creation = null;
+		$this->duser_modify = null;
+		$this->ddate_modify = null;
+	}
+	public function arrayifyHeader() {
+		return array(
+			'bom_id'=>$this->bom_id,
+			'resulting_product_id'=>$this->resulting_product,
+			'resulting_quantity'=>$this->resulting_product_qty,
+			'description'=>$this->bom_description,
+			'rev_enabled'=>$this->rev_enabled,
+			'rev_number'=>$this->rev_number,
+			'huser_creation'=>$this->huser_creation,
+			'hdate_creation'=>$this->hdate_creation,
+			'huser_modify'=>$this->huser_modify,
+			'hdate_modify'=>$this->hdate_modify
+		);
+	} // arrayifyHeader()
+	public function arrayifyDetail() {
+		return array(
+			'bom_detail_id'=>$this->bom_detail_id,
+			'step_number'=>$this->step_number,
+			'step_type'=>$this->step_type,
+			'component_product_id'=>$this->component_product_id,
+			'component_quantity_used'=>$this->component_quantity_used,
+			'bom_step_id'=>$this->bom_step_id,
+			'seconds_to_process'=>$this->seconds_to_process,
+			'sub_bom_id'=>$this->sub_bom_id,
+			'description'=>$this->detail_description,
+			'rev_enabled'=>$this->drev_enabled,
+			'rev_number'=>$this->drev_number,
+			'duser_creation'=>$this->duser_creation,
+			'ddate_creation'=>$this->ddate_creation,
+			'duser_modify'=>$this->duser_modify,
+			'ddate_modify'=>$this->ddate_modify
+		);
 	}
 	public function listRecords() {
 		parent::abstractListRecords('BOM');
@@ -78,7 +134,48 @@ class BOM extends ERPBase {
 		parent::abstractSearchPage('BOMSearch');
 	} // function searchPage()
 	public function executeSearch($criteria) {
-		
+		$this->resetHeader();
+		$q = "SELECT bom_id,resulting_product_id,product_code,product_description,resulting_quantity,description 
+			FROM bom_header bh JOIN item_master im ON bh.resulting_product_id=im.product_id";
+		if (!is_null($criteria) && is_array($criteria) && count($criteria)>0) {
+			if (isset($criteria['bom_id']) && isset($criteria['product_id'])) {
+				$q .= ' WHERE bom_id=? OR product_id=? ORDER BY bom_id';
+				$stmt = $this->dbconn->prepare($q);
+				if ($stmt!==false) {
+					$stmt->bind_param('ii',$p1,$p2);
+					$p1 = $criteria['bom_id'];
+					$p2 = $criteria['product_id'];
+					$result = $stmt->execute();
+					if ($result !== false) {
+						$stmt->store_result();
+						$stmt->bind_result($this->bom_id,$this->resulting_product_id,$this->product_code,$this->product_description,
+							$this->resulting_quantity,$this->description);
+						while ($stmt->fetch()) {
+							$this->recordSet[$this->bom_id] = array('product'=>$this->resulting_product_id,'code'=>$this->product_code,
+								'product_description'=>$this->product_description,'quantity'=>$this->resulting_quantity,'description'=>$this->description);
+						}
+					}
+					
+				} else echo $this->dbconn->error;
+			}
+		// if criteria exists
+		} else {
+			$q .= " ORDER BY bom_id";
+			$result = $this->dbconn->query($q);
+			if ($result!==false) {
+				$this->recordSet = array();
+				while ($row=$result->fetch_assoc()) {
+					$this->recordSet[$row['bom_id']] = array('product'=>$row['resulting_product_id'],'code'=>$row['product_code'],
+						'product_description'=>$row['product_description'],'quantity'=>$row['resulting_quantity'],'description'=>$row['description']);
+				} // while rows
+			} // if query succeeded
+		} // if criteria does not exist
+		$this->listRecords();
+		$_SESSION['currentScreen'] = 1019;
+		$_SESSION['lastCriteria'] = $criteria;
+		if (!isset($_SESSION['searchResults'])) $_SESSION['searchResults'] = array();
+		$_SESSION['searchResults']['BOM'] = array_keys($this->recordSet);
+			
 	} // function executeSearch()
 	public function isIDValid($id) {
 		// TODO: Validate that the ID is actually a record in the database
@@ -87,8 +184,91 @@ class BOM extends ERPBase {
 		if (ctype_digit($id)) return true;
 		return false;
 	} // function isIDValid()
-	public function display($id) {
-		
+	public function display($id,$mode='view') {
+		if (!($this->isIDValid($id))) return;
+		$readonly = true;
+		$html = '';
+		$q = "SELECT {$this->column_list_header},h.created_by,h.creation_date,h.last_update_by,h.last_update_date FROM bom_header h WHERE bom_id=?;";
+		$stmt = $this->dbconn->prepare($q);
+		if ($stmt===false) {
+			echo $this->dbconn->error;
+			return;
+		}
+		$stmt->bind_param('i',$BOMid);
+		$BOMid = $id;
+		$result = $stmt->execute();
+		// TODO: What if another user deletes the record while it's still in my search results?
+		if ($result!==false) {
+			$stmt->bind_result(
+				$this->bom_id
+				,$this->resulting_product
+				,$this->resulting_product_qty
+				,$this->bom_description
+				,$this->rev_enabled
+				,$this->rev_number
+				,$this->huser_creation
+				,$this->hdate_creation
+				,$this->huser_modify
+				,$this->hdate_modify
+			);
+			$stmt->store_result();
+			$stmt->fetch();
+			$stmt->close();		
+			
+			$q = "SELECT {$this->column_list_detail},d.created_by,d.creation_date,d.last_update_by,d.last_update_date 
+				FROM bom_detail d 
+				WHERE bom_id=?";
+			$stmt = $this->dbconn->prepare($q);
+			if ($stmt===false) {
+				echo $this->dbconn->error;
+				return;
+			}
+			$stmt->bind_param('i',$BOMid);
+			$BOMid = $id;
+			$dresult = $stmt->execute();
+			if ($dresult!==false) {
+				$stmt->bind_result(
+					$this->bom_id
+					,$this->bom_detail_id
+					,$this->step_number
+					,$this->step_type
+					,$this->component_product_id
+					,$this->component_quantity_used
+					,$this->bom_step_id
+					,$this->seconds_to_process
+					,$this->sub_bom_id
+					,$this->detail_description
+					,$this->drev_enabled
+					,$this->drev_number				
+					,$this->duser_creation
+					,$this->ddate_creation
+					,$this->duser_modify
+					,$this->ddate_modify
+				);
+				$stmt->store_result();
+				while ($stmt->fetch()) {
+					$this->detail_array[$this->bom_detail_id] = $this->arrayifyDetail();
+				}
+				$stmt->close();
+			} // if detail result
+			else echo $this->dbconn->error;
+			if ($mode!='update') {
+				$hdata = $this->arrayifyHeader();
+				echo parent::abstractRecord($mode,'BOM','',$hdata,$this->detail_array);
+			}
+		} // if result
+		else $this->bom_id = null;
+		$_SESSION['currentScreen'] = 2019;
+		if (!isset($_SESSION['searchResults']) && !isset($_SESSION['searchResults']['BOM']))
+			$_SESSION['idarray'] = array(0,0,$id,0,0);
+		else {
+			$idloc = array_search($id,$_SESSION['searchResults']['BOM'],false);
+			$f = $_SESSION['searchResults']['BOM'][0];
+			$l = $_SESSION['searchResults']['BOM'][] = array_pop($_SESSION['searchResults']['BOM']); // https://stackoverflow.com/questions/3687358/whats-the-best-way-to-get-the-last-element-of-an-array-without-deleting-it#comment63556865_3687358
+			if ($idloc > 0) $p = $_SESSION['searchResults']['BOM'][$idloc-1]; else $p = $f;
+			if ($l != $id) $n = $_SESSION['searchResults']['BOM'][$idloc+1]; else $n = $l;
+			$_SESSION['idarray'] = array($f,$p,$id,$n,$l);
+		}		
 	} // function display()
 	public function newRecord() {
 		echo parent::abstractNewRecord('BOM');

@@ -61,7 +61,7 @@ function executeSearch(whichModule) {
 			var key = obj.id;
 			obj.find("option:selected").each(function (opt_index) {
 				if ($(this).val()=="") return false;
-				if (kvp[key]=="undefined") kvp[key] = $(this).val();
+				if (!(key in kvp)) kvp[key] = $(this).val();
 				else if (typeof kvp[key]=="string") kvp[key] = [kvp[key],$(this).val()];
 				else kvp[key].push($(this).val());
 				return true;

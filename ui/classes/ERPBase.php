@@ -108,7 +108,18 @@ class ERPBase {
 					$tableentry = "";
 				} elseif ($field[3]=='endfieldtable') {
 					$html .= '<TR>'.$tableheader.'</TR>';
-					$html .= '<TR id="row'.$tablerow.'">'.$tableentry.'</TR>';
+					if ($view!='view') $html .= '<TR id="row'.$tablerow.'">'.$tableentry.'</TR>';
+					if (strpos($field[0],'_detail')!==false && is_array($ddata)) {
+						foreach($ddata as $dkey=>$drow) {
+							$tablerow++;
+							$html .= '<TR id="row'.$tablerow.'">';
+							// TODO: Match the array fields to the ids in $tableentry
+							foreach ($drow as $dlabel=>$dfield) {
+								$html .= '<TD id="row'.$tablerow.'-'.$dlabel.'">'.$dfield.'</TD>';
+							}
+							$html .= '</TR>';
+						}
+					}
 					$html .= '</TABLE></FIELDSET>';
 					$intable = false;
 					$tablerow++;
