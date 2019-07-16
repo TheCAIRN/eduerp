@@ -6,6 +6,7 @@ class Attachments extends ERPBase {
 		$this->supportsNotes = false;
 		$this->supportsAttachments = false;
 		$this->location = Options::GetOptionValue($link,'ATTACHMENT_LOCATION');
+		if (substr($this->location,-1)=='/') $this->location = substr($this->location,0,strlen($this->location)-1);
 		$this->resetHeader();
 	} // __construct
 	public function resetHeader() {
@@ -143,9 +144,9 @@ class Attachments extends ERPBase {
 				$i1 = $this->location.'/'.basename($file['name']);
 				$i2 = $_POST['attachmentType'];
 				// TODO: Bug = URI is not capturing the correct path
-				if (strpos($this->location,'./')===0) $uri = 'http'.(isset($_SERVER['HTTPS'])?'s':'').'://'.$_SERVER['SERVER_NAME'].substr($this->location,1).basename($file['name']);
-				elseif (strpos($this->location,'/')===0) $uri = 'http'.(isset($_SERVER['HTTPS'])?'s':'').'://'.$_SERVER['SERVER_NAME'].$this->location.basename($file['name']);
-				else $uri = 'http'.(isset($_SERVER['HTTPS'])?'s':'').'://'.$_SERVER['SERVER_NAME'].'/'.$this->location.basename($file['name']);
+				if (strpos($this->location,'./')===0) $uri = 'http'.(isset($_SERVER['HTTPS'])?'s':'').'://'.$_SERVER['SERVER_NAME'].substr($this->location,1).'/'.basename($file['name']);
+				elseif (strpos($this->location,'/')===0) $uri = 'http'.(isset($_SERVER['HTTPS'])?'s':'').'://'.$_SERVER['SERVER_NAME'].$this->location.'/'.basename($file['name']);
+				else $uri = 'http'.(isset($_SERVER['HTTPS'])?'s':'').'://'.$_SERVER['SERVER_NAME'].'/'.$this->location.'/'.basename($file['name']);
 				$i3 = $uri;
 				$i4 = $_POST['description'];
 				$result = $stmt2->execute();

@@ -41,7 +41,7 @@ class BOMSteps extends ERPBase {
 		if ($result!==false) {
 			$this->recordSet = array();
 			while ($row=$result->fetch_assoc()) {
-				$this->recordSet[$row['bom_step_id']] = array();
+				$this->recordSet[$row['bom_step_id']] = array('Name'=>$row['bom_step_name'],'Description'=>$row['description']);
 			} // while rows
 		} // if query succeeded
 		$this->listRecords();
@@ -57,7 +57,7 @@ class BOMSteps extends ERPBase {
 		if (ctype_digit($id)) return true;
 		return false;
 	} // isIDValid()
-	public function display($id) {
+	public function display($id,$mode='view') {
 		if (!$this->isIDValid($id)) return;
 		$readonly = true;
 		$html = '';
@@ -75,16 +75,19 @@ class BOMSteps extends ERPBase {
 		// TODO: What if another user deletes the record while it's still in my search results?
 		if ($result!==false) {
 			$stmt->bind_result(
-			
+				$this->bom_step_id
+				,$this->bom_step_name
+				,$this->description
+				,$crevyn
+				,$crevnumber
+				,$cuser_creation
+				,$cdate_creation
+				,$cuser_modify
+				,$cdate_modify
 			);
 			$stmt->fetch();
-			if ($readonly) $cls = 'RecordView'; else $cls = 'RecordEdit';
-			if ($readonly) $inputtextro = ' readonly="readonly"'; else $inputtextro = '';
-			$html .= '<FIELDSET id="zzzzRecord" class="'.$cls.'">';
-			$html .= '<LABEL for="zzzzid">zzzz ID:</LABEL><B id="zzzzid">'.$id.'</B>';
-			$html .= $this->statusSelect($status,$readonly);
-			$html .= parent::displayRecordAudit($inputtextro,$crevyn,$crevnumber,$cuser_creation,$cdate_creation,$cuser_modify,$cdate_modify);
-			$html .= '</FIELDSET>';
+			echo parent::abstractRecord($mode,'BOMSteps','',array('bom_step_id'=>$this->bom_step_id,'bom_step_name'=>$this->bom_step_name,'description'=>$this->description),null);
+			echo parent::displayRecordAudit('readonly="readonly"',$crevyn,$crevnumber,$cuser_creation,$cdate_creation,$cuser_modify,$cdate_modify);
 		} // if result
 		$stmt->close();			
 		echo $html;
@@ -112,10 +115,18 @@ class BOMSteps extends ERPBase {
 		$this->resetHeader();
 		$q = "INSERT INTO bom_steps (bom_step_name,description,
 			rev_enabled,rev_number,created_by,creation_date,last_update_by,last_update_date) VALUES 
-			(?,?,?,?,NOW(),?,NOW());";
+			(?,?,?,?,?,NOW(),?,NOW());";
 		$stmt = $this->dbconn->prepare($q);
+		if ($stmt===false) {
+			echo 'fail|'.$this->dbconn->error;
+			return;
+		}
+		// v.2019: Not supporting revisions in the front end, but the database support still exists
+		$rev_enabled='false';
+		$rev_number = 1;
 		$stmt->bind_param('sssiii',$p1,$p2,$p12,$p13,$p14,$p16);
-
+		$p1 = isset($_POST['bom_step_name'])?$_POST['bom_step_name']:null;
+		$p2 = isset($_POST['description'])?$_POST['description']:'';
 		$p12 = ($rev_enabled=='true')?'Y':'N';
 		if ($rev_number<1) $rev_number = 1;
 		$p13 = $rev_number;

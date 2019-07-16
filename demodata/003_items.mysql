@@ -26,10 +26,11 @@ INSERT INTO item_categories (item_category_id,item_category_description) VALUES
 ,(6,'Fish')
 ;
 
-INSERT INTO item_gtin_master (entity_id,division_id,department_id,manufacturer_id,description,first_used,created_by,creation_date,last_update_by,last_update_date) VALUES
-(1,1,1,'4000000','Produce codes',NOW(),1,NOW(),1,NOW())
-,(1,1,1,'4000001','Seed for produce codes',NOW(),1,NOW(),1,NOW())
-,(1,1,1,'4000002','Fish codes',NOW(),1,NOW(),1,NOW());
+INSERT INTO item_gtin_master (entity_id,division_id,department_id,item_type_code,manufacturer_id,description,first_used,created_by,creation_date,last_update_by,last_update_date) VALUES
+(1,1,1,'SI','4000000','Produce codes',NOW(),1,NOW(),1,NOW())
+,(1,1,1,'PI','4000001','Seed for produce codes',NOW(),1,NOW(),1,NOW())
+,(1,1,2,'SI','4000002','Fish codes',NOW(),1,NOW(),1,NOW())
+,(1,1,1,'CG','4000003','Consumables in farming operations',NOW(),1,NOW(),1,NOW());
 
 INSERT INTO item_master (entity_id,division_id,department_id,item_type_code,item_category_id,product_code,product_description,gtin,currency,lwh_uom,weight_uom,created_by,creation_date,last_update_by,last_update_date) VALUES
 (1,1,1,'SI',1,'PLU3000','Alkmene Apples All Sizes','00400000030005','USD','IN','LBS',1,NOW(),1,NOW())

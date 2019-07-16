@@ -27,42 +27,60 @@ class Toolbar {
 				case 27: $mod="'CustomerStoresSearch'"; break;
 				case 28: $mod="'ConsumersSearch'"; break;
 				case 44: $mod="'SalesOrdersSearch'"; break;
+				case 1002:
 				case 2002: 
 				case 3002: 
 				case 4002: $mod="'Entity'"; break;
+				case 1005:
 				case 2005: 
 				case 3005: 
 				case 4005: $mod="'Vendor'"; break;
+				case 1007:
 				case 2007: 
 				case 3007: 
 				case 4007: $mod="'Purchasing'"; break;
+				case 1012:
 				case 2012:
 				case 3012: 
 				case 4012: $mod="'Addresses'"; break;
+				case 1013:
 				case 2013: 
 				case 3013: 
 				case 4013: $mod="'ItemManager'"; break;
+				case 1019:
 				case 2019:
 				case 3019: 
 				case 4019: $mod="'BOM'"; break;
+				case 1020:
 				case 2020: 
 				case 3020: $mod="'VendorCatalog'"; break;
+				case 1023:
 				case 2023:
 				case 3023: $mod="'CustomerTypes'"; break;
+				case 1024:
 				case 2024:
 				case 3024: 
 				case 4024: $mod="'Customer'"; break;
+				case 1025:
 				case 2025:
 				case 3025: $mod="'CustomerDC'"; break;
+				case 1026:
 				case 2026:
 				case 3026: $mod="'CustomerStoreTypes'"; break;
+				case 1027:
 				case 2027:
 				case 3027: $mod="'CustomerStores'"; break;
+				case 1028:
 				case 2028:
 				case 3028: $mod="'Consumers'"; break;
+				case 1044:
 				case 2044: 
 				case 3044: 
 				case 4044: $mod="'SalesOrders'"; break;
+				case 1063: 
+				case 2063:
+				case 3063:
+				case 4063: $mod="'BOMSteps'"; break;
 			}
 			if ($cs >= 1 && $cs < 1000 && array_search($cs,$subscreens)==false) {
 				// Submenu or search
@@ -71,6 +89,7 @@ class Toolbar {
 			}
 			if ($cs >= 1000 && $cs < 2000) {
 				// Search results list
+				$html .= '<BUTTON class="toolbarButton" id="newSearchButton" title="New Search" onClick="newSearch('.$mod.');">8</BUTTON>';
 				
 			}
 			if ($cs >= 2000 && $cs < 3000) {

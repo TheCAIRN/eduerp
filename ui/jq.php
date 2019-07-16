@@ -211,7 +211,7 @@ function jquery() {
 				$modObject = new SalesOrders($link);
 				$_SESSION['activeModule'] = $modObject;
 			}
-		} elseif ($module=='BOMSteps') {
+		} elseif ($module=='BOMStepsSearch') {
 			if (isset($_SESSION['activeModule']) && $_SESSION['activeModule'] instanceof BOMSteps)
 				$modObject = $_SESSION['activeModule'];
 			else {

@@ -302,6 +302,8 @@ class ItemManager extends ERPBase {
 			$p2 = ctype_digit($criteria)?$criteria:-99999;
 			$result = $stmt->execute();
 			if ($result !== false) {
+				$this->recordSet = array();
+				if (isset($_SESSION['recordSet']['ItemManager'])) unset($_SESSION['recordSet']['ItemManager']); // A search criteria was given, so do not display the last search on an empty set.
 				$stmt->store_result();
 				$stmt->bind_result($this->product_id,$this->product_code,$this->product_description,$this->gtin,$this->item_type_description,
 					$this->item_category_description,$this->product_catalog_title,$this->visible);

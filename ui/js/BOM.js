@@ -136,7 +136,30 @@ function saveBOMDetail() {
 	});		
 }
 function saveBOMSteps() {
-	
+	var bom_step_id = $("#bom_step_id").val();
+	var bom_step_name = $("#bom_step_name").val();
+	var bom_step_description = $("#description").val();
+	// Submit to server
+	var mode;
+	if (bom_step_id<=0) mode = "insertRecord";
+	else mode = "updateRecord";
+	$.post("jq.php",{jquery:mode,module:"bomsteps",level:"header",
+		bom_step_id:bom_step_id,bom_step_name:bom_step_name,description:bom_step_description},function(data) {
+		var fields = data.split("|");
+		if (fields[0]=="inserted") {
+			$("#bom_step_id").val(fields[1]);
+			$("#messagebar").html('<DIV class="successMessage">Data saved.</DIV>');
+		}
+		if (fields[0]=="updated") {
+			$("#messagebar").html('<DIV class="successMessage">Data saved.</DIV>');
+		}
+		if (fields[0]=="fail") {
+			$("#messagebar").html('<DIV class="errorMessage">'+fields[1]+'</DIV>');
+		}
+	})
+	.fail(function() {
+		$("#messagebar").html('<DIV class="errorMessage">I could not contact the database. Your data has <B>NOT</B> been saved.</DIV>');
+	});		
 }
 function newBOMDetailRow() {
 	var bomid = $("#bom_id").val();
