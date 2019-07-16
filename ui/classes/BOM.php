@@ -303,6 +303,10 @@ class BOM extends ERPBase {
 			});
 			</SCRIPT>";
 	} // function newRecord()
+	public function editRecord($id) {
+		$this->display($id,'edit');
+		$_SESSION['currentScreen'] = 4019;
+	}
 	private function insertHeader() {
 		$this->resetHeader();
 		$this->resetDetail();

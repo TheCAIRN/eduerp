@@ -81,7 +81,8 @@ function jquery() {
 			'People','Addresses','ItemSetup','ItemAttributes','ItemCategories','ItemTypes','GTINMaster','InventoryLookup','BillofMaterials','VendorCatalog',
 			'EntityResource','CustomerCatalog','CustomerTypes','Customer','CustomerDC','CustomerStoreTypes','CustomerStores','Consumers','Insights','DashboardSetup',
 			'ReportSetup','Dashboards','Reports','Accounting','ChartOfAccounts','GLPeriods','GLAccounts','GLBalances','GLJournal','FreightVendorTypes','FreightVendors',
-			'InboundFreight','OutboundFreight','SalesOrders','SalesPayments','SalesOrderTypes','Admin','SystemOptions','UserAccounts','SecurityGroups','Permissions'
+			'InboundFreight','OutboundFreight','SalesOrders','SalesPayments','SalesOrderTypes','Admin','SystemOptions','UserAccounts','SecurityGroups','Permissions',
+			'Currency','Country','Language','State','UOMTypes','UOM','UOMConversions','Terms','NoteTypes','AttachmentTypes','CancellationReasonCodes','BOMSteps'
 			);
 		$setcs = array_search($module,$cs); // Set the current screen to the index # of the $cs array.
 		if (is_integer($setcs)) $ws->setCurrentScreen($setcs);
@@ -210,6 +211,13 @@ function jquery() {
 				$modObject = new SalesOrders($link);
 				$_SESSION['activeModule'] = $modObject;
 			}
+		} elseif ($module=='BOMSteps') {
+			if (isset($_SESSION['activeModule']) && $_SESSION['activeModule'] instanceof BOMSteps)
+				$modObject = $_SESSION['activeModule'];
+			else {
+				$modObject = new BOMSteps($link);
+				$_SESSION['activeModule'] = $modObject;
+			}
 		} else {
 			$messagebar->addWarning("The selected module has not been installed in this system.");
 			$link->close();
@@ -266,6 +274,8 @@ function jquery() {
 			$modObject = new Consumers($link);
 		} elseif ($module=='SalesOrders') {
 			$modObject = new SalesOrders($link);
+		} elseif ($module=='BOMSteps') {
+			$modObject = new BOMSteps($link);
 		} else {
 			$messagebar->addWarning("The selected module has not been installed in this system.");
 			$link->close();
@@ -305,6 +315,7 @@ function jquery() {
 			case 27: $modObject = new CustomerStores($link); break;
 			case 28: $modObject = new Consumers($link); break;
 			case 44: $modObject = new SalesOrders($link); break;
+			case 63: $modObject = new BOMSteps($link); break;
 		}
 		if (is_null($modObject)) {
 			$messagebar->addWarning("The selected module is not available at the moment.  Please wait a few minutes and try again.");
@@ -353,6 +364,8 @@ function jquery() {
 			$modObject = new Consumers($link);
 		} elseif ($module=='SalesOrders') {
 			$modObject = new SalesOrders($link);
+		} elseif ($module=='BOMSteps') {
+			$modObject = new BOMSteps($link);
 		} else {
 			$messagebar->addWarning("The selected module has not been installed in this system.");
 			$link->close();
@@ -389,6 +402,8 @@ function jquery() {
 			$modObject = new Customer($link);
 		} elseif ($_POST['module']=='salesorders') {
 			$modObject = new SalesOrders($link);
+		} elseif ($_POST['module']=='bomsteps') {
+			$modObject = new BOMSteps($link);
 		}
 		if (is_null($modObject)) {
 			$messagebar->addWarning("The selected module is not available at the moment.  Please wait a few minutes and try again.");

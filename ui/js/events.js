@@ -35,6 +35,7 @@ function selectModule(whichModule) {
 function newSearch(whichModule) {
 	var moduleName = whichModule;
 	if (whichModule=='ItemManager') moduleName='ItemSetup';
+	if (whichModule=='BOM') moduleName='BillofMaterials';
 	$.post('jq.php',{jquery:'moduleSearchSpace',module:moduleName},function (data) {
 		if (data.length > 0) $("#core").html(data);
 		updateDiv('messagebar');
@@ -116,6 +117,9 @@ function saveRecord(whichModule) {
 	}
 	if (whichModule=="BOM") {
 		saveBOMHeader();
+	}
+	if (whichModule=="BOMSteps") {
+		saveBOMSteps();
 	}
 	if (whichModule=="EntityResource") {
 		saveEntityResourceHeader();

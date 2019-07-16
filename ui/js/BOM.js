@@ -135,6 +135,9 @@ function saveBOMDetail() {
 		$("#messagebar").html('<DIV class="errorMessage">I could not contact the database. Your data has <B>NOT</B> been saved.</DIV>');
 	});		
 }
+function saveBOMSteps() {
+	
+}
 function newBOMDetailRow() {
 	var bomid = $("#bom_id").val();
 	if (bomid<1 || bomid=="") {

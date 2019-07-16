@@ -63,6 +63,18 @@ class Workspace {
 			case 49: $this->notInstalled("User Accounts"); break;
 			case 50: $this->notInstalled("Security Groups"); break;
 			case 51: $this->notInstalled("Permissions"); break;
+			case 52: $this->notInstalled("Currency"); break;
+			case 53: $this->notInstalled("Country"); break;
+			case 54: $this->notInstalled("Language"); break;
+			case 55: $this->notInstalled("State"); break;
+			case 56: $this->notInstalled("UOM Types"); break;
+			case 57: $this->notInstalled("UOM"); break;
+			case 58: $this->notInstalled("UOM Conversions"); break;
+			case 59: $this->notInstalled("Terms"); break;
+			case 60: $this->notInstalled("Note Types"); break;
+			case 61: $this->notInstalled("Attachment Types"); break;
+			case 62: $this->notInstalled("Cancellation Reason Codes"); break;
+			case 63: $boms = new BOMSteps($this->dbconn); echo $boms->searchPage(); break;
 			/* 1000-1999: List Records */
 			case 1002: $ent = new Entity($this->dbconn); $ent->listRecords(); break;
 			case 1005: $vend = new Vendor($this->dbconn); $vend->listRecords(); break;
@@ -77,6 +89,8 @@ class Workspace {
 			case 1026: $st = new CustomerStoreTypes($this->dbconn); $st->listRecords(); break;
 			case 1027: $st = new CustomerStores($this->dbconn); $st->listRecords(); break;
 			case 1028: $cc = new Consumers($this->dbconn); $cc->listRecords(); break;
+			case 1044: $so = new SalesOrders($this->dbconn); $so->listRecords(); break;
+			case 1063: $boms = new BOMSteps($this->dbconn); $boms->listRecords(); break;
 			/* 2000-2999: Display record */
 			case 2002: $ent = new Entity($this->dbconn); $ent->display($_SESSION['idarray'][2]); break;
 			case 2005: $vend = new Vendor($this->dbconn); $vend->display($_SESSION['idarray'][2]); break;
@@ -91,10 +105,16 @@ class Workspace {
 			case 2026: $st = new CustomerStoreTypes($this->dbconn); $st->display($_SESSION['idarray'][2]); break;
 			case 2027: $st = new CustomerStores($this->dbconn); $st->display($_SESSION['idarray'][2]); break;
 			case 2028: $cc = new Consumers($this->dbconn); $cc->display($_SESSION['idarray'][2]); break;
+			case 2044: $so = new SalesOrders($this->dbconn); $so->display($_SESSION['idarray'][2]); break;
+			case 2063: $boms = new BOMSteps($this->dbconn); $boms->display($_SESSION['idarray'][2]); break;
 			/* 3000-3999: New Record */
+			//case 3002: $ent = new Entity($this->dbconn); $ent->newRecord(); break;
+			case 3005: $vend = new Vendor($this->dbconn); $vend->newRecord(); break;
 			case 3007: $purch = new Purchasing($this->dbconn); $purch->newRecord(); break;
 			case 3012: $addr = new Addresses($this->dbconn); $addr->newRecord(); break;
+			case 3013: $item = new ItemManager($this->dbconn); $item->newRecord(); break;
 			case 3019: $bom = new BOM($this->dbconn); $bom->newRecord(); break;
+			case 3020: $vc = new VendorCatalog($this->dbconn); $vc->newRecord(); break;
 			case 3021: $entres = new EntityResource($this->dbconn); $entres->newRecord(); break;
 			case 3023: $ct = new CustomerTypes($this->dbconn); $ct->newRecord(); break;
 			case 3024: $cust = new Customer($this->dbconn); $cust->newRecord(); break;
@@ -102,6 +122,25 @@ class Workspace {
 			case 3026: $st = new CustomerStoreTypes($this->dbconn); $st->newRecord(); break;
 			case 3027: $st = new CustomerStores($this->dbconn); $st->newRecord(); break;
 			case 3028: $cc = new Consumers($this->dbconn); $cc->newRecord(); break;
+			case 3044: $so = new SalesOrders($this->dbconn); $so->newRecord(); break;
+			case 3063: $boms = new BOMSteps($this->dbconn); $boms->newRecord(); break;
+			/* 4000-4999: Edit Record */
+			//case 4002: $ent = new Entity($this->dbconn); $ent->editRecord($_SESSION['idarray'][2]); break;
+			case 4005: $vend = new Vendor($this->dbconn); $vend->editRecord($_SESSION['idarray'][2]); break;
+			case 4007: $purch = new Purchasing($this->dbconn); $purch->editRecord($_SESSION['idarray'][2]); break;
+			case 4012: $addr = new Addresses($this->dbconn); $addr->editRecord($_SESSION['idarray'][2]); break;
+			case 4013: $item = new ItemManager($this->dbconn); $item->editRecord($_SESSION['idarray'][2]); break;
+			case 4019: $bom = new BOM($this->dbconn); $bom->editRecord($_SESSION['idarray'][2]); break;
+			case 4020: $vc = new VendorCatalog($this->dbconn); $vc->editRecord($_SESSION['idarray'][2]); break;
+			case 4021: $entres = new EntityResource($this->dbconn); $entres->editRecord($_SESSION['idarray'][2]); break;
+			case 4023: $ct = new CustomerTypes($this->dbconn); $ct->editRecord($_SESSION['idarray'][2]); break;
+			case 4024: $cust = new Customer($this->dbconn); $cust->editRecord($_SESSION['idarray'][2]); break;
+			case 4025: $dc = new CustomerDC($this->dbconn); $dc->editRecord($_SESSION['idarray'][2]); break;
+			case 4026: $st = new CustomerStoreTypes($this->dbconn); $st->editRecord($_SESSION['idarray'][2]); break;
+			case 4027: $st = new CustomerStores($this->dbconn); $st->editRecord($_SESSION['idarray'][2]); break;
+			case 4028: $cc = new Consumers($this->dbconn); $cc->editRecord($_SESSION['idarray'][2]); break;	
+			case 4044: $so = new SalesOrders($this->dbconn); $so->editRecord($_SESSION['idarray'][2]); break;
+			case 4063: $boms = new BOMSteps($this->dbconn); $boms->editRecord($_SESSION['idarray'][2]); break;
 		}
 		
 	} // render()

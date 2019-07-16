@@ -171,10 +171,14 @@ class ERPBase {
 						$tableentry .= '</SELECT></TD>';
 					}
 				} elseif ($field[3]=='textarea') {
+					$readonly = '';
+					if ($view=='view') $readonly = ' readonly="readonly"';
+					$val = '&nbsp;';
+					if (is_array($hdata) && strpos($field[0],'_detail')===false && isset($hdata[$field[1]])) $val=$hdata[$field[1]];
 					if (!$intable) {
 						$html .= '<DIV class="labeldiv" id="'.$prefix.$field[1].'-div" style="height: 4em;">';
 						$html .= '<LABEL for="'.$prefix.$field[1].'">'.$field[2].'</LABEL>';						
-						$html .= "<TEXTAREA id=\"{$field[1]}\" onMouseUp=\"document.getElementById('{$field[1]}-div').height=this.height;\">&nbsp;</TEXTAREA></DIV>";
+						$html .= "<TEXTAREA id=\"{$field[1]}\" onMouseUp=\"document.getElementById('{$field[1]}-div').height=this.height;\" $readonly>$val</TEXTAREA></DIV>";
 					} else {
 						$tableheader .= '<TH>'.$field[2].'</TH>';
 						$tableentry .= '<TD id="row'.$tablerow.'-'.$field[1].'"><TEXTAREA id="'.$prefix.$field[1].'">&nbsp;</TEXTAREA></TD>';

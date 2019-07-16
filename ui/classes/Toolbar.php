@@ -18,6 +18,7 @@ class Toolbar {
 				case 7: $mod="'PurchasingSearch'"; break;
 				case 12: $mod="'AddressesSearch'"; break;
 				case 13: $mod="'ItemSearch'"; break;
+				case 19: $mod="'BOMSearch'"; break;
 				case 20: $mod="'VendorCatalogSearch'"; break;
 				case 23: $mod="'CustomerTypesSearch'"; break;
 				case 24: $mod="'CustomerSearch'"; break;
