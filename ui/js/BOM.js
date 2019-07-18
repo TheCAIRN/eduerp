@@ -1,7 +1,7 @@
 var currentBOM = 0;
 function saveBOMHeader() {
 	var bomid = $("#bom_id").val();
-	var endresult = $("#resulting_product_id option:selected").val();
+	var endresult = $("#resulting_product_id-product_id").text();
 	var quantity = $("#resulting_quantity").val();
 	var description = $("#description").val();
 	var rev_enabled = $("#rev_enabled").is(":checked");
@@ -35,12 +35,13 @@ function saveBOMHeader() {
 	});	
 }
 function saveBOMDetail() {
-	var row = $("#bom_detail_table tr:last").attr("id");
+	//var row = $("#bom_detail_table tr:last").attr("id");
+	var row = "row0";
 	var bomid = $("#bom_id").val();
 	var bomdetail = $("#bom_detail_id").val();
 	var stepnumber = $("#step_number").val();
 	var steptype = $("#step_type option:selected").val();
-	var component = $("#component_product_id option:selected").val();
+	var component = $("#component_product_id-product_id").text();
 	var componentqty = $("#component_quantity_used").val();
 	var process = $("#bom_step_id").val();
 	var processtime = $("#seconds_to_process").val();
@@ -75,8 +76,9 @@ function saveBOMDetail() {
 			var detailtable = document.getElementById("bom_detail_table");
 			var oldtr = $("#bom_detail_table tr:last");
 			var newtr = detailtable.insertRow(1);
-			var lastrow = $("#bom_detail_table tr").eq(1).attr("id");
-			var newrow = "row"+(Number(lastrow.substr(3))+1);
+			//var lastrow = $("#bom_detail_table tr").eq(1).attr("id");
+			//var newrow = "row"+(Number(lastrow.substr(3))+1);
+			var newrow = "row"+(Number($("#bom_detail_table tr").length-2)); // Headers count as a row, but don't take a number, and the input row starts with 0.
 			newtr.id=newrow;
 			var newcell = newtr.insertCell(0);
 			newcell.id = newrow+"-bom_detail_id";
@@ -92,8 +94,8 @@ function saveBOMDetail() {
 			$("#step_type").val("");
 			newcell = newtr.insertCell(3);
 			newcell.id = newrow+"-component_product_id";
-			newcell.innerText = $("#component_product_id option:selected").text();
-			$("#component_product_id").val("");
+			newcell.innerText = $("#component_product_id-product_id").text()+" "+$("#component_product_id-product_code").text();
+			//$("#component_product_id").val("");
 			newcell = newtr.insertCell(4);
 			newcell.id = newrow+"-component_quantity_used";
 			newcell.innerText = componentqty;
@@ -122,7 +124,7 @@ function saveBOMDetail() {
 			newcell.innerText = rev_number;
 			$("#"+row+"-rev_number:first-child").val("");
 			newcell = newtr.insertCell(11);
-			newcell.innerHTML = "<BUTTON onClick=\"editBOMDetailRow("+newrow+");\">Edit</BUTTON>";
+			newcell.innerHTML = "<BUTTON onClick=\"editBOMDetailRow('"+newrow+"');\">Edit</BUTTON>";
 			$("#bom_detail_edit td:nth-child(4), #bom_detail_edit th:nth-child(4)").hide();
 			$("#bom_detail_edit td:nth-child(5), #bom_detail_edit th:nth-child(5)").hide();
 			$("#bom_detail_edit td:nth-child(6), #bom_detail_edit th:nth-child(6)").hide();
@@ -169,6 +171,18 @@ function newBOMDetailRow() {
 		saveBOMDetail();
 	}
 }
-function editBOMDetailRow(rownum) {
-	
+function editBOMDetailRow(rowid) {
+	$("#bom_detail_id").val($("#"+rowid+"-bom_detail_id").text());
+	$("#step_number").val($("#"+rowid+"-step_number").text());
+	$("#step_type").val($("#"+rowid+"-step_type").text());
+	$("#component_quantity_used").val($("#"+rowid+"-component_quantity_used").text());
+	$("#bom_step_id").val($("#"+rowid+"-bom_step_id").text());
+	$("#seconds_to_process").val($("#"+rowid+"-seconds_to_process").text());
+	$("#sub_bom_id").val($("#"+rowid+"-sub_bom_id").text());
+	$("#row0-description #description").text($("#"+rowid+"-description").text());
+	var rev_enabled = $("#"+rowid+"-rev_enabled").text();
+	if (rev_enabled=="Y") $("#row0-rev_enabled #rev_enabled").prop("checked",true);
+	else $("#row0-rev_enabled #rev_enabled").prop("checked",false);
+	$("#row0-rev_number #rev_number").val($("#"+rowid+"-rev_number").text());
+	embeddedItemSelect('component_product_id',$("#"+rowid+"-component_product_id").text());
 }

@@ -91,12 +91,18 @@ function embeddedItemList(id) {
 		$("#"+id+"-div").html(data);
 	});
 } // embeddedItemList()
-function embeddedItemSelect(id) {
-	var Item_id = $("#"+id+"-select :selected").val();
-	$.post('jq.php',{jquery:'embedded',module:'ItemManager',mode:'display',id:id,data:Item_id},function(data) {
-		$("#"+id+"-div").html(data);
-	});
+function embeddedItemSelect(id,data) {
+	var Item_id;
+	Item_id = data || $("#"+id+"-select :selected").val(); // If data is set, use it; otherwise grab the value from the dropdown.  Needed for edits.
+	if (!Item_id) embeddedItemNewSearch(id);
+	else {
+		$.post('jq.php',{jquery:'embedded',module:'ItemManager',mode:'display',id:id,data:Item_id},function(data) {
+			$("#"+id+"-div").html(data);
+		});
+	}
 } // embeddedItemSelect()
 function embeddedItemNewSearch(id) {
-	
+	$.post('jq.php',{jquery:'embedded',module:'ItemManager',mode:'search',id:id,data:''},function(data) {
+		$("#"+id+"-div").html(data);
+	});	
 } // embeddedItemNewSearch()

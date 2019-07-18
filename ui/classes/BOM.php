@@ -12,7 +12,7 @@ class BOM extends ERPBase {
 	private $hdate_creation;
 	private $huser_modify;
 	private $hdate_modify;
-	private $column_list_header = 'bom_id,resulting_product_id,resulting_quantity,description,rev_enabled,rev_number';
+	private $column_list_header = 'h.bom_id,h.resulting_product_id,h.resulting_quantity,h.description,h.rev_enabled,h.rev_number';
 	
 	private $bom_detail_id;
 	private $step_number;
@@ -40,7 +40,9 @@ class BOM extends ERPBase {
 		
 		$this->entryFields[] = array('bom_header','','Bill of Materials','fieldset');
 		$this->entryFields[] = array('bom_header','bom_id','BOM ID','integerid');
-		$this->entryFields[] = array('bom_header','resulting_product_id','Resulting Product','dropdown','item_master',array('product_id','product_code'));
+		$this->entryFields[] = array('bom_header','','Resulting Product','embedded');
+		$this->entryFields[] = array('bom_header','resulting_product_id','Resulting Product','Item');
+		$this->entryFields[] = array('bom_header','','','endembedded');
 		$this->entryFields[] = array('bom_header','resulting_quantity','Quantity','decimal',11,5);
 		$this->entryFields[] = array('bom_header','description','Description','textarea');
 		$this->entryFields[] = array('bom_header','rev_enabled','Enable Revision Tracking','checkbox','rev_number');
@@ -51,7 +53,9 @@ class BOM extends ERPBase {
 		$this->entryFields[] = array('bom_detail','bom_detail_id','BOM Detail ID','integerid');
 		$this->entryFields[] = array('bom_detail','step_number','Step #','integer');
 		$this->entryFields[] = array('bom_detail','step_type','Step Type','dropdown',array(array('C','Component'),array('P','Process'),array('B','Sub-BOM')));
-		$this->entryFields[] = array('bom_detail','component_product_id','Component Product','dropdown','item_master',array('product_id','product_code'));
+		$this->entryFields[] = array('bom_detail','','Component Product','embedded');
+		$this->entryFields[] = array('bom_detail','component_product_id','Component Product','Item');
+		$this->entryFields[] = array('bom_detail','','','endembedded');
 		$this->entryFields[] = array('bom_detail','component_quantity_used','Quantity used','decimal',11,5);
 		$this->entryFields[] = array('bom_detail','bom_step_id','Process Step','dropdown','bom_steps',array('bom_step_id','bom_step_name'));
 		$this->entryFields[] = array('bom_detail','seconds_to_process','Time (s)','decimal',17,3);
@@ -188,7 +192,13 @@ class BOM extends ERPBase {
 		if (!($this->isIDValid($id))) return;
 		$readonly = true;
 		$html = '';
-		$q = "SELECT {$this->column_list_header},h.created_by,h.creation_date,h.last_update_by,h.last_update_date FROM bom_header h WHERE bom_id=?;";
+		$q = "SELECT {$this->column_list_header},h.created_by,h.creation_date,h.last_update_by,h.last_update_date,
+			i.product_code,i.product_description,cre.given_name+' '+cre.family_name AS cre_name,chg.given_name+' '+chg.family_name AS mod_name
+			FROM bom_header h 
+			LEFT OUTER JOIN item_master i ON h.resulting_product_id=i.product_id
+			LEFT OUTER JOIN cx_humans cre ON h.created_by=cre.human_id
+			LEFT OUTER JOIN cx_humans chg ON h.last_update_by=chg.human_id
+			WHERE bom_id=?;";
 		$stmt = $this->dbconn->prepare($q);
 		if ($stmt===false) {
 			echo $this->dbconn->error;
@@ -210,6 +220,10 @@ class BOM extends ERPBase {
 				,$this->hdate_creation
 				,$this->huser_modify
 				,$this->hdate_modify
+				,$product_code
+				,$product_description
+				,$hcre_name
+				,$hmod_name
 			);
 			$stmt->store_result();
 			$stmt->fetch();
@@ -254,6 +268,11 @@ class BOM extends ERPBase {
 			else echo $this->dbconn->error;
 			if ($mode!='update') {
 				$hdata = $this->arrayifyHeader();
+				if ($mode=='view') {
+					$hdata['resulting_product_id'] = $this->resulting_product.' '.$product_code.' '.$product_description;
+					$hdata['huser_creation'] = $hcre_name;
+					$hdata['huser_modify'] = $hmod_name;
+				}
 				echo parent::abstractRecord($mode,'BOM','',$hdata,$this->detail_array);
 			}
 		} // if result
@@ -431,15 +450,78 @@ class BOM extends ERPBase {
 	private function updateHeader() {
 		$this->resetHeader();
 		$this->resetDetail();
+		$now = new DateTime();
+		$id = $_POST['bomid'];
+		if ((!is_integer($id) && !ctype_digit($id)) || $id<1) {
+			echo 'fail|Invalid BOM id for updating';
+			return;
+		}
+		$this->display($id,'update'); // Display already has the logic for loading the record.  TODO: Refactor into separate function.
+		if (is_null($this->bom_id)) {
+			echo 'fail|Invalid BOM id for updating';
+			return;
+		}
+		$update = array();
+		if (isset($_POST['resultingproductid']) && $_POST['resultingproductid']!=$this->resulting_product) $update['resulting_product_id'] = array('i',$_POST['resultingproductid']);
+		if (isset($_POST['resultingquantity']) && $_POST['resultingquantity']!=$this->resulting_product_qty) $update['resulting_product_qty'] = array('d',$_POST['resultingquantity']);
+		if (isset($_POST['description']) && $_POST['description']!=$this->description) $update['description'] = array('s',$_POST['description']);
+		$reven = null;
+		if (isset($_POST['rev_enabled'])) $reven = ($_POST['rev_enabled']=='true')?'Y':'N';
+		if (!is_null($reven) && $reven!=$this->rev_enabled) $update['rev_enabled'] = array('s',$reven);
+		if ((!is_null($reven)) && $reven=='Y' && isset($_POST['rev_number']) && $_POST['rev_number']!=$this->rev_number) $update['rev_number'] = array('i',$_POST['rev_number']);
+		$update['last_update_date'] = array('s',$now->format('Y-m-d H:i:s'));
+		$update['last_update_by'] = array('i',$_SESSION['dbuserid']);
 		
-	}
+		// Create UPDATE String
+		
+		if (count($update)==0) {
+			echo 'fail|Nothing to update';
+			return;
+		}
+		$q = 'UPDATE bom_header SET ';
+		$ctr = 0;
+		$bp_types = '';
+		$bp_values = array_fill(0,count($update),null);
+		foreach ($update as $field=>$data) {
+			if ($ctr > 0) $q .= ',';
+			$q .= "$field=?";
+			$bp_types .= $data[0];
+			$bp_values[$ctr] = $data[1];
+			$ctr++;
+		}
+		$q .= ' WHERE bom_id=?';
+		$ctr++;
+		$bp_types .= 'i';
+		$bp_values[$ctr] = $this->bom_id;
+		$stmt = $this->dbconn->prepare($q);
+		/* The internet has a lot of material about different ways to pass a variable number of arguments to bind_param.
+		   I feel that using Reflection is the best tool for the job.
+		   Reference: https://www.php.net/manual/en/mysqli-stmt.bind-param.php#107154
+		*/
+		$bp_method = new ReflectionMethod('mysqli_stmt','bind_param');
+		$bp_refs = array();
+		foreach ($bp_values as $key=>$value) {
+			$bp_refs[$key] = &$bp_values[$key];
+		}
+		array_unshift($bp_values,$bp_types);
+		$bp_method->invokeArgs($stmt,$bp_values);
+		$stmt->execute();
+		if ($stmt->affected_rows > 0) {
+			echo 'updated';
+		} else {
+			if ($this->dbconn->error) {
+				echo 'fail|'.$this->dbconn->error;
+				$this->mb->addError($this->dbconn->error);
+			} else echo 'fail|No rows updated';
+		}
+		$stmt->close();
+	} // updateHeader()
 	private function updateDetail() {
 		$this->resetDetail();
 		
-	}
+	} // updateDetail()
 	public function insertRecord() {
 		// Assumes values are stored in $_POST
-		$this->mb->addInfo("Inserting ".$_POST['level']);
 		if (isset($_POST['level']) && $_POST['level']=='header') $this->insertHeader();
 		if (isset($_POST['level']) && $_POST['level']=='detail') $this->insertDetail();
 	}

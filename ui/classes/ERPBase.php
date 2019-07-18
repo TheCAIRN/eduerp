@@ -90,7 +90,7 @@ class ERPBase {
 					$fieldsetlevel--;
 				} elseif ($field[3]=='embedded') {
 					if (!$intable) {
-						$html .= '<FIELDSET class="RecordEdit embedded" id="'.$field[0].'_'.$field[1].'_edit">';
+						$html .= '<FIELDSET class="'.$cls.' embedded" id="'.$field[0].'_'.$field[1].'_edit">';
 						$html .= '<LEGEND onClick="$(this).siblings().toggle();">'.$field[2].'</LEGEND>';
 					}
 					$embedded = true;
@@ -117,6 +117,7 @@ class ERPBase {
 							foreach ($drow as $dlabel=>$dfield) {
 								$html .= '<TD id="row'.$tablerow.'-'.$dlabel.'">'.$dfield.'</TD>';
 							}
+							$html .= "<TD id=\"row{$tablerow}-editButton\"><BUTTON onClick=\"editDetailRow('{$field[0]}','row{$tablerow}');\">Edit</BUTTON></TD>";
 							$html .= '</TR>';
 						}
 					}
@@ -312,13 +313,25 @@ class ERPBase {
 					}
 				}
 				if ($field[3]=='Item') {
-					$item = new ItemManager($this->dbconn);
-					if (!$intable) {
-						$html .= '<DIV id="'.$field[1].'-div" class="embedded">'.$item->embed($field[1],'search').'</DIV>';
+					if ($view=='view') {
+						if (!$intable) {
+							if (is_array($hdata) && strpos($field[0],'_detail')===false && isset($hdata[$field[1]])) $html .= '<DIV id="'.$field[1].'-div">'.$hdata[$field[1]].'</DIV>';
+						} else {
+							$tableentry .= '<TD id="row'.$tablerow.'-'.$field[1].'">';
+							if (is_array($hdata) && strpos($field[0],'_detail')===false && isset($hdata[$field[1]])) $tableentry .= '<DIV id="'.$field[1].'-div" class="embedded">'.$hdata[$field[1]].'</DIV>';
+							$tableentry .= '</TD>';
+						}
 					} else {
-						$tableentry .= '<TD id="row'.$tablerow.'-'.$field[1].'">';
-						$tableentry .= '<DIV id="'.$field[1].'-div" class="embedded">'.$item->embed($field[1],'search').'</DIV>';
-						$tableentry .= '</TD>';
+						$item = new ItemManager($this->dbconn);
+						if (!$intable) {
+							if ($view=='edit' && is_array($hdata) && strpos($field[0],'_detail')===false && isset($hdata[$field[1]])) 
+								$html .= '<DIV id="'.$field[1].'-div" class="embedded">'.$item->embed($field[1],'display',$hdata[$field[1]]).'</DIV>';
+							else $html .= '<DIV id="'.$field[1].'-div" class="embedded">'.$item->embed($field[1],'search').'</DIV>';
+						} else {
+							$tableentry .= '<TD id="row'.$tablerow.'-'.$field[1].'">';
+							$tableentry .= '<DIV id="'.$field[1].'-div" class="embedded">'.$item->embed($field[1],'search').'</DIV>';
+							$tableentry .= '</TD>';
+						}
 					}
 				}
 				if (!$intable && !$embedded) {

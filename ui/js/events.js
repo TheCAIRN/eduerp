@@ -157,6 +157,9 @@ function addDetailRow(whichModule) {
 		newSalesOrdersDetailRow();
 	}
 } // addDetailRow()
+function editDetailRow(whichModule,id) {
+	if (whichModule=="bom_detail") editBOMDetailRow(id);
+} // editDetailRow()
 function showNewRecordAttachmentPane() {
 	
 } // showNewRecordAttachmentPane()
