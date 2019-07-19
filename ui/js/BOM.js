@@ -130,6 +130,31 @@ function saveBOMDetail() {
 			$("#bom_detail_edit td:nth-child(6), #bom_detail_edit th:nth-child(6)").hide();
 			$("#bom_detail_edit td:nth-child(7), #bom_detail_edit th:nth-child(7)").hide();
 			$("#bom_detail_edit td:nth-child(8), #bom_detail_edit th:nth-child(8)").hide();
+		} else if (fields[0]=='updated') {
+			var updrow = $("#bom_detail_edit td:nth-child(1):contains("+bomdetail+")").closest("tr").attr("id");
+			if (!updrow) {
+				alert("Cannot update the screen.  Please click the 'view' button in the toolbar, then 'edit' to refresh.");
+			} else {
+				$("#"+updrow+"-step_number").text(stepnumber);
+				$("#step_number").val("");
+				$("#"+updrow+"-step_type").text($("#step_type option:selected").text());
+				$("#step_type").val("");
+				$("#"+updrow+"-component_product_id").text($("#component_product_id-product_id").text()+" "+$("#component_product_id-product_code").text());
+				embeddedItemNewSearch("component_product_id");
+				$("#"+updrow+"-component_quantity_used").text(componentqty);
+				$("#component_quantity_used").val("");
+				$("#"+updrow+"-bom_step_id").text($("#bom_step_id option:selected").text());
+				$("#bom_step_id").val("");
+				$("#"+updrow+"-seconds_to_process").text(processtime);
+				$("#seconds_to_process").val("");
+				$("#"+updrow+"-sub_bom_id").text($("#sub_bom_id option:selected").text());
+				$("#sub_bom_id").val("");
+				$("#"+updrow+"-description").text(instructions);
+				$("#updrow0 #description").text("");
+				if (rev_enabled) $("#"+updrow+"-rev_enabled").text("Yes"); else $("#"+updrow+"-rev_enabled").text("No");
+				$("#"+updrow+"-rev_number").text(rev_number);
+				$("#"+row+"-rev_number:first-child").val("");
+			}
 		}
 		updateDiv('messagebar');
 	})

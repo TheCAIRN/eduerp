@@ -289,9 +289,7 @@ class BOM extends ERPBase {
 			$_SESSION['idarray'] = array($f,$p,$id,$n,$l);
 		}		
 	} // function display()
-	public function newRecord() {
-		echo parent::abstractNewRecord('BOM');
-		$_SESSION['currentScreen'] = 3019;
+	private function echoStepTypeScript() {
 		echo "<SCRIPT type=\"text/javascript\">
 			$(\"#bom_detail_edit td:nth-child(4), #bom_detail_edit th:nth-child(4)\").hide();
 			$(\"#bom_detail_edit td:nth-child(5), #bom_detail_edit th:nth-child(5)\").hide();
@@ -321,10 +319,16 @@ class BOM extends ERPBase {
 				}
 			});
 			</SCRIPT>";
+	}
+	public function newRecord() {
+		echo parent::abstractNewRecord('BOM');
+		$_SESSION['currentScreen'] = 3019;
+		$this->echoStepTypeScript();
 	} // function newRecord()
 	public function editRecord($id) {
 		$this->display($id,'edit');
 		$_SESSION['currentScreen'] = 4019;
+		$this->echoStepTypeScript();
 	}
 	private function insertHeader() {
 		$this->resetHeader();
@@ -474,7 +478,7 @@ class BOM extends ERPBase {
 		
 		// Create UPDATE String
 		
-		if (count($update)==0) {
+		if (count($update)==2) { // last_update is always there
 			echo 'fail|Nothing to update';
 			return;
 		}
@@ -518,7 +522,114 @@ class BOM extends ERPBase {
 	} // updateHeader()
 	private function updateDetail() {
 		$this->resetDetail();
-		
+		$now = new DateTime();
+		$id = $_POST['bomid'];
+		$dtlid = $_POST['bomdetailid'];
+		if ((!is_integer($id) && !ctype_digit($id)) || $id<1) {
+			echo 'fail|Invalid BOM id for updating';
+			return;
+		}
+		if ((!is_integer($dtlid) && !ctype_digit($dtlid)) || $dtlid<1) {
+			echo 'fail|Invalid BOM detail id for updating';
+			return;
+		}
+		$this->display($id,'update'); // Display already has the logic for loading the record.  TODO: Refactor into separate function.
+		if (is_null($this->bom_id)) {
+			echo 'fail|Invalid BOM id for updating';
+			return;
+		}
+		$update = array();
+		$this->bom_detail_id = $dtlid;
+		$this->step_number = $this->detail_array[$dtlid]['step_number'];
+		$this->step_type = $this->detail_array[$dtlid]['step_type'];
+		$this->component_product_id = $this->detail_array[$dtlid]['component_product_id'];
+		$this->component_quantity_used = $this->detail_array[$dtlid]['component_quantity_used'];
+		$this->bom_step_id = $this->detail_array[$dtlid]['bom_step_id'];
+		$this->seconds_to_process = $this->detail_array[$dtlid]['seconds_to_process'];
+		$this->sub_bom_id = $this->detail_array[$dtlid]['sub_bom_id'];
+		$this->detail_description = $this->detail_array[$dtlid]['description'];
+		$this->detail_rev_enabled = $this->detail_array[$dtlid]['rev_enabled'];
+		$this->detail_rev_number = $this->detail_array[$dtlid]['rev_number'];
+		if (isset($_POST['stepnumber']) && $_POST['stepnumber']!=$this->step_number) $update['step_number'] = array('i',$_POST['stepnumber']);
+		if (isset($_POST['description']) && $_POST['description']!=$this->detail_description) $update['description'] = array('s',$_POST['description']);
+		$reven = null;
+		if (isset($_POST['rev_enabled'])) $reven = ($_POST['rev_enabled']=='true')?'Y':'N';
+		if (!is_null($reven) && $reven!=$this->detail_rev_enabled) $update['rev_enabled'] = array('s',$reven);
+		if ((!is_null($reven)) && $reven=='Y' && isset($_POST['rev_number']) && $_POST['rev_number']!=$this->detail_rev_number) $update['rev_number'] = array('i',$_POST['rev_number']);
+		$update['last_update_date'] = array('s',$now->format('Y-m-d H:i:s'));
+		$update['last_update_by'] = array('i',$_SESSION['dbuserid']);
+		if (isset($_POST['steptype'])) {
+			$steptype = $_POST['steptype'];
+			if ($steptype=='C') {
+				if (isset($_POST['component']) && $_POST['component']!=$this->component_product_id) $update['component_product_id'] = array('i',$_POST['component']);
+				if (isset($_POST['componentqty']) && $_POST['componentqty']!=$this->component_quantity_used) $update['component_quantity_used'] = array('d',$_POST['componentqty']);
+			} elseif ($steptype=='P') {
+				if (isset($_POST['bom_step_id']) && $_POST['bom_step_id']!=$this->bom_step_id) $update['bom_step_id'] = array('i',$_POST['bom_step_id']);
+				if (isset($_POST['processtime']) && $_POST['processtime']!=$this->seconds_to_process) $update['seconds_to_process'] = array('i',$_POST['processtime']);
+			} elseif ($steptype=='B') {
+				if (isset($_POST['sub_bom_id']) && $_POST['sub_bom_id']!=$this->sub_bom_id) $update['sub_bom_id'] = array('i',$_POST['sub_bom_id']);
+			}
+			if ($steptype!=$this->step_type) {
+				// step type changed
+				$update['step_type'] = array('s',$steptype);
+				if ($steptype=='C') {
+					$update['bom_step_id'] = array('i',null);
+					$update['seconds_to_process'] = array('i',null);
+					$update['sub_bom_id'] = array('i',null);
+				} elseif ($steptype=='P') {
+					$update['component_product_id'] = array('i',null);
+					$update['component_quantity_used'] = array('d',null);
+					$update['sub_bom_id'] = array('i',null);
+				} elseif ($steptype=='B') {
+					$update['bom_step_id'] = array('i',null);
+					$update['seconds_to_process'] = array('i',null);
+					$update['component_product_id'] = array('i',null);
+					$update['component_quantity_used'] = array('d',null);
+				}
+			}
+		} // Steptype submitted
+		if (count($update)==2) { // last_update is always there
+			echo 'fail|Nothing to update';
+			return;
+		}
+		$q = 'UPDATE bom_detail SET ';
+		$ctr = 0;
+		$bp_types = '';
+		$bp_values = array_fill(0,count($update),null);
+		foreach ($update as $field=>$data) {
+			if ($ctr > 0) $q .= ',';
+			$q .= "$field=?";
+			$bp_types .= $data[0];
+			$bp_values[$ctr] = $data[1];
+			$ctr++;
+		}
+		$q .= ' WHERE bom_id=? AND bom_detail_id=?';
+		$ctr++;
+		$bp_types .= 'ii';
+		$bp_values[$ctr++] = $this->bom_id;
+		$bp_values[$ctr] = $dtlid;
+		$stmt = $this->dbconn->prepare($q);
+		/* The internet has a lot of material about different ways to pass a variable number of arguments to bind_param.
+		   I feel that using Reflection is the best tool for the job.
+		   Reference: https://www.php.net/manual/en/mysqli-stmt.bind-param.php#107154
+		*/
+		$bp_method = new ReflectionMethod('mysqli_stmt','bind_param');
+		$bp_refs = array();
+		foreach ($bp_values as $key=>$value) {
+			$bp_refs[$key] = &$bp_values[$key];
+		}
+		array_unshift($bp_values,$bp_types);
+		$bp_method->invokeArgs($stmt,$bp_values);
+		$stmt->execute();
+		if ($stmt->affected_rows > 0) {
+			echo 'updated';
+		} else {
+			if ($this->dbconn->error) {
+				echo 'fail|'.$this->dbconn->error;
+				$this->mb->addError($this->dbconn->error);
+			} else echo 'fail|No rows updated';
+		}
+		$stmt->close();		
 	} // updateDetail()
 	public function insertRecord() {
 		// Assumes values are stored in $_POST
