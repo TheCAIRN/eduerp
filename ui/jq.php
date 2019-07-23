@@ -312,6 +312,7 @@ function jquery() {
 			return;
 		}
 		switch ($_SESSION['currentScreen']%1000) {
+			case 5: $modObject = new Vendor($link); break;
 			case 7: $modObject = new Purchasing($link); break;
 			case 12: $modObject = new Addresses($link); break;
 			case 13: $modObject = new ItemManager($link); break;

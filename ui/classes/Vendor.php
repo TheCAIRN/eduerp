@@ -1,5 +1,21 @@
 <?php
 class Vendor extends ERPBase {
+	private $vendor_id;
+	private $vendor_name;
+	private $url;
+	private $primary_address;
+	private $billing_address;
+	private $payment_address;
+	private $gl_account_id;
+	private $default_terms;
+	private $status;
+	private $rev_enabled;
+	private $rev_number;
+	private $created_by;
+	private $creation_date;
+	private $last_update_by;
+	private $last_update_date;
+	private $column_list = 'vendor_id,vendor_name,url,primary_address,billing_address,payment_address,gl_account_id,default_terms,status,rev_enabled,rev_number';
 	public function __construct($link=null) {
 		parent::__construct($link);
 		$this->searchFields[] = array('pur_vendors','vendor_id','ID','integer');
@@ -7,7 +23,47 @@ class Vendor extends ERPBase {
 		$this->searchFields[] = array('ent_entities','status','Active Flag','dropdown',array(array('A','Active'),array('B','Bankrupt'),array('D','Defunct'),
 			array('I','Temporarily Inactive'),array('S','Seasonally Inactive')));
 		// TO DO: Search by address
+		
+		$this->entryFields[] = array('pur_vendors','','Vendor','fieldset');
+		$this->entryFields[] = array('pur_vendors','vendor_id','ID','integerid');
+		$this->entryFields[] = array('pur_vendors','vendor_name','Name','textbox');
+		$this->entryFields[] = array('pur_vendors','url','URL','textbox');
+		$this->entryFields[] = array('pur_vendors','gl_account_id','G/L Account','dropdown','acgl_accounts',array('gl_account_id','gl_account_name'));
+ // TODO: Change gl_account_id from simple dropdown to GLAccount, and treat as an embedded field, so new G/L accounts can be created in place.
+		$this->entryFields[] = array('pur_vendors','default_terms','Default Terms','dropdown','aa_terms',array('terms_id','terms_code'));
+		$this->entryFields[] = array('pur_vendors','status','Status','function',$this,'statusSelect');
+		$this->entryFields[] = array('pur_vendors','rev_enabled','Enable Revision Tracking','checkbox','rev_number');
+		$this->entryFields[] = array('pur_vendors','rev_number','Revision number','integer');
+		$this->entryFields[] = array('pur_vendors','','','endfieldset');
+		$this->entryFields[] = array('pur_vendors','primary_address','Primary Address','embedded');
+		$this->entryFields[] = array('pur_vendors','primary_address','Primary Address','Address');
+		$this->entryFields[] = array('pur_vendors','','','endembedded');
+		$this->entryFields[] = array('pur_vendors','billing_address','Billing Address','embedded');
+		$this->entryFields[] = array('pur_vendors','billing_address','Billing Address','Address');
+		$this->entryFields[] = array('pur_vendors','','','endembedded');
+		$this->entryFields[] = array('pur_vendors','payment_address','Payment Address','embedded');
+		$this->entryFields[] = array('pur_vendors','payment_address','Payment Address','Address');
+		$this->entryFields[] = array('pur_vendors','','','endembedded');
+		
+		$this->resetHeader();		
 	} // function __construct
+	public function resetHeader() {
+		$this->vendor_id = -1;
+		$this->vendor_name = '';
+		$this->url = '';
+		$this->primary_address = null;
+		$this->billing_address = null;
+		$this->payment_address = null;
+		$this->gl_account_id = null;
+		$this->default_terms = null;
+		$this->status = 'A';
+		$this->rev_enabled = false;
+		$this->rev_number = 1;
+		$this->created_by = null;
+		$this->creation_date = null;
+		$this->last_update_by = null;
+		$this->last_update_date = null;
+	}
 	public function vendorSelect($id=0,$readonly=false) {
 		/*
 		$html = '<LABEL for="vendorSelect">Vendor:</LABEL><SELECT id="vendorSelect">';
@@ -70,7 +126,7 @@ class Vendor extends ERPBase {
 		if (ctype_digit($id)) return true;
 		return false;
 	}
-	public function display($id) {
+	public function display($id,$mode='view') {
 		if (!($this->isIDValid($id))) return;
 		$readonly = true;
 		$html = '';
@@ -183,6 +239,28 @@ class Vendor extends ERPBase {
 			$_SESSION['idarray'] = array($f,$p,$id,$n,$l);
 		}
 	} // function display
+	public function newRecord() {
+		echo parent::abstractNewRecord('Vendor');
+		$_SESSION['currentScreen'] = 3005;
+	} // newRecord()
+	public function editRecord($id) {
+		$this->display($id,'edit');
+		$_SESSION['currentScreen'] = 4005;
+	}
+	private function insertHeader() {
+		
+	} // insertHeader()
+	private function updateHeader() {
+		
+	} // updateHeader()
+	public function insertRecord() {
+		if (isset($_POST['level']) && $_POST['level']=='header') $this->insertHeader(false);
+	}
+	public function updateRecord() {
+		if (isset($_POST['level']) && $_POST['level']=='header') $this->updateHeader();
+	}
+	public function saveRecord() {
 	
+	} // saveRecord()	
 } // class Vendor
 ?>

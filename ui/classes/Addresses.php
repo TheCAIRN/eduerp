@@ -333,7 +333,7 @@ class Addresses extends ERPBase {
 		echo '<FIELDSET class="RecordEdit" id="Addresses_edit">';
 		echo '<LEGEND onClick="$(this).siblings().toggle();">Address</LEGEND>';
 		echo parent::abstractNewRecord('Addresses');
-		echo '</FIELDSET';
+		echo '</FIELDSET>';
 		$_SESSION['currentScreen'] = 3012;
 	} // newRecord()
 	public function editRecord($id) {

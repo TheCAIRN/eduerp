@@ -87,7 +87,7 @@ class Customer extends ERPBase {
 		if (ctype_digit($id)) return true;
 		return false;
 	} // isIDValid()
-	public function display($id) {
+	public function display($id,$mode='view') {
 		if (!$this->isIDValid($id)) return;
 		$readonly = true;
 		$html = '';

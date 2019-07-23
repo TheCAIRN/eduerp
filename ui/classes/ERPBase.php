@@ -261,6 +261,12 @@ class ERPBase {
 					if (is_array($hdata) && strpos($field[0],'_detail')===false && isset($hdata[$field[1]])) {
 						$dval = ' value="'.substr($hdata[$field[1]],0,10).'"';
 						$tval = ' value="'.substr($hdata[$field[1]],11).'"';
+					} elseif (count($field)>=5) {
+						$now = new DateTime();
+						if ($field[4]=='now') {
+							$dval = ' value="'.$now->format('Y-m-d').'"';
+							$tval = ' value="'.$now->format('H:i:s').'"';
+						}
 					}
 					if (!$intable) {
 						$html .= '<INPUT type="date" id="'.$prefix.$field[1].'-date"'.$dval.$readonly.' /><INPUT type="time" id="'.$prefix.$field[1].'-time"'.$tval.$readonly.' />';

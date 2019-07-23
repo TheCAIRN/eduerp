@@ -24,13 +24,18 @@ class Purchasing extends ERPBase {
 	private $quantity_uom;
 	private $price;
 	private $gl_account_id;
+	private $fv_vendor_id;
+	private $quantity_shipped;
+	private $date_shipped;
+	private $tracking_number;
 	private $detail_rev_enabled;
 	private $detail_rev_number;
 	private $duser_creation;
 	private $ddate_creation;
 	private $duser_modify;
 	private $ddate_modify;
-	private $column_list_detail = 'pur_detail_id,po_line,parent_line,item_id,quantity,quantity_uom,price,gl_account_id,rev_enabled,rev_number';
+	private $column_list_detail = 'pur_detail_id,po_line,parent_line,item_id,quantity,quantity_uom,price,gl_account_id,fv_vendor_id,quantity_shipped,
+		date_shipped,tracking_number,rev_enabled,rev_number';
 	
 	private $detail_array;
 	public function __construct($link=null) {
@@ -43,7 +48,7 @@ class Purchasing extends ERPBase {
 		$this->entryFields[] = array('pur_header','','Purchase Order','fieldset');
 		$this->entryFields[] = array('pur_header','purchase_order_number','Order #','integerid');
 		$this->entryFields[] = array('pur_header','vendor_id','Vendor','dropdown','pur_vendors',array('vendor_id','vendor_name'));
-		$this->entryFields[] = array('pur_header','order_date','Order Date','datetime');
+		$this->entryFields[] = array('pur_header','order_date','Order Date','datetime','now');
 		$this->entryFields[] = array('pur_header','purchase_order_reference','Reference','textbox');
 		$this->entryFields[] = array('pur_header','entity_id','Entity','dropdown','ent_entities',array('entity_id','entity_name'));
 		$this->entryFields[] = array('pur_header','division_id','Division','dropdown','ent_division_master',array('division_id','division_name'));
@@ -56,11 +61,17 @@ class Purchasing extends ERPBase {
 		$this->entryFields[] = array('pur_detail','pur_detail_id','Order Detail #','integerid');
 		$this->entryFields[] = array('pur_detail','po_line','Order Line #','integer');
 		$this->entryFields[] = array('pur_detail','parent_line','Parent Line #','integer');
-		$this->entryFields[] = array('pur_detail','item_id','Item','dropdown','item_master',array('product_id','product_code'));
-		$this->entryFields[] = array('pur_detail','quantity','Quantity','integer');
+		$this->entryFields[] = array('pur_detail','item_id','Item','embedded');
+		$this->entryFields[] = array('pur_detail','item_id','Item','Item');
+		$this->entryFields[] = array('pur_detail','','','endembedded');
+		$this->entryFields[] = array('pur_detail','quantity','Quantity','decimal',11,5);
 		$this->entryFields[] = array('pur_detail','quantity_uom','Quantity UOM','dropdown','aa_uom',array('uom_code','uom_description'));
 		$this->entryFields[] = array('pur_detail','price','Price','decimal',17,5);
 		$this->entryFields[] = array('pur_detail','gl_account_id','G/L Account','dropdown','acgl_accounts',array('gl_account_id','gl_account_name'));
+		$this->entryFields[] = array('pur_detail','fv_vendor_id','Shipper','dropdown','fv_freight_vendors',array('fv_vendor_id','fv_vendor_name'));
+		$this->entryFields[] = array('pur_detail','quantity_shipped','Qty Shipped','decimal',17,5);
+		$this->entryFields[] = array('pur_detail','date_shipped','Date Shipped','datetime');
+		$this->entryFields[] = array('pur_detail','tracking_number','Tracking #','textbox');
 		$this->entryFields[] = array('pur_detail','rev_enabled','Enable Revision Tracking','checkbox','rev_number');
 		$this->entryFields[] = array('pur_detail','rev_number','Revision number','integer');
 		$this->entryFields[] = array('pur_detail','','','endfieldtable');
@@ -83,10 +94,14 @@ class Purchasing extends ERPBase {
 		$this->po_line = 0;
 		$this->parent_line = 0;
 		$this->item_id = 0;
-		$this->quantity = 0;
+		$this->quantity = 0.00;
 		$this->quantity_uom = '';
 		$this->price = 0.00;
 		$this->gl_account_id = 0;
+		$this->fv_vendor_id = null;
+		$this->quantity_shipped = 0.00;
+		$this->date_shipped = null;
+		$this->tracking_number = '';
 		$this->detail_rev_enabled = false;
 		$this->detail_rev_number = 1;
 	}
@@ -114,6 +129,10 @@ class Purchasing extends ERPBase {
 			,'quantity_uom'=>$this->quantity_uom
 			,'price'=>$this->price
 			,'gl_account_id'=>$this->gl_account_id
+			,'fv_vendor_id'=>$this->fv_vendor_id
+			,'quantity_shipped'=>$this->quantity_shipped
+			,'date_shipped'=>$this->date_shipped
+			,'tracking_number'=>$this->tracking_number
 			,'rev_enabled'=>$this->detail_rev_enabled
 			,'rev_number'=>$this->detail_rev_number
 		);
@@ -232,6 +251,10 @@ class Purchasing extends ERPBase {
 					,$this->quantity_uom 
 					,$this->price
 					,$this->gl_account_id
+					,$this->fv_vendor_id
+					,$this->quantity_shipped
+					,$this->date_shipped
+					,$this->tracking_number
 					,$this->detail_rev_enabled 
 					,$this->detail_rev_number
 					,$this->duser_creation
@@ -341,6 +364,10 @@ class Purchasing extends ERPBase {
 		$quantity_uom = isset($_POST['quantity_uom'])?$_POST['quantity_uom']:'EA';
 		$price = isset($_POST['price'])?$_POST['price']:0.00;
 		$gl_account_id = isset($_POST['gl_account_id'])?$_POST['gl_account_id']:null;
+		$shipper = isset($_POST['fv_vendor_id'])?$_POST['fv_vendor_id']:null;
+		$qtyshipped = isset($_POST['quantity_shipped'])?$_POST['quantity_shipped']:0.00;
+		$dateshipped = isset($_POST['date_shipped'])?$_POST['date_shipped']:null;
+		$tracking = isset($_POST['tracking_number'])?$_POST['tracking_number']:'';
 		$rev_enabled = isset($_POST['rev_enabled'])?$_POST['rev_enabled']:false;
 		$rev_number = isset($_POST['rev_number'])?$_POST['rev_number']:1;
 		$entityid = isset($_POST['entityid'])?$_POST['entityid']:0;
@@ -349,9 +376,10 @@ class Purchasing extends ERPBase {
 		
 		/* The entity, division, and department are for future use, where one entity may be purchasing materials for another. */
 		$q = "INSERT INTO pur_detail (purchase_order_number,po_line,parent_line,entity_id,division_id,department_id, item_id,quantity,quantity_uom,price,gl_account_id,
-			rev_enabled,rev_number,created_by,creation_date,last_update_by,last_update_date) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,NOW(),?,NOW());";
+			fv_vendor_id,quantity_shipped,date_shipped,tracking_number,
+			rev_enabled,rev_number,created_by,creation_date,last_update_by,last_update_date) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,NOW(),?,NOW());";
 		$stmt = $this->dbconn->prepare($q);
-		$stmt->bind_param('iiiiiisdsdisiii',$p1,$p2,$p3,$p4,$p5,$p6,$p7,$p8,$p9,$p10,$p11,$p12,$p13,$p14,$p16);
+		$stmt->bind_param('iiiiiisdsdiidsssiii',$p1,$p2,$p3,$p4,$p5,$p6,$p7,$p8,$p9,$p10,$p11,$p12,$p13,$p14,$p15,$p16,$p17,$p18,$p19);
 		if ($orderkey==0) {
 			$this->mb->addError("Details cannot be inserted when the purchase order number is zero.");
 			$stmt->close();
@@ -376,11 +404,15 @@ class Purchasing extends ERPBase {
 		$p9 = $quantity_uom;
 		$p10 = $price;
 		$p11 = $gl_account_id;
-		$p12 = ($rev_enabled=='true')?'Y':'N';
+		$p12 = $shipper;
+		$p13 = $qtyshipped;
+		$p14 = $dateshipped;
+		$p15 = $tracking;
+		$p16 = ($rev_enabled=='true')?'Y':'N';
 		if ($rev_number<1) $rev_number = 1;
-		$p13 = $rev_number;
-		$p14 = $_SESSION['dbuserid'];
-		$p16 = $_SESSION['dbuserid'];
+		$p17 = $rev_number;
+		$p18 = $_SESSION['dbuserid'];
+		$p19 = $_SESSION['dbuserid'];
 		$result = $stmt->execute();
 		if ($result!==false) {
 			echo 'inserted|'.$this->dbconn->insert_id;
