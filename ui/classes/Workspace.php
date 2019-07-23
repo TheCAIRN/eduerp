@@ -78,6 +78,7 @@ class Workspace {
 			/* 1000-1999: List Records */
 			case 1002: $ent = new Entity($this->dbconn); $ent->listRecords(); break;
 			case 1005: $vend = new Vendor($this->dbconn); $vend->listRecords(); break;
+			case 1007: $pur = new Purchasing($this->dbconn); $pur->listRecords(); break;
 			case 1012: $addr = new Addresses($this->dbconn); $addr->listRecords(); break;
 			case 1013: $item = new ItemManager($this->dbconn); $item->listRecords(); break;
 			case 1019: $bom = new BOM($this->dbconn); $bom->listRecords(); break;
@@ -94,6 +95,7 @@ class Workspace {
 			/* 2000-2999: Display record */
 			case 2002: $ent = new Entity($this->dbconn); $ent->display($_SESSION['idarray'][2]); break;
 			case 2005: $vend = new Vendor($this->dbconn); $vend->display($_SESSION['idarray'][2]); break;
+			case 2007: $pur = new Purchasing($this->dbconn); $pur->display($_SESSION['idarray'][2]); break;
 			case 2012: $addr = new Addresses($this->dbconn); $addr->display($_SESSION['idarray'][2]); break;
 			case 2013: $item = new ItemManager($this->dbconn); $item->display($_SESSION['idarray'][2]); break;
 			case 2019: $bom = new BOM($this->dbconn); $bom->display($_SESSION['idarray'][2]); break;

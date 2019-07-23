@@ -10,6 +10,11 @@ class Purchasing extends ERPBase {
 	private $terms_id;
 	private $rev_enabled;
 	private $rev_number;
+	private $huser_creation;
+	private $hdate_creation;
+	private $huser_modify;
+	private $hdate_modify;
+	private $column_list_header = 'purchase_order_number,vendor_id,order_date,purchase_order_reference,entity_id,division_id,department_id,terms,rev_enabled,rev_number';
 	
 	private $pur_detail_id;
 	private $po_line;
@@ -21,16 +26,19 @@ class Purchasing extends ERPBase {
 	private $gl_account_id;
 	private $detail_rev_enabled;
 	private $detail_rev_number;
+	private $duser_creation;
+	private $ddate_creation;
+	private $duser_modify;
+	private $ddate_modify;
+	private $column_list_detail = 'pur_detail_id,po_line,parent_line,item_id,quantity,quantity_uom,price,gl_account_id,rev_enabled,rev_number';
+	
 	private $detail_array;
 	public function __construct($link=null) {
 		parent::__construct($link);
-		$this->searchFields[] = array('ent_entities',array('entity_id','entity_name'),'Entity','dropdown');
-		$this->searchFields[] = array('pur_vendors',array('vendor_id','vendor_name'),'Vendor','dropdown');
-		$this->searchFields[] = array('pur_header','purchase_order_number','Order #','integer');
-		$this->searchFields[] = array('pur_header','order_date','Order Date','datetime');
-		$this->searchFields[] = array('item_master',array('product_id','product_code'),'Product ID','dropdown');
-		$this->searchFields[] = array('pur_vendor_catalog',array('vendor_catalog_id','vendor_item_number'),'Vendor SKU','dropdown');
-		$this->searchFields[] = array('pur_detail','pur_detail_id','Order detail #','integer');
+		$this->supportsAttachments = null;
+		$this->supportsNotes = 'pur_header_notes';
+		$this->primaryKey = 'purchase_order_number';
+		$this->searchFields[] = array('pur_header','unified_search','Type in any item related info and click Search','textbox');
 		
 		$this->entryFields[] = array('pur_header','','Purchase Order','fieldset');
 		$this->entryFields[] = array('pur_header','purchase_order_number','Order #','integerid');
@@ -82,6 +90,34 @@ class Purchasing extends ERPBase {
 		$this->detail_rev_enabled = false;
 		$this->detail_rev_number = 1;
 	}
+	public function arrayifyHeader() {
+		return array(
+			'purchase_order_number'=>$this->purchase_order_number
+			,'vendor_id'=>$this->vendor_id
+			,'order_date'=>$this->order_date
+			,'purchase_order_reference'=>$this->purchase_order_reference
+			,'entity_id'=>$this->entity_id
+			,'division_id'=>$this->division_id
+			,'department_id'=>$this->department_id
+			,'terms_id'=>$this->terms_id
+			,'rev_enabled'=>$this->rev_enabled
+			,'rev_number'=>$this->rev_number
+		);
+	}
+	public function arrayifyDetail() {
+		return array(
+			'pur_detail_id'=>$this->pur_detail_id
+			,'po_line'=>$this->po_line
+			,'parent_line'=>$this->parent_line
+			,'item_id'=>$this->item_id
+			,'quantity'=>$this->quantity
+			,'quantity_uom'=>$this->quantity_uom
+			,'price'=>$this->price
+			,'gl_account_id'=>$this->gl_account_id
+			,'rev_enabled'=>$this->detail_rev_enabled
+			,'rev_number'=>$this->detail_rev_number
+		);
+	}
 	public function listRecords() {
 		parent::abstractListRecords('Purchasing');
 	} // function listRecords()
@@ -89,7 +125,50 @@ class Purchasing extends ERPBase {
 		parent::abstractSearchPage('PurchasingSearch');
 	} // function searchPage()
 	public function executeSearch($criteria) {
-		
+		$result = null;
+		$q = 'SELECT DISTINCT h.purchase_order_number,vendor_name,order_date,purchase_order_reference 
+			FROM pur_header h
+			LEFT OUTER JOIN pur_detail d ON h.purchase_order_number=d.purchase_order_number
+			LEFT OUTER JOIN pur_vendors v ON h.vendor_id=v.vendor_id
+			LEFT OUTER JOIN item_master i ON d.item_id=i.product_id';
+		// Add $criteria
+		if (!is_null($criteria) && is_array($criteria) && count($criteria)>0) {
+			// The only key for Addresses is unified_search.
+			if (is_array($criteria[0]) && count($criteria[0])>=2 && $criteria[0][0]=='unified_search') $criteria = $criteria[0][1];
+			else $criteria='';
+			$q .= " WHERE h.purchase_order_number=? OR vendor_name LIKE ? OR purchase_order_reference LIKE ? OR d.item_id = ? OR product_code LIKE ? OR product_description LIKE ? OR product_catalog_title LIKE ? or gtin=?";
+			$stmt = $this->dbconn->prepare($q);
+			$stmt->bind_param('ississss',$p1,$p2,$p3,$p4,$p5,$p6,$p7,$p8);
+			$p2 = $p3 = $p5 = $p6 = $p7 = '%'.$criteria.'%';
+			$p8 = $criteria;
+			$p1 = $p4 = ctype_digit($criteria)?$criteria:-99999;
+			$result = $stmt->execute();
+			if ($result !== false) {
+				$this->recordSet = array();
+				if (isset($_SESSION['recordSet']['Purchasing'])) unset($_SESSION['recordSet']['Purchasing']); // A search criteria was given, so do not display the last search on an empty set.
+				$stmt->store_result();
+				$vendorname='';
+				$stmt->bind_result($this->purchase_order_number,$vendorname,$this->order_date,$this->purchase_order_reference);
+				while ($stmt->fetch()) {
+					$this->recordSet[$this->purchase_order_number] = array('Vendor Name'=>$vendorname,'Order Date'=>$this->order_date,'Reference'=>$this->purchase_order_reference);
+				}
+			}
+		// if criteria exists
+		} else {
+			$q .= " ORDER BY h.purchase_order_number";
+			$result = $this->dbconn->query($q);
+			if ($result!==false) {
+				$this->recordSet = array();
+				while ($row=$result->fetch_assoc()) {
+					$this->recordSet[$row['purchase_order_number']] = array('Vendor Name'=>$row['vendor_name'],'Order Date'=>$row['order_date'],'Reference'=>$row['purchase_order_reference']);
+				} // while rows
+			} // if query succeeded
+		} // if criteria does not exist
+		$this->listRecords();
+		$_SESSION['currentScreen'] = 1007;
+		$_SESSION['lastCriteria'] = $criteria;
+		if (!isset($_SESSION['searchResults'])) $_SESSION['searchResults'] = array();
+		$_SESSION['searchResults']['Purchasing'] = array_keys($this->recordSet);		
 	} // function executeSearch()
 	public function isIDValid($id) {
 		// TODO: Validate that the ID is actually a record in the database
@@ -98,13 +177,104 @@ class Purchasing extends ERPBase {
 		if (ctype_digit($id)) return true;
 		return false;
 	} // function isIDValid()
-	public function display($id) {
-		
+	public function display($id,$mode='view') {
+		if (!$this->isIDValid($id)) return;
+		$readonly = true;
+		$html = '';
+		$q = "SELECT {$this->column_list_header},h.created_by,h.creation_date,h.last_update_by,h.last_update_date 
+			FROM pur_header h 
+			WHERE purchase_order_number=?";
+		$stmt = $this->dbconn->prepare($q);
+		if ($stmt===false) {
+			echo $this->dbconn->error;
+			return;
+		}
+		$stmt->bind_param('i',$PurchaseOrdersid);
+		$PurchaseOrdersid = $id;
+		$result = $stmt->execute();
+		// TODO: What if another user deletes the record while it's still in my search results?
+		if ($result!==false) {
+			$stmt->bind_result(
+				$this->purchase_order_number
+				,$this->vendor_id
+				,$this->order_date
+				,$this->purchase_order_reference
+				,$this->entity_id
+				,$this->division_id
+				,$this->department_id
+				,$this->terms_id
+				,$this->rev_enabled
+				,$this->rev_number
+				,$this->huser_creation,$this->hdate_creation,$this->huser_modify,$this->hdate_modify
+			);
+			$stmt->store_result();
+			$stmt->fetch();
+			$stmt->close();		
+
+			$q = "SELECT {$this->column_list_detail},d.created_by,d.creation_date,d.last_update_by,d.last_update_date 
+				FROM pur_detail d 
+				WHERE purchase_order_number=?";
+			$stmt = $this->dbconn->prepare($q);
+			if ($stmt===false) {
+				echo $this->dbconn->error;
+				return;
+			}
+			$stmt->bind_param('i',$PurchaseOrdersid);
+			$PurchaseOrdersid = $id;
+			$dresult = $stmt->execute();
+			if ($dresult!==false) {
+				$stmt->bind_result(
+					$this->pur_detail_id
+					,$this->po_line
+					,$this->parent_line
+					,$this->item_id
+					,$this->quantity
+					,$this->quantity_uom 
+					,$this->price
+					,$this->gl_account_id
+					,$this->detail_rev_enabled 
+					,$this->detail_rev_number
+					,$this->duser_creation
+					,$this->ddate_creation
+					,$this->duser_modify
+					,$this->ddate_modify
+				
+				);
+				$stmt->store_result();
+				while ($stmt->fetch()) {
+					$this->detail_array[$this->pur_detail_id] = $this->arrayifyDetail();
+				}
+				$stmt->close();
+			}
+			
+			if ($mode!='update') {
+				$hdata = $this->arrayifyHeader();
+				echo parent::abstractRecord($mode,'Purchasing','',$hdata,$this->detail_array);
+			}
+		} // if result
+		else $this->purchase_order_number = null;
+		//echo $html;
+		$_SESSION['currentScreen'] = 2007;
+		if (!isset($_SESSION['searchResults']) && !isset($_SESSION['searchResults']['Purchasing']))
+			$_SESSION['idarray'] = array(0,0,$id,0,0);
+		else {
+			$idloc = array_search($id,$_SESSION['searchResults']['Purchasing'],false);
+			$f = $_SESSION['searchResults']['Purchasing'][0];
+			$l = $_SESSION['searchResults']['Purchasing'][] = array_pop($_SESSION['searchResults']['Purchasing']); // https://stackoverflow.com/questions/3687358/whats-the-best-way-to-get-the-last-element-of-an-array-without-deleting-it#comment63556865_3687358
+			if ($idloc > 0) $p = $_SESSION['searchResults']['Purchasing'][$idloc-1]; else $p = $f;
+			if ($l != $id) $n = $_SESSION['searchResults']['Purchasing'][$idloc+1]; else $n = $l;
+			$_SESSION['idarray'] = array($f,$p,$id,$n,$l);
+		}		
+			
 	} // function display()
 	public function newRecord() {
 		echo parent::abstractNewRecord('Purchasing');
 		$_SESSION['currentScreen'] = 3007;
 	} // function newRecord()
+	public function editRecord($id) {
+		$this->display($id,'edit');
+		$_SESSION['currentScreen'] = 4007;
+	}
 	private function insertHeader() {
 		$this->resetHeader();
 		$this->resetDetail();

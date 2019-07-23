@@ -120,6 +120,13 @@ function jquery() {
 				$modObject = new Entity($link);
 				$_SESSION['activeModule'] = $modObject;
 			}
+		} elseif ($module=='PurchasingSearch') {
+			if (isset($_SESSION['activeModule']) && $_SESSION['activeModule'] instanceof Purchasing) 
+				$modObject = $_SESSION['activeModule'];
+			else {
+				$modObject = new Purchasing($link);
+				$_SESSION['activeModule'] = $modObject;
+			}
 		} elseif ($module=='ItemSearch') {
 			if (isset($_SESSION['activeModule']) && $_SESSION['activeModule'] instanceof ItemManager) 
 				$modObject = $_SESSION['activeModule'];
@@ -248,6 +255,8 @@ function jquery() {
 		$modObject = null;
 		if ($module=='Entity') {
 			$modObject = new Entity($link);
+		} elseif ($module=='Purchasing') {
+			$modObject = new Purchasing($link);
 		} elseif ($module=='ItemManager') {
 			$modObject = new ItemManager($link);
 		} elseif ($module=='Addresses') {
@@ -338,6 +347,8 @@ function jquery() {
 		$modObject = null;
 		if ($module=='Entity') {
 			$modObject = new Entity($link);
+		} elseif ($module=='Purchasing') {
+			$modObject = new Purchasing($link);
 		} elseif ($module=='ItemManager') {
 			$modObject = new ItemManager($link);
 		} elseif ($module=='Addresses') {

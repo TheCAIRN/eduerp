@@ -112,8 +112,9 @@ class SalesOrders extends ERPBase {
 	
 	public function __construct ($link=null) {
 		parent::__construct($link);
-		$this->supportsNotes = true;
-		$this->supportsAttachments = true;
+		$this->supportsNotes = 'sales_header_notes';
+		$this->supportsAttachments = false;
+		$this->primaryKey = 'sales_order_number';
 		$this->searchFields[] = array('sales_header','sales_order_number','Sales Order #','integer');
 		$this->searchFields[] = array('sales_header','customer_purchase_order_number','PO #','textbox');
 		$this->searchFields[] = array('sales_header','bill_of_lading','BOL #','textbox');

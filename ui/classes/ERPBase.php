@@ -253,13 +253,22 @@ class ERPBase {
 						$tableentry .= '<TD id="row'.$tablerow.'-'.$prefix.$field[1].'"><INPUT type="checkbox" id="'.$prefix.$field[1].'" indeterminate="true" /></TD>';
 					}
 				}
-				if ($field[3]=='datetime') 
+				if ($field[3]=='datetime') {
+					$readonly = '';
+					if ($view=='view') $readonly = ' readonly="readonly"';
+					$dval = '';
+					$tval = '';
+					if (is_array($hdata) && strpos($field[0],'_detail')===false && isset($hdata[$field[1]])) {
+						$dval = ' value="'.substr($hdata[$field[1]],0,10).'"';
+						$tval = ' value="'.substr($hdata[$field[1]],11).'"';
+					}
 					if (!$intable) {
-						$html .= '<INPUT type="date" id="'.$prefix.$field[1].'-date" /><INPUT type="time" id="'.$prefix.$field[1].'-time" />';
+						$html .= '<INPUT type="date" id="'.$prefix.$field[1].'-date"'.$dval.$readonly.' /><INPUT type="time" id="'.$prefix.$field[1].'-time"'.$tval.$readonly.' />';
 					} else {
 						$tableentry .= '<TD id="row'.$tablerow.'-'.$prefix.$field[1].'"><INPUT type="date" id="'.$prefix.$field[1].'-date" />'.
 							'<INPUT type="time" id="'.$prefix.$field[1].'-time" /></TD>';
 					}
+				}
 				if ($field[3]=='date') {
 					$readonly = '';
 					if ($view=='view') $readonly = ' readonly="readonly"';
