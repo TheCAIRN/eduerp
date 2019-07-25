@@ -533,7 +533,7 @@ class BOM extends ERPBase {
 			echo 'fail|Invalid BOM detail id for updating';
 			return;
 		}
-		$this->display($id,'update'); // Display already has the logic for loading the record.  TODO: Refactor into separate function.
+		$this->display($id,'update'); // Display already has the logic for loading the header record.  TODO: Refactor into separate function.
 		if (is_null($this->bom_id)) {
 			echo 'fail|Invalid BOM id for updating';
 			return;

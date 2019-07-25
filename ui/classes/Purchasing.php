@@ -74,6 +74,7 @@ class Purchasing extends ERPBase {
 		$this->entryFields[] = array('pur_detail','tracking_number','Tracking #','textbox');
 		$this->entryFields[] = array('pur_detail','rev_enabled','Enable Revision Tracking','checkbox','rev_number');
 		$this->entryFields[] = array('pur_detail','rev_number','Revision number','integer');
+		$this->entryFields[] = array('pur_detail','','Add Row','newlinebutton','newPurchasingDetailRow();');
 		$this->entryFields[] = array('pur_detail','','','endfieldtable');
 	}
 	public function resetHeader() {
@@ -114,7 +115,7 @@ class Purchasing extends ERPBase {
 			,'entity_id'=>$this->entity_id
 			,'division_id'=>$this->division_id
 			,'department_id'=>$this->department_id
-			,'terms_id'=>$this->terms_id
+			,'terms'=>$this->terms_id
 			,'rev_enabled'=>$this->rev_enabled
 			,'rev_number'=>$this->rev_number
 		);
@@ -228,6 +229,7 @@ class Purchasing extends ERPBase {
 			);
 			$stmt->store_result();
 			$stmt->fetch();
+			$this->currentRecord = $id;
 			$stmt->close();		
 
 			$q = "SELECT {$this->column_list_detail},d.created_by,d.creation_date,d.last_update_by,d.last_update_date 
@@ -366,13 +368,15 @@ class Purchasing extends ERPBase {
 		$gl_account_id = isset($_POST['gl_account_id'])?$_POST['gl_account_id']:null;
 		$shipper = isset($_POST['fv_vendor_id'])?$_POST['fv_vendor_id']:null;
 		$qtyshipped = isset($_POST['quantity_shipped'])?$_POST['quantity_shipped']:0.00;
-		$dateshipped = isset($_POST['date_shipped'])?$_POST['date_shipped']:null;
+		$dateshipped_date = isset($_POST['date_shipped_date'])?$_POST['date_shipped_date']:null;
+		$dateshipped_time = isset($_POST['date_shipped_time'])?$_POST['date_shipped_time']:null;
 		$tracking = isset($_POST['tracking_number'])?$_POST['tracking_number']:'';
 		$rev_enabled = isset($_POST['rev_enabled'])?$_POST['rev_enabled']:false;
 		$rev_number = isset($_POST['rev_number'])?$_POST['rev_number']:1;
 		$entityid = isset($_POST['entityid'])?$_POST['entityid']:0;
 		$divisionid = isset($_POST['divisionid'])?$_POST['divisionid']:0;
 		$departmentid = isset($_POST['departmentid'])?$_POST['departmentid']:0;
+		$dateshipped = new DateTime($dateshipped_date.' '.$dateshipped_time);
 		
 		/* The entity, division, and department are for future use, where one entity may be purchasing materials for another. */
 		$q = "INSERT INTO pur_detail (purchase_order_number,po_line,parent_line,entity_id,division_id,department_id, item_id,quantity,quantity_uom,price,gl_account_id,
@@ -406,7 +410,12 @@ class Purchasing extends ERPBase {
 		$p11 = $gl_account_id;
 		$p12 = $shipper;
 		$p13 = $qtyshipped;
-		$p14 = $dateshipped;
+		if (is_null($dateshipped)) {
+			$this->mb->addError("The ship date is not formatted correctly.");
+			$stmt->close();
+			return;
+		}
+		$p14 = $dateshipped->format("Y-m-d H:i:s");
 		$p15 = $tracking;
 		$p16 = ($rev_enabled=='true')?'Y':'N';
 		if ($rev_number<1) $rev_number = 1;
@@ -425,12 +434,176 @@ class Purchasing extends ERPBase {
 	private function updateHeader() {
 		$this->resetHeader();
 		$this->resetDetail();
+		$now = new DateTime();
+		$id = $_POST['orderkey'];
+		if ((!is_integer($id) && !ctype_digit($id)) || $id<1) {
+			echo 'fail|Invalid purchase order number for updating';
+			return;
+		}
+		$this->display($id,'update'); // Display already has the logic for loading the record.  TODO: Refactor into separate function.
+		if (is_null($this->purchase_order_number)) {
+			echo 'fail|Invalid purchase order number for updating';
+			return;
+		}
+		$update = array();
+		if (isset($_POST['vendorid']) && $_POST['vendorid']!=$this->vendor_id) $update['vendor_id'] = array('i',$_POST['vendorid']);
+		$orderdate = null;
+		if (isset($_POST['orderdate_date']) && isset($_POST['orderdate_time'])) $orderdate = new DateTime($_POST['orderdate_date'].' '.$_POST['orderdate_time']);
+		if (!empty($orderdate) && $orderdate->format('Y-m-d H:i:s')!=$this->order_date) $update['order_date'] = array('s',$orderdate->format('Y-m-d H:i:s'));
+		if (isset($_POST['orderreference']) && $_POST['orderreference']!=$this->purchase_order_reference) $update['purchase_order_reference'] = array('s',$_POST['orderreference']);
+		if (isset($_POST['entityid']) && $_POST['entityid']!=$this->entity_id) $update['entity_id'] = array('i',$_POST['entityid']);
+		if (isset($_POST['divisionid']) && $_POST['divisionid']!=$this->division_id) $update['division_id'] = array('i',$_POST['divisionid']);
+		if (isset($_POST['departmentid']) && $_POST['departmentid']!=$this->department_id) $update['department_id'] = array('i',$_POST['departmentid']);
+		if (isset($_POST['termsid']) && $_POST['termsid']!=$this->terms_id) $update['terms_id'] = array('i',$_POST['termsid']);
+		$reven = null;
+		if (isset($_POST['rev_enabled'])) $reven = ($_POST['rev_enabled']=='true')?'Y':'N';
+		if (!is_null($reven) && $reven!=$this->rev_enabled) $update['rev_enabled'] = array('s',$reven);
+		if ((!is_null($reven)) && $reven=='Y' && isset($_POST['rev_number']) && $_POST['rev_number']!=$this->rev_number) $update['rev_number'] = array('i',$_POST['rev_number']);
+		$update['last_update_date'] = array('s',$now->format('Y-m-d H:i:s'));
+		$update['last_update_by'] = array('i',$_SESSION['dbuserid']);
+
+		// Create UPDATE String
 		
-	}
+		if (count($update)<=2) { // last update is always set
+			echo 'fail|Nothing to update';
+			return;
+		}
+		$q = 'UPDATE pur_header SET ';
+		$ctr = 0;
+		$bp_types = '';
+		$bp_values = array_fill(0,count($update),null);
+		foreach ($update as $field=>$data) {
+			if ($ctr > 0) $q .= ',';
+			$q .= "$field=?";
+			$bp_types .= $data[0];
+			$bp_values[$ctr] = $data[1];
+			$ctr++;
+		}
+		$q .= ' WHERE purchase_order_number=?';
+		$ctr++;
+		$bp_types .= 'i';
+		$bp_values[$ctr] = $this->purchase_order_number;
+		$stmt = $this->dbconn->prepare($q);
+		/* The internet has a lot of material about different ways to pass a variable number of arguments to bind_param.
+		   I feel that using Reflection is the best tool for the job.
+		   Reference: https://www.php.net/manual/en/mysqli-stmt.bind-param.php#107154
+		*/
+		$bp_method = new ReflectionMethod('mysqli_stmt','bind_param');
+		$bp_refs = array();
+		foreach ($bp_values as $key=>$value) {
+			$bp_refs[$key] = &$bp_values[$key];
+		}
+		array_unshift($bp_values,$bp_types);
+		$bp_method->invokeArgs($stmt,$bp_values);
+		$stmt->execute();
+		if ($stmt->affected_rows > 0) {
+			echo 'updated';
+		} else {
+			if ($this->dbconn->error) {
+				echo 'fail|'.$this->dbconn->error;
+				$this->mb->addError($this->dbconn->error);
+			} else echo 'fail|No rows updated';
+		}
+		$stmt->close();
+	} // updateHeader()
 	private function updateDetail() {
 		$this->resetDetail();
+		$now = new DateTime();
+		$id = $_POST['orderkey'];
+		$dtlid = $_POST['orderlinekey'];
+		if ((!is_integer($id) && !ctype_digit($id)) || $id<1) {
+			echo 'fail|Invalid purchase order number for updating';
+			return;
+		}
+		if ((!is_integer($dtlid) && !ctype_digit($dtlid)) || $dtlid<1) {
+			echo 'fail|Invalid purchase order detail id for updating';
+			return;
+		}
+		$this->display($id,'update'); // Display already has the logic for loading the header record.  TODO: Refactor into separate function.
+		if (is_null($this->purchase_order_number)) {
+			echo 'fail|Invalid purchase order number for updating';
+			return;
+		}
+		$this->pur_detail_id = $dtlid;
+		$this->po_line = $this->detail_array[$dtlid]['po_line'];
+		$this->parent_line = $this->detail_array[$dtlid]['parent_line'];
+		$this->item_id = $this->detail_array[$dtlid]['item_id'];
+		$this->quantity = $this->detail_array[$dtlid]['quantity'];
+		$this->quantity_uom = $this->detail_array[$dtlid]['quantity_uom'];
+		$this->price = $this->detail_array[$dtlid]['price'];
+		$this->gl_account_id = $this->detail_array[$dtlid]['gl_account_id'];
+		$this->fv_vendor_id = $this->detail_array[$dtlid]['fv_vendor_id'];
+		$this->quantity_shipped = $this->detail_array[$dtlid]['quantity_shipped'];
+		$this->date_shipped = $this->detail_array[$dtlid]['date_shipped'];
+		$this->tracking_number = $this->detail_array[$dtlid]['tracking_number'];
+		$this->detail_rev_enabled = $this->detail_array[$dtlid]['rev_enabled'];
+		$this->detail_rev_number = $this->detail_array[$dtlid]['rev_number'];
+		$dateshipped_date = isset($_POST['date_shipped_date'])?$_POST['date_shipped_date']:null;
+		$dateshipped_time = isset($_POST['date_shipped_time'])?$_POST['date_shipped_time']:null;
+		$dateshipped = new DateTime($dateshipped_date.' '.$dateshipped_time);
+		$update = array();
+		if (isset($_POST['orderlinenum']) && $_POST['orderlinenum']!=$this->po_line) $update['po_line'] = array('i',$_POST['orderlinenum']);
+		if (isset($_POST['parentlinenum']) && $_POST['parentlinenum']!=$this->parent_line) $update['parent_line'] = array('i',$_POST['parentlinenum']);
+		if (isset($_POST['itemid']) && $_POST['itemid']!=$this->item_id) $update['item_id'] = array('i',$_POST['itemid']);
+		if (isset($_POST['quantity']) && $_POST['quantity']!=$this->quantity) $update['quantity'] = array('d',$_POST['quantity']);
+		if (isset($_POST['quantity_uom']) && $_POST['quantity_uom']!=$this->quantity_uom) $update['quantity_uom'] = array('s',$_POST['quantity_uom']);
+		if (isset($_POST['price']) && $_POST['price']!=$this->price) $update['price'] = array('d',$_POST['price']);
+		if (isset($_POST['gl_account_id']) && $_POST['gl_account_id']!=$this->gl_account_id) $update['gl_account_id'] = array('i',$_POST['gl_account_id']);
+		if (isset($_POST['fv_vendor_id']) && $_POST['fv_vendor_id']!=$this->fv_vendor_id) $update['fv_vendor_id'] = array('i',$_POST['fv_vendor_id']);
+		if (isset($_POST['quantity_shipped']) && $_POST['quantity_shipped']!=$this->quantity_shipped) $update['quantity_shipped'] = array('d',$_POST['quantity_shipped']);
+		if (!empty($dateshipped) && $dateshipped->format('Y-m-d H:i:s')!=$this->date_shipped) $update['date_shipped'] = array('s',$dateshipped->format('Y-m-d H:i:s'));
+		if (isset($_POST['tracking_number']) && $_POST['tracking_number']!=$this->tracking_number) $update['tracking_number'] = array('s',$_POST['tracking_number']);
+		$reven = null;
+		if (isset($_POST['rev_enabled'])) $reven = ($_POST['rev_enabled']=='true')?'Y':'N';
+		if (!is_null($reven) && $reven!=$this->rev_enabled) $update['rev_enabled'] = array('s',$reven);
+		if ((!is_null($reven)) && $reven=='Y' && isset($_POST['rev_number']) && $_POST['rev_number']!=$this->rev_number) $update['rev_number'] = array('i',$_POST['rev_number']);
+		$update['last_update_date'] = array('s',$now->format('Y-m-d H:i:s'));
+		$update['last_update_by'] = array('i',$_SESSION['dbuserid']);
+
+		// Create UPDATE String
 		
-	}
+		if (count($update)<=2) { // last update is always set
+			echo 'fail|Nothing to update';
+			return;
+		}
+		$q = 'UPDATE pur_detail SET ';
+		$ctr = 0;
+		$bp_types = '';
+		$bp_values = array_fill(0,count($update),null);
+		foreach ($update as $field=>$data) {
+			if ($ctr > 0) $q .= ',';
+			$q .= "$field=?";
+			$bp_types .= $data[0];
+			$bp_values[$ctr] = $data[1];
+			$ctr++;
+		}
+		$q .= ' WHERE pur_detail_id=?';
+		$ctr++;
+		$bp_types .= 'i';
+		$bp_values[$ctr] = $dtlid;
+		$stmt = $this->dbconn->prepare($q);
+		/* The internet has a lot of material about different ways to pass a variable number of arguments to bind_param.
+		   I feel that using Reflection is the best tool for the job.
+		   Reference: https://www.php.net/manual/en/mysqli-stmt.bind-param.php#107154
+		*/
+		$bp_method = new ReflectionMethod('mysqli_stmt','bind_param');
+		$bp_refs = array();
+		foreach ($bp_values as $key=>$value) {
+			$bp_refs[$key] = &$bp_values[$key];
+		}
+		array_unshift($bp_values,$bp_types);
+		$bp_method->invokeArgs($stmt,$bp_values);
+		$stmt->execute();
+		if ($stmt->affected_rows > 0) {
+			echo 'updated';
+		} else {
+			if ($this->dbconn->error) {
+				echo 'fail|'.$this->dbconn->error;
+				$this->mb->addError($this->dbconn->error);
+			} else echo 'fail|No rows updated';
+		}
+		$stmt->close();
+	} // updateDetail()
 	public function insertRecord() {
 		// Assumes values are stored in $_POST
 		if (isset($_POST['level']) && $_POST['level']=='header') $this->insertHeader();

@@ -1124,7 +1124,7 @@ class SalesOrders extends ERPBase {
 		
 		// Create UPDATE String
 		
-		if (count($update)==0) {
+		if (count($update)<=2) { // last update is always set
 			echo 'fail|Nothing to update';
 			return;
 		}

@@ -57,22 +57,18 @@ var currentScreen = 0;
 <DIV id="content">
 <DIV id="leftnav">Project Roadmap<BR /><?php /*$navbar->render(); */?>
 <UL>
-<LI>&#x2714; Lookup entities</LI>
-<LI>&#x2714; Lookup items</LI>
-<LI>&#x2714; Lookup vendors</LI>
-<LI>&#x2714; Lookup vendor catalog</LI>
 <LI>&#x2714; Create new purchase order</LI>
 <LI>&#x2714; Create new bill of materials</LI>
-<LI>&#x2714; Embedded item search</LI>
 <LI>Create new production</LI>
 <LI>Add functionality to Entities: <UL><LI>production capacity</LI><LI>create new entity</LI><LI>Modify entity</LI></UL></LI>
 <LI>&#x2714; Lookup customers</LI>
-<LI>&#x2714; Lookup / add addresses</LI>
 <LI>&#x2714; Create sales orders</LI>
+<LI>Modify vendors</LI>
 <LI>Update sales orders for shipping</LI>
 <LI>Create shipment</LI>
 <LI>Create invoice</LI>
 <LI>Update purchase order with tracking and receiving</LI>
+<LI>Manage freight vendors</LI>
 </UL>
 </DIV>
 <DIV id="core"><?php $workspace->render(); ?></DIV>

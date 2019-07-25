@@ -159,6 +159,7 @@ function addDetailRow(whichModule) {
 } // addDetailRow()
 function editDetailRow(whichModule,id) {
 	if (whichModule=="bom_detail") editBOMDetailRow(id);
+	if (whichModule=="pur_detail") editPurchasingDetailRow(id);
 } // editDetailRow()
 function showNewRecordAttachmentPane() {
 	

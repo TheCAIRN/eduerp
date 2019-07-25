@@ -1,0 +1,26 @@
+INSERT INTO ac_coa (account_number,account_type,account_title,rev_enabled,rev_number,created_by,creation_date,last_update_by,last_update_date) VALUES
+(54002,'E','Freight Vendors','N',1,1,NOW(),1,NOW())
+;
+
+/* Create Freight Vendor Addresses */
+INSERT INTO cx_addresses (address_id,building_number,street,attention,apartment,postal_box,
+line2,line3,city,spc_abbrev,postal_code,country,county,maidenhead,latitude,longitude,osm_id,last_validated)
+VALUES
+(851,55,'Glenlake Parkway NE','','','','','','Atlanta','GA','30328','US','',NULL,33.9431979,-84.3623969,NULL,NOW())
+,(852,3680,'Hacks Cross Road','','','','','','Memphis','TN','38125','US','',NULL,35.0489275,-89.7974017,NULL,NOW())
+,(853,475,'L''Enfant Plaza SW','','','','','','Washington','DC','20590','US','',NULL,38.883601,-77.0286226,NULL,NOW())
+;
+
+INSERT INTO acgl_accounts (gl_account_id,account_number,entity_id,division_id,department_id,sub_account_number,gl_account_string,
+gl_account_name,gl_account_balance,currency_code,rev_enabled,rev_number,created_by,creation_date,last_update_by,last_update_date)
+VALUES
+(851,54002,1,NULL,NULL,851,'54002.00851','United Parcel Service',0,'USD','N',1,1,NOW(),1,NOW())
+,(852,54002,1,NULL,NULL,852,'54002.00852','Federal Express',0,'USD','N',1,1,NOW(),1,NOW())
+,(853,54002,1,NULL,NULL,853,'54002.00853','United States Postal Service',0,'USD','N',1,1,NOW(),1,NOW())
+;
+
+INSERT INTO fv_freight_vendors (fv_vendor_id,fv_vendor_abbreviation,fv_vendor_name,fv_vendor_scac,fv_type_id,gl_account_id,primary_address,fv_vendor_status,rev_enabled,rev_number,created_by,creation_date,last_update_by,last_update_date) VALUES
+(1,'UPS','United Parcel Service','UPSN',14,851,851,'A','N',1,1,NOW(),1,NOW())
+,(2,'FEDEX','Federal Express','FEDX',14,852,852,'A','N',1,1,NOW(),1,NOW())
+,(3,'USPS','United States Postal Service','USPS',6,853,853,'A','N',1,1,NOW(),1,NOW())
+;

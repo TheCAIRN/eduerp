@@ -292,7 +292,7 @@ class ERPBase {
 					} else {
 						$tableentry .= '<TD id="row'.$tablerow.'-'.$prefix.$field[1].'"><INPUT type="time" id="'.$prefix.$field[1].'-time" /></TD>';
 					}
-				if ($field[3]=='newlinebutton')
+				if ($field[3]=='newlinebutton' && $view!='view')
 					if (!$intable) {
 						$html .= '<BUTTON id="newlinebutton"'.((count($field)>=5)?' onClick="'.$field[4].'"':'').'>'.$field[2].'</BUTTON>';
 					} else {
