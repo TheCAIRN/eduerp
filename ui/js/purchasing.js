@@ -53,7 +53,7 @@ function savePurchasingDetail() {
 	var orderlinekey = $("#pur_detail_id").val();
 	var orderlinenum = $("#po_line").val();
 	var parentlinenum = $("#parent_line").val();
-	var itemid = $("#item_id option:selected").val();
+	var itemid = $("#item_id-product_id").text();
 	var quantity = $("#quantity").val();
 	var quantity_uom = $("#quantity_uom option:selected").val();
 	var price = $("#price").val();
@@ -92,6 +92,32 @@ function savePurchasingDetail() {
 			if (!updrow) {
 				alert("Cannot update the screen.  Please click the 'view' button in the toolbar, then 'edit' to refresh.");
 			} else {
+				$("#"+updrow+"-po_line").text($("#po_line").val());
+				$("#po_line").val("");
+				$("#"+updrow+"-parent_line").text($("#parent_line").val());
+				$("#parent_line").val("");
+				$("#"+updrow+"-item_id").text($("#item_id-product_id").text()+" "+$("#item_id-product_code").text());
+				embeddedItemNewSearch("item_id");
+				$("#"+updrow+"-quantity").text($("#quantity").val());
+				$("#quantity").val("");
+				$("#"+updrow+"-quantity_uom").text($("#quantity_uom option:selected").val());
+				$("#quantity_uom").val("");
+				$("#"+updrow+"-price").text($("#price").val());
+				$("#price").val("");
+				$("#"+updrow+"-gl_account_id").text($("#gl_account_id option:selected").val());
+				$("#gl_account_id").val("");
+				$("#"+updrow+"-fv_vendor_id").text($("#fv_vendor_id option:selected").val());
+				$("#fv_vendor_id").val("");
+				$("#"+updrow+"-quantity_shipped").text($("#quantity_shipped").val());
+				$("#quantity_shipped").val("");
+				$("#"+updrow+"-date_shipped").text($("#date_shipped_date").val()+" "+$("#date_shipped_time").val());
+				$("#date_shipped_date").val("");
+				$("#date_shipped_time").val("");
+				$("#"+updrow+"-tracking_number").text($("#tracking_number").val());
+				$("#tracking_number").val("");
+				if (rev_enabled) $("#"+updrow+"-rev_enabled").text("Yes"); else $("#"+updrow+"-rev_enabled").text("No");
+				$("#"+updrow+"-rev_number").text(rev_number);
+				$("#"+row+"-rev_number:first-child").val("");
 
 			}
 		}
