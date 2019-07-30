@@ -162,6 +162,13 @@ function jquery() {
 				$modObject = new EntityResource($link);
 				$_SESSION['activeModule'] = $modObject;
 			}
+		} elseif ($module=='InventoryManagerSearch') {
+			if (isset($_SESSION['activeModule']) && $_SESSION['activeModule'] instanceof InventoryManager) 
+				$modObject = $_SESSION['activeModule'];
+			else {
+				$modObject = new InventoryManager($link);
+				$_SESSION['activeModule'] = $modObject;
+			}
 		} elseif ($module=='BOMSearch') {
 			if (isset($_SESSION['activeModule']) && $_SESSION['activeModule'] instanceof BOM) 
 				$modObject = $_SESSION['activeModule'];
@@ -267,6 +274,8 @@ function jquery() {
 			$modObject = new VendorCatalog($link);
 		} elseif ($module=='EntityResource') {
 			$modObject = new EntityResource($link);
+		} elseif ($module=='InventoryManager') {
+			$modObject = new InventoryManager($link);
 		} elseif ($module=='BOM') {
 			$modObject = new BOM($link);
 		} elseif ($module=='CustomerTypes') {

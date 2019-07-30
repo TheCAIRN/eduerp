@@ -59,6 +59,8 @@ var currentScreen = 0;
 <UL>
 <LI>&#x2714; Create new purchase order</LI>
 <LI>&#x2714; Create new bill of materials</LI>
+<LI>Update inventory table</LI>
+<LI>Search inventory and transactions</LI>
 <LI>Create new production</LI>
 <LI>Add functionality to Entities: <UL><LI>production capacity</LI><LI>create new entity</LI><LI>Modify entity</LI></UL></LI>
 <LI>&#x2714; Lookup customers</LI>
@@ -69,6 +71,8 @@ var currentScreen = 0;
 <LI>Create invoice</LI>
 <LI>Update purchase order with tracking and receiving</LI>
 <LI>Manage freight vendors</LI>
+<LI>Dashboards</LI>
+<LI>Reports</LI>
 </UL>
 </DIV>
 <DIV id="core"><?php $workspace->render(); ?></DIV>

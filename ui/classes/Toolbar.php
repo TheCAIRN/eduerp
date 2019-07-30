@@ -18,6 +18,7 @@ class Toolbar {
 				case 7: $mod="'PurchasingSearch'"; break;
 				case 12: $mod="'AddressesSearch'"; break;
 				case 13: $mod="'ItemSearch'"; break;
+				case 18: $mod="'InventoryManagerSearch'"; break;
 				case 19: $mod="'BOMSearch'"; break;
 				case 20: $mod="'VendorCatalogSearch'"; break;
 				case 23: $mod="'CustomerTypesSearch'"; break;
@@ -47,6 +48,8 @@ class Toolbar {
 				case 2013: 
 				case 3013: 
 				case 4013: $mod="'ItemManager'"; break;
+				case 1018:
+				case 2018: $mod="'InventoryManager'"; break;
 				case 1019:
 				case 2019:
 				case 3019: 

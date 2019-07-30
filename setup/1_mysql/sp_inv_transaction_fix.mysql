@@ -1,0 +1,24 @@
+INSERT INTO inv_master (entity_id,product_id,created_by,creation_date,last_update_by,last_update_date)
+SELECT ph.entity_id,pd.item_id,pd.created_by,NOW(),pd.last_update_by,NOW()
+FROM pur_detail pd JOIN pur_header ph ON pd.purchase_order_number=ph.purchase_order_number
+LEFT OUTER JOIN inv_master inv ON inv.entity_id=ph.entity_id AND inv.product_id=pd.item_id
+WHERE inv.inventory_id IS NULL;
+
+INSERT INTO inv_transactions (inv_transaction_type,reference_table,reference_key_int,inventory_id_1,inventory_id_2,quantity_on_order_delta_1,created_by,creation_date,last_update_by,last_update_date)
+SELECT 'Q','pur_detail',pd.pur_detail_id,inv.inventory_id,inv.inventory_id,pd.quantity,pd.created_by,pd.creation_date,pd.last_update_by,pd.last_update_date 
+FROM pur_detail pd JOIN pur_header ph ON ph.purchase_order_number=pd.purchase_order_number 
+LEFT OUTER JOIN inv_transactions tx ON tx.reference_table='pur_detail' AND tx.reference_key_int=pd.pur_detail_id
+LEFT OUTER JOIN inv_master inv ON inv.entity_id=ph.entity_id AND inv.product_id=pd.item_id
+WHERE tx.inv_transaction_id IS NULL;
+
+UPDATE inv_master 
+JOIN ( 
+	SELECT inv_id,SUM(on_order) AS ttl_order FROM ( 
+		SELECT quantity_on_order_delta_1 AS on_order,inventory_id_1 AS inv_id 
+		FROM inv_transactions 
+		UNION 
+		SELECT quantity_on_order_delta_2 AS on_order,inventory_id_2 AS inv_id 
+		FROM inv_transactions 
+	) AS d GROUP BY inv_id
+) t ON t.inv_id = inv_master.inventory_id 
+SET total_on_order=ttl_order

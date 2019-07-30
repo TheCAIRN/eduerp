@@ -29,7 +29,7 @@ class Workspace {
 			case 15: $this->notInstalled("Item Categories"); break; //$item = new ItemCategories($this->dbconn); echo $item->searchPage(); break;
 			case 16: $this->notInstalled("Item Types"); break; $item = new ItemTypes($this->dbconn); echo $item->searchPage(); break;
 			case 17: echo $this->gtinSubmenu(); break;
-			case 18: $this->notInstalled("Inventory Manager"); break; //$item = new InventoryManager($this->dbconn); echo $item->searchPage(); break;
+			case 18: $im = new InventoryManager($this->dbconn); echo $im->searchPage(); break;
 			case 19: $bom = new BOM($this->dbconn); echo $bom->searchPage(); break;
 			case 20: $vc = new VendorCatalog($this->dbconn); echo $vc->searchPage(); break;
 			case 21: $entres = new EntityResource($this->dbconn); echo $entres->searchPage(); break;
@@ -81,6 +81,7 @@ class Workspace {
 			case 1007: $pur = new Purchasing($this->dbconn); $pur->listRecords(); break;
 			case 1012: $addr = new Addresses($this->dbconn); $addr->listRecords(); break;
 			case 1013: $item = new ItemManager($this->dbconn); $item->listRecords(); break;
+			case 1018: $im = new InventoryManager($this->dbconn); $im->listRecords(); break;
 			case 1019: $bom = new BOM($this->dbconn); $bom->listRecords(); break;
 			case 1020: $vc = new VendorCatalog($this->dbconn); $vc->listRecords(); break;
 			case 1021: $entres = new EntityResource($this->dbconn); $entres->listRecords(); break;
@@ -98,6 +99,7 @@ class Workspace {
 			case 2007: $pur = new Purchasing($this->dbconn); $pur->display($_SESSION['idarray'][2]); break;
 			case 2012: $addr = new Addresses($this->dbconn); $addr->display($_SESSION['idarray'][2]); break;
 			case 2013: $item = new ItemManager($this->dbconn); $item->display($_SESSION['idarray'][2]); break;
+			case 2018: $im = new InventoryManager($this->dbconn); $im->display($_SESSION['idarray'][2]); break;
 			case 2019: $bom = new BOM($this->dbconn); $bom->display($_SESSION['idarray'][2]); break;
 			case 2020: $vc = new VendorCatalog($this->dbconn); $vc->display($_SESSION['idarray'][2]); break;
 			case 2021: $entres = new EntityResource($this->dbconn); $entres->display($_SESSION['idarray'][2]); break;

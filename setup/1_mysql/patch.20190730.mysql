@@ -1,0 +1,4 @@
+ALTER TABLE pur_detail
+ADD COLUMN quantity_received decimal(11,5) AFTER tracking_number
+,ADD COLUMN date_received datetime AFTER quantity_received
+,ADD COLUMN received_by int AFTER date_received

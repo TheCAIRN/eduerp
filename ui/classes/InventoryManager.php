@@ -55,8 +55,20 @@ class InventoryManager extends ERPBase {
 		parent::__construct($link);
 		$this->supportsNotes = false;
 		$this->supportsAttachments = false;
-		$this->searchFields[] = array('inv_master','entity_id','Entity','dropdown','ent_entities',array('entity_id','entity_name'));
-		$this->searchFields[] = array('inv_master','product_id','Item','Item');
+		$this->searchFields[] = array('inv_master','unified_search','Type an entity name, item number, or product text.','textbox');
+		$this->entryFields[] = array('inv_master','inventory_id','ID','integerid');
+		$this->entryFields[] = array('inv_master','entity_id','Entity','dropdown','ent_entities',array('entity_id','entity_name'));
+		$this->entryFields[] = array('inv_master','product_id','Item','embedded');
+		$this->entryFields[] = array('inv_master','product_id','Item','Item');
+		$this->entryFields[] = array('inv_master','','','endembedded');
+		//$this->entryFields[] = array('inv_master','variant_code','Variant','dropdown','item_variant_codes',array('variant_code','variant_description'));
+		$this->entryFields[] = array('inv_master','total_on_hand','On Hand','decimal',24,5);
+		$this->entryFields[] = array('inv_master','total_in_wip','Work In Progress','decimal',24,5);
+		$this->entryFields[] = array('inv_master','total_on_order','On Order','decimal',24,5);
+		$this->entryFields[] = array('inv_master','total_reserved','Reserved','decimal',24,5);
+		$this->entryFields[] = array('inv_master','total_unshipped_sold','Sold - unshipped','decimal',24,5);
+		$this->entryFields[] = array('inv_master','total_shipped_sold','Sold - shipped','decimal',24,5);
+		
 	} // constructor
 	public function resetEntityInventory() {
 		$this->inventory_id = -1;
@@ -155,7 +167,7 @@ class InventoryManager extends ERPBase {
 					$this->inv_creation_date = new DateTime();
 					$this->inv_last_update_date = new DateTime();
 					$this->inv_created_by = $_SESSION['dbuserid'];
-					$this->inv_last_update_By = $_SESSION['dbuserid'];
+					$this->inv_last_update_by = $_SESSION['dbuserid'];
 					$stmt->close();
 					return $this->inventory_id;
 				} else {
@@ -304,16 +316,120 @@ class InventoryManager extends ERPBase {
 	 *** UI SUPPORT ************************************************
 	 ***************************************************************/
 	public function searchPage() {
-		
+		parent::abstractSearchPage('InventoryManagerSearch');
 	} // searchPage()
 	public function listRecords() {
-		
+		parent::abstractListRecords('InventoryManager');
 	} // listRecords()
 	public function executeSearch($criteria) {
-		
+		$q = 'SELECT inventory_id,inv.entity_id,entity_name,inv.product_id,product_description,total_on_hand,total_in_wip,total_on_order,total_reserved,total_unshipped_sold,total_shipped_sold
+			FROM inv_master inv 
+			JOIN ent_entities ent ON inv.entity_id=ent.entity_id
+			JOIN cx_addresses addr ON ent.primary_address=addr.address_id
+			JOIN item_master item ON inv.product_id=item.product_id';
+		if (!is_null($criteria) && is_array($criteria) && count($criteria)>0) {
+			if (is_array($criteria[0]) && count($criteria[0])>=2 && $criteria[0][0]=='unified_search') $criteria = $criteria[0][1];
+			else $criteria='';
+			$qc = " WHERE inv.product_id = ? OR product_code LIKE ? OR product_description LIKE ? OR product_catalog_title LIKE ? or gtin=?";
+			$qc .= " OR inv.entity_id = ? OR entity_name LIKE ? OR street LIKE ? OR city LIKE ? OR spc_abbrev = ? OR postal_code LIKE ?";
+			if (strpos($criteria,'<')!==false || strpos($criteria,'>')!==false) {
+				$q .= " ORDER BY inventory_id;";
+				$stmt = $this->dbconn->prepare($q);
+				
+			} else {
+				$q .= $qc;
+				$q .= " ORDER BY inventory_id;";
+				$stmt = $this->dbconn->prepare($q);
+				if ($stmt===false) {
+					echo $this->dbconn->error;
+					return;
+				}
+				$stmt->bind_param('issssisssss',$i2,$i3,$i4,$i5,$i6,$e1,$e2,$e3,$e4,$e5,$e6);
+				$i2 = $e1 = ctype_digit($criteria)?$criteria:-99999;
+				$i6 = $e5 = $criteria;
+				$i3 = $i4 = $i5 = $e2 = $e3 = $e4 = $e6 = '%'.$criteria.'%';
+			}
+			$result = $stmt->execute();
+			if ($result !== false) {
+				$this->recordSet = array();
+				if (isset($_SESSION['recordSet']['InventoryManager'])) unset($_SESSION['recordSet']['InventoryManager']); // A search criteria was given, so do not display the last search on an empty set.
+				$stmt->store_result();
+				$vendorname='';
+				$stmt->bind_result($this->inventory_id,$this->entity_id,$entname,$this->product_id,$prodname,$this->total_on_hand,$this->total_in_wip,$this->total_on_order,
+					$this->total_reserved,$this->total_unshipped_sold,$this->total_shipped_sold);
+				while ($stmt->fetch()) {
+					$this->recordSet[$this->inventory_id] = array('Entity'=>$entname,'Item'=>$prodname,'QOH'=>$this->total_on_hand,
+						'WIP'=>$this->total_in_wip,'PUR'=>$this->total_on_order,'RES'=>$this->total_reserved,'ORD'=>$this->total_unshipped_sold,
+						'INV'=>$this->total_shipped_sold);
+				}
+			}
+		} else {
+			$q .= ' ORDER BY inventory_id;';
+			$result = $this->dbconn->query($q);
+					if ($result!==false) {
+				$this->recordSet = array();
+				while ($row=$result->fetch_assoc()) {
+					$this->recordSet[$row['inventory_id']] = array('Entity'=>$row['entity_name'],'Item'=>$row['product_description'],'QOH'=>$row['total_on_hand'],
+						'WIP'=>$row['total_in_wip'],'PUR'=>$row['total_on_order'],'RES'=>$row['total_reserved'],'ORD'=>$row['total_unshipped_sold'],
+						'INV'=>$row['total_shipped_sold']);
+				} // while rows
+			} // if query succeeded
+		} // if criteria does not exist
+		$this->listRecords();
+		$_SESSION['currentScreen'] = 1018;
+		$_SESSION['lastCriteria'] = $criteria;
+		if (!isset($_SESSION['searchResults'])) $_SESSION['searchResults'] = array();
+		$_SESSION['searchResults']['InventoryManager'] = array_keys($this->recordSet);		
 	} // executeSearch()
+	public function isIDValid($id) {
+		// TODO: Validate that the ID is actually a record in the database
+		if ($id<1) return false;
+		if (is_integer($id)) return true;
+		if (ctype_digit($id)) return true;
+		return false;
+	} // function isIDValid()
 	public function display($id,$mode='view') {
-		
+		$readonly = true;
+		$html = '';
+		$q = 'SELECT entity_id,product_id,total_on_hand,total_in_wip,total_on_order,total_reserved,total_unshipped_sold,total_shipped_sold,
+				created_by,creation_date,last_update_by,last_update_date
+				FROM inv_master
+				WHERE inventory_id=?;';
+		$stmt = $this->dbconn->prepare($q);
+		if ($stmt===false) {
+			echo 'fail|'.$this->dbconn->error;
+			return;
+		}
+		$stmt->bind_param('i',$p1);
+		$p1 = $id;
+		$result = $stmt->execute();
+		if ($result!==false) {
+			$this->inventory_id = $id;
+			$stmt->bind_result($this->product_id,$this->total_on_hand,$this->total_in_wip,$this->total_on_order,$this->total_reserved,
+				$this->total_unshipped_sold,$this->total_shipped_sold,$this->inv_created_by,$this->inv_creation_date,
+				$this->inv_last_update_by,$this->inv_last_update_date);
+			$stmt->store_result();
+			$stmt->fetch();
+			$this->currentRecord = $id;
+			$stmt->close();
+
+			$this->detail_array = null; // TODO
+			if ($mode!='update') {
+				$hdata = $this->arrayifyHeader();
+				echo parent::abstractRecord($mode,'InventoryManager','',$hdata,$this->detail_array);
+			}
+		} else $this->inventory_id = null;
+		$_SESSION['currentScreen'] = 2018;
+		if (!isset($_SESSION['searchResults']) && !isset($_SESSION['searchResults']['InventoryManager']))
+			$_SESSION['idarray'] = array(0,0,$id,0,0);
+		else {
+			$idloc = array_search($id,$_SESSION['searchResults']['InventoryManager'],false);
+			$f = $_SESSION['searchResults']['InventoryManager'][0];
+			$l = $_SESSION['searchResults']['InventoryManager'][] = array_pop($_SESSION['searchResults']['InventoryManager']); // https://stackoverflow.com/questions/3687358/whats-the-best-way-to-get-the-last-element-of-an-array-without-deleting-it#comment63556865_3687358
+			if ($idloc > 0) $p = $_SESSION['searchResults']['InventoryManager'][$idloc-1]; else $p = $f;
+			if ($l != $id) $n = $_SESSION['searchResults']['InventoryManager'][$idloc+1]; else $n = $l;
+			$_SESSION['idarray'] = array($f,$p,$id,$n,$l);
+		}		
 	} // display()
 } // class InventoryManager
 ?>
