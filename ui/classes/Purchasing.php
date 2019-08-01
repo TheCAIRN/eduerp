@@ -383,29 +383,29 @@ class Purchasing extends ERPBase {
 		$gl_account_id = isset($_POST['gl_account_id'])?$_POST['gl_account_id']:null;
 		$shipper = isset($_POST['fv_vendor_id'])?$_POST['fv_vendor_id']:null;
 		$qtyshipped = isset($_POST['quantity_shipped'])?$_POST['quantity_shipped']:0.00;
-		$dateshipped_date = isset($_POST['date_shipped_date'])?$_POST['date_shipped_date']:null;
-		$dateshipped_time = isset($_POST['date_shipped_time'])?$_POST['date_shipped_time']:null;
+		$dateshipped_date = !empty($_POST['date_shipped_date'])?$_POST['date_shipped_date']:null;
+		$dateshipped_time = !empty($_POST['date_shipped_time'])?$_POST['date_shipped_time']:null;
 		$tracking = isset($_POST['tracking_number'])?$_POST['tracking_number']:'';
 		$qtyreceived = isset($_POST['quantity_received'])?$_POST['quantity_received']:0.00;
-		$datereceived_date = isset($_POST['date_received_date'])?$_POST['date_received_date']:null;
-		$datereceived_time = isset($_POST['date_received_time'])?$_POST['date_received_time']:null;
+		$datereceived_date = !empty($_POST['date_received_date'])?$_POST['date_received_date']:null;
+		$datereceived_time = !empty($_POST['date_received_time'])?$_POST['date_received_time']:null;
 		$receivedby = isset($_POST['received_by'])?$_POST['received_by']:null;
 		$rev_enabled = isset($_POST['rev_enabled'])?$_POST['rev_enabled']:false;
 		$rev_number = isset($_POST['rev_number'])?$_POST['rev_number']:1;
 		$entityid = isset($_POST['entityid'])?$_POST['entityid']:0;
 		$divisionid = isset($_POST['divisionid'])?$_POST['divisionid']:0;
 		$departmentid = isset($_POST['departmentid'])?$_POST['departmentid']:0;
-		$dateshipped = new DateTime($dateshipped_date.' '.$dateshipped_time);
-		$datereceived = new DateTime($datereceived_date.' '.$datereceived_time);
+		$dateshipped = !empty($dateshipped_date)?new DateTime($dateshipped_date.' '.$dateshipped_time):null;
+		$datereceived = !empty($datereceived_date)?new DateTime($datereceived_date.' '.$datereceived_time):null;
 		
 		/* The entity, division, and department are for future use, where one entity may be purchasing materials for another. */
 		$q = "INSERT INTO pur_detail (purchase_order_number,po_line,parent_line,entity_id,division_id,department_id, item_id,quantity,quantity_uom,price,gl_account_id,
 			fv_vendor_id,quantity_shipped,date_shipped,tracking_number,quantity_received,date_received,received_by,
-			rev_enabled,rev_number,created_by,creation_date,last_update_by,last_update_date) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,NOW(),?,NOW());";
+			rev_enabled,rev_number,created_by,creation_date,last_update_by,last_update_date) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,NOW(),?,NOW());";
 		$stmt = $this->dbconn->prepare($q);
 		$stmt->bind_param('iiiiiisdsdiidssdsisiii',$p1,$p2,$p3,$p4,$p5,$p6,$p7,$p8,$p9,$p10,$p11,$p12,$p13,$p14,$p15,$p16,$p17,$p18,$p19,$p20,$p21,$p22);
 		if ($orderkey==0) {
-			$this->mb->addError("Details cannot be inserted when the purchase order number is zero.");
+			echo("fail|Details cannot be inserted when the purchase order number is zero.");
 			$stmt->close();
 			return;
 		}
@@ -415,13 +415,18 @@ class Purchasing extends ERPBase {
 		/* Question: Should parentline be set to null if it references a line which no longer exists? */
 		$p3 = $parentlinenum;
 		if ($entityid==0) {
-			$this->mb->addError("The entity cannot be blank for purchase orders.");
+			echo("fail|The entity cannot be blank for purchase orders.");
 			$stmt->close();
 			return;
 		}
 		$p4 = $entityid;
 		$p5 = ($divisionid==0)?null:$divisionid;
 		$p6 = ($departmentid==0)?null:$departmentid;
+		if ($itemid==0) {
+			echo("fail|Make sure you click the SELECT button on items before you add a row.");
+			$stmt->close();
+			return;
+		}
 		$p7 = $itemid;
 		/* Note: Orders with a quantity of 0 may be used as placeholders from a quote, where the remaining balance may be ordered at a future time. */
 		$p8 = $quantity;
@@ -431,7 +436,7 @@ class Purchasing extends ERPBase {
 		$p12 = $shipper;
 		$p13 = $qtyshipped;
 		if ($qtyshipped > 0 && is_null($dateshipped)) {
-			$this->mb->addError("The ship date is not formatted correctly.");
+			echo("fail|The ship date is not formatted correctly.");
 			$stmt->close();
 			return;
 		}
@@ -439,7 +444,7 @@ class Purchasing extends ERPBase {
 		$p15 = $tracking;
 		$p16 = $qtyreceived;
 		if ($qtyreceived > 0 && is_null($datereceived)) {
-			$this->mb->addError("The received date is not formatted correctly.");
+			echo("fail|The received date is not formatted correctly.");
 			$stmt->close();
 			return;
 		}
@@ -580,12 +585,12 @@ class Purchasing extends ERPBase {
 		$this->received_by = $this->detail_array[$dtlid]['received_by'];
 		$this->detail_rev_enabled = $this->detail_array[$dtlid]['rev_enabled'];
 		$this->detail_rev_number = $this->detail_array[$dtlid]['rev_number'];
-		$dateshipped_date = isset($_POST['date_shipped_date'])?$_POST['date_shipped_date']:null;
-		$dateshipped_time = isset($_POST['date_shipped_time'])?$_POST['date_shipped_time']:null;
-		$dateshipped = new DateTime($dateshipped_date.' '.$dateshipped_time);
-		$datereceived_date = isset($_POST['date_received_date'])?$_POST['date_receieved_date']:null;
-		$datereceived_time = isset($_POST['date_received_time'])?$_POST['date_receieved_time']:null;
-		$datereceived = new DateTime($datereceived_date.' '.$datereceived_time);
+		$dateshipped_date = !empty($_POST['date_shipped_date'])?$_POST['date_shipped_date']:null;
+		$dateshipped_time = !empty($_POST['date_shipped_time'])?$_POST['date_shipped_time']:null;
+		$dateshipped = !empty($dateshipped_date)?new DateTime($dateshipped_date.' '.$dateshipped_time):null;
+		$datereceived_date = !empty($_POST['date_received_date'])?$_POST['date_received_date']:null;
+		$datereceived_time = !empty($_POST['date_received_time'])?$_POST['date_received_time']:null;
+		$datereceived = !empty($datereceived_date)?new DateTime($datereceived_date.' '.$datereceived_time):null;
 		$update = array();
 		if (isset($_POST['orderlinenum']) && $_POST['orderlinenum']!=$this->po_line) $update['po_line'] = array('i',$_POST['orderlinenum']);
 		if (isset($_POST['parentlinenum']) && $_POST['parentlinenum']!=$this->parent_line) $update['parent_line'] = array('i',$_POST['parentlinenum']);
@@ -598,8 +603,8 @@ class Purchasing extends ERPBase {
 		if (isset($_POST['quantity_shipped']) && $_POST['quantity_shipped']!=$this->quantity_shipped) $update['quantity_shipped'] = array('d',$_POST['quantity_shipped']);
 		if (!empty($dateshipped) && $dateshipped->format('Y-m-d H:i:s')!=$this->date_shipped) $update['date_shipped'] = array('s',$dateshipped->format('Y-m-d H:i:s'));
 		if (isset($_POST['tracking_number']) && $_POST['tracking_number']!=$this->tracking_number) $update['tracking_number'] = array('s',$_POST['tracking_number']);
-		if (isset($_POST['quantity_received']) && $_POST['quanttiy_received']!=$this->quantity_received) $update['quantity_received'] = array('d',$_POST['quantity_received']);
-		if (!empty($datereceived) && $datereceived->format('Y-m-d H:i:s')!=$this->date_received) $update['date_received'] = array('s',$_POST['date_received']);
+		if (isset($_POST['quantity_received']) && $_POST['quantity_received']!=$this->quantity_received) $update['quantity_received'] = array('d',$_POST['quantity_received']);
+		if (!empty($datereceived) && $datereceived->format('Y-m-d H:i:s')!=$this->date_received) $update['date_received'] = array('s',$datereceived->format('Y-m-d H:i:s'));
 		if (isset($_POST['received_by']) && $_POST['received_by']!=$this->received_by) $update['received_by'] = array('i',$_POST['received_by']);
 		$reven = null;
 		if (isset($_POST['rev_enabled'])) $reven = ($_POST['rev_enabled']=='true')?'Y':'N';
@@ -650,9 +655,9 @@ class Purchasing extends ERPBase {
 				// TODO: Not yet handled on updates
 			}
 			if (isset($update['item_id'])) {
-				$inv->purchasingChangeOrder($this->pur_detail_id,$this->entity_id,$this->item_id,$this->quantity,$this->entity_id,$_POST['itemid'],$_POST['quantity']);
+				$inv->purchasingChangeOrder($this->pur_detail_id,$this->entity_id,$this->item_id,-1*$this->quantity,$this->entity_id,$_POST['itemid'],$_POST['quantity']);
 			} elseif (isset($update['quantity'])) {
-				$inv->purchasingChangeOrder($this->pur_detail_id,$this->entity_id,$this->item_id,$this->quantity,$this->entity_id,$this->item_id,$_POST['quantity']);
+				$inv->purchasingChangeOrder($this->pur_detail_id,$this->entity_id,$this->item_id,-1*$this->quantity,$this->entity_id,$this->item_id,$_POST['quantity']);
 			}
 			if (isset($update['quantity_received'])) {
 				// Using the subtraction will handle both the initial receiving and any revisions to receivings done later.

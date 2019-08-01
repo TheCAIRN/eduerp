@@ -177,7 +177,9 @@ class ItemManager extends ERPBase {
 		} elseif ($mode=='lookup') {
 			return $this->embed_lookup($id,$data);
 		} elseif ($mode=='display') {
-			return $this->embed_display($id,$data);
+			return $this->embed_display($id,$data,false);
+		} elseif ($mode=='display readonly') {
+			return $this->embed_display($id,$data,true);
 		} elseif ($mode=='new') {
 			return $this->embed_new($id,$data);
 		} elseif ($mode=='save') {
@@ -249,13 +251,13 @@ class ItemManager extends ERPBase {
 		$stmt->bind_result($pid,$pcode,$pdesc,$gtin);
 		if ($stmt->fetch()) {
 			$html = '';
-			if ($readonly) $html .= $this->embed_search($id).'<BR />';
+			if (!$readonly) $html .= $this->embed_search($id).'<BR />';
 			$html .= '<DIV class="labeldiv"><LABEL for="'.$id.'-product_id">ID:</LABEL><B id="'.$id.'-product_id">'.$pid.'</B></DIV>';
-			if ($readonly) {
+			//if ($readonly) {
 				$html .= '&nbsp;<I id="'.$id.'-product_code">'.$pcode.'</I>&nbsp;'.$pdesc.'<BR />';
 				if ($gtin!='') $html .= 'GTIN: '.$gtin;
-				return $html;
-			}
+			//}
+			return $html;
 		} else {
 			return $this->embed_search($id);
 		}

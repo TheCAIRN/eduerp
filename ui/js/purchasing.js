@@ -65,9 +65,13 @@ function savePurchasingDetail() {
 	var departmentid = $("#department_id option:selected").val();
 	var fv_vendor_id = $("#fv_vendor_id option:selected").val();
 	var quantity_shipped = $("#quantity_shipped").val();
-	var date_shipped_date = $("#date_shipped_date").val();
-	var date_shipped_time = $("#date_shipped_time").val();
+	var date_shipped_date = $("#date_shipped-date").val();
+	var date_shipped_time = $("#date_shipped-time").val();
 	var tracking_number = $("#tracking_number").val();
+	var quantity_received = $("#quantity_received").val();
+	var date_received_date = $("#date_received-date").val();
+	var date_received_time = $("#date_received-time").val();
+	var received_by = $("#received_by option:selected").val();
 	// Perform validation
 	if (orderkey=="" || orderkey < 1) orderkey = pur_orderkey;
 	if (orderkey=="" || orderkey < 1) {
@@ -81,6 +85,7 @@ function savePurchasingDetail() {
 	$.post("jq.php",{jquery:mode,module:"purchasing",level:"detail",orderkey:orderkey,orderlinekey:orderlinekey,orderlinenum:orderlinenum,parentlinenum:parentlinenum,itemid:itemid,
 		quantity:quantity,quantity_uom:quantity_uom,price:price,gl_account_id:gl_account,
 		fv_vendor_id:fv_vendor_id,quantity_shipped:quantity_shipped,date_shipped_date:date_shipped_date,date_shipped_time:date_shipped_time,tracking_number:tracking_number,
+		quantity_received:quantity_received,date_received_date:date_received_date,date_received_time:date_received_time,
 		rev_enabled:rev_enabled,rev_number:rev_number,entityid:entityid,
 		divisionid:divisionid,departmentid:departmentid},function(data) {
 		var fields = data.split("|");
@@ -110,11 +115,18 @@ function savePurchasingDetail() {
 				$("#fv_vendor_id").val("");
 				$("#"+updrow+"-quantity_shipped").text($("#quantity_shipped").val());
 				$("#quantity_shipped").val("");
-				$("#"+updrow+"-date_shipped").text($("#date_shipped_date").val()+" "+$("#date_shipped_time").val());
-				$("#date_shipped_date").val("");
-				$("#date_shipped_time").val("");
+				$("#"+updrow+"-date_shipped").text($("#date_shipped-date").val()+" "+$("#date_shipped-time").val());
+				$("#date_shipped-date").val("");
+				$("#date_shipped-time").val("");
 				$("#"+updrow+"-tracking_number").text($("#tracking_number").val());
 				$("#tracking_number").val("");
+				$("#"+updrow+"-quantity_received").text($("#quantity_received").val());
+				$("#quantity_received").val("");
+				$("#"+updrow+"-date_received").text($("#date_received-date").val()+" "+$("#date_received-time").val());
+				$("#date_received-date").val("");
+				$("#date_received-time").val("");
+				$("#"+updrow+"-received_by").text($("#received_by").val());
+				$("#received_by").val("");
 				if (rev_enabled) $("#"+updrow+"-rev_enabled").text("Yes"); else $("#"+updrow+"-rev_enabled").text("No");
 				$("#"+updrow+"-rev_number").text(rev_number);
 				$("#"+row+"-rev_number:first-child").val("");
@@ -140,7 +152,10 @@ function editPurchasingDetailRow(rowid) {
 	$("#pur_detail_id").val($("#"+rowid+"-pur_detail_id").text());
 	$("#po_line").val($("#"+rowid+"-po_line").text());
 	$("#parent_line").val($("#"+rowid+"-parent_line").text());
-	embeddedItemSelect('item_id',$("#"+rowid+"-item_id").text());
+	// Saving or updating a detail row puts both the ID and the code in the table.  EmbeddedItemSelect requires only the ID.
+	var itemid = $("#"+rowid+"-item_id").text().split(" ");
+	itemid = itemid[0];
+	embeddedItemSelect('item_id',itemid);
 	$("#quantity").val($("#"+rowid+"-quantity").text());
 	$("#quantity_uom").val($("#"+rowid+"-quantity_uom").text());
 	$("#price").val($("#"+rowid+"-price").text());
@@ -148,8 +163,12 @@ function editPurchasingDetailRow(rowid) {
 	$("#fv_vendor_id").val($("#"+rowid+"-fv_vendor_id").text());
 	$("#quantity_shipped").val($("#"+rowid+"-quantity_shipped").text());
 	$("#tracking_number").val($("#"+rowid+"-tracking_number").text());
-	$("#date_shipped_date").val($("#"+rowid+"-date_shipped").text().substring(0,10));
-	$("#date_shipped_time").val($("#"+rowid+"-date_shipped").text().substring(11));
+	$("#date_shipped-date").val($("#"+rowid+"-date_shipped").text().substring(0,10));
+	$("#date_shipped-time").val($("#"+rowid+"-date_shipped").text().substring(11));
+	$("#date_received-date").val($("#"+rowid+"-date_received").text().substring(0,10));
+	$("#date_received-time").val($("#"+rowid+"-date_received").text().substring(11));
+	$("#quantity_received").val($("#"+rowid+"-quantity_received").text());
+	$("#received_by").val($("#"+rowid+"-received_by").text());
 	var rev_enabled = $("#"+rowid+"-rev_enabled").text();
 	if (rev_enabled=="Y") $("#row0-rev_enabled #rev_enabled").prop("checked",true);
 	else $("#row0-rev_enabled #rev_enabled").prop("checked",false);

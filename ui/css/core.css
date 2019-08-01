@@ -29,3 +29,6 @@
 	width: 95%;
 	overflow: auto;
 }
+.RecordView table td {
+	background-color: white;
+}

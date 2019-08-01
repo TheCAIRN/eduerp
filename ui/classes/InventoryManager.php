@@ -56,6 +56,7 @@ class InventoryManager extends ERPBase {
 		$this->supportsNotes = false;
 		$this->supportsAttachments = false;
 		$this->searchFields[] = array('inv_master','unified_search','Type an entity name, item number, or product text.','textbox');
+		$this->entryFields[] = array('inv_master','','Inventory','fieldset');
 		$this->entryFields[] = array('inv_master','inventory_id','ID','integerid');
 		$this->entryFields[] = array('inv_master','entity_id','Entity','dropdown','ent_entities',array('entity_id','entity_name'));
 		$this->entryFields[] = array('inv_master','product_id','Item','embedded');
@@ -68,7 +69,20 @@ class InventoryManager extends ERPBase {
 		$this->entryFields[] = array('inv_master','total_reserved','Reserved','decimal',24,5);
 		$this->entryFields[] = array('inv_master','total_unshipped_sold','Sold - unshipped','decimal',24,5);
 		$this->entryFields[] = array('inv_master','total_shipped_sold','Sold - shipped','decimal',24,5);
-		
+		$this->entryFields[] = array('inv_master','total_ats','Avail. to Sell','decimal',24,5);
+		$this->entryFields[] = array('inv_master','','','endfieldset');
+		$this->entryFields[] = array('inv_transactions','','Transactions','fieldtable');
+		$this->entryFields[] = array('inv_transactions','inv_transaction_id','Trans ID','integerid');
+		$this->entryFields[] = array('inv_transactions','inv_transaction_type','Trans Type','textbox');
+		$this->entryFields[] = array('inv_transactions','reference_table','Table','textbox');
+		$this->entryFields[] = array('inv_transactions','reference_key','Key','textbox');
+		$this->entryFields[] = array('inv_transactions','on_hand_delta','Chg On Hand','decimal',24,5);
+		$this->entryFields[] = array('inv_transactions','in_wip_delta','Chg In WIP','decimal',24,5);
+		$this->entryFields[] = array('inv_transactions','on_order_delta','Chg On Order','decimal',24,5);
+		$this->entryFields[] = array('inv_transactions','reserved_delta','Chg Reserved','decimal',24,5);
+		$this->entryFields[] = array('inv_transactions','unshipped_delta','Chg Unshipped','decimal',24,5);
+		$this->entryFields[] = array('inv_transactions','shipped_delta','Chg Shipped','decimal',24,5);
+		$this->entryFields[] = array('inv_transactions','','','endfieldtable');		
 	} // constructor
 	public function resetEntityInventory() {
 		$this->inventory_id = -1;
@@ -119,7 +133,8 @@ class InventoryManager extends ERPBase {
 		return array('inventory_id'=>$this->inventory_id,'entity_id'=>$this->entity_id,'product_id'=>$this->product_id,'variant_code'=>$this->variant_code,
 			'total_on_hand'=>$this->total_on_hand,'total_in_wip'=>$this->total_in_wip,'total_on_order'=>$this->total_on_order,'total_reserved'=>$this->total_reserved,
 			'total_unshipped_sold'=>$this->total_unshipped_sold,'total_shipped_sold'=>$this->total_shipped_sold,'created_by'=>$this->inv_created_by,
-			'creation_date'=>$this->inv_creation_date,'last_update_by'=>$this->inv_last_update_by,'last_update_date'=>$this->inv_last_update_date);		
+			'creation_date'=>$this->inv_creation_date,'last_update_by'=>$this->inv_last_update_by,'last_update_date'=>$this->inv_last_update_date,
+			'total_ats'=>($this->total_on_hand+$this->total_in_wip+$this->total_on_order-$this->total_reserved-$this->total_unshipped_sold));		
 	} // arrayifyEntityInventory()
 	public function arrayifyTransaction() {
 		return array('inv_transaction_id'=>$this->inv_transaction_id,'inv_transaction_type'=>$this->inv_transaction_type,'reference_note'=>$this->reference_note,
@@ -136,15 +151,26 @@ class InventoryManager extends ERPBase {
 		return null;
 	} // arrayifyLocationInventory
 	private function getInventoryId($entity,$item,$variant=null) {
-		$q = 'SELECT inventory_id FROM inv_master WHERE entity_id=? AND product_id=? AND variant_code=?';
-		$stmt = $this->dbconn->prepare($q);
-		$stmt->bind_param('iis',$p1,$p2,$p3);
-		$p1 = $entity;
-		$p2 = $item;
-		$p3 = $variant;
+		if ($entity==0 || $item==0) return null;
+		$q = 'SELECT inventory_id FROM inv_master WHERE entity_id=? AND product_id=?';
+		if (!is_null($variant)) {
+			$q .= ' AND variant_code=?';
+			$stmt = $this->dbconn->prepare($q);
+			$stmt->bind_param('iis',$p1,$p2,$p3);
+			$p1 = $entity;
+			$p2 = $item;
+			$p3 = $variant;
+		} else {
+			$q .= ' AND variant_code IS NULL';
+			$stmt = $this->dbconn->prepare($q);
+			$stmt->bind_param('ii',$p1,$p2);
+			$p1 = $entity;
+			$p2 = $item;
+		}
 		$result = $stmt->execute();
 		if ($result!==false) {
-			if ($stmt->num_row==0) {
+			$stmt->store_result();
+			if ($stmt->num_rows==0) {
 				// Inventory record doesn't exist, so create one.
 				$stmt->close();
 				$this->resetEntityInventory();
@@ -177,7 +203,6 @@ class InventoryManager extends ERPBase {
 			} else {
 				$this->resetEntityInventory();
 				$stmt->bind_result($this->inventory_id);
-				$stmt->store_result();
 				$stmt->fetch();
 				$stmt->close();
 				return $this->inventory_id;
@@ -190,7 +215,10 @@ class InventoryManager extends ERPBase {
 	public function purchasingPlaceOrder($purdetailid,$entity,$item,$quantity) {
 		// Record the purchase in inventory transactions, and update the inventory master accordingly.
 		$invid = $this->getInventoryId($entity,$item);
-		if (is_null($invid)) return false;
+		if (is_null($invid)) {
+			echo 'fail|Could not get or create the Entity Inventory ID. '.$this->dbconn->error;
+			return false;
+		}
 		$q1 = "INSERT INTO inv_transactions (inv_transaction_type,reference_table,reference_key_int,inventory_id_1,quantity_on_order_delta_1,created_by,creation_date,last_update_by,last_update_date)
 			VALUES ('Q','pur_detail',?,?,?,?,NOW(),?,NOW());";
 		$stmt1 = $this->dbconn->prepare($q1);
@@ -203,11 +231,11 @@ class InventoryManager extends ERPBase {
 		if ($result1!==false) {
 			$stmt1->close();
 			$this->display($invid,'update');
-			$this->quantity_on_order += $quantity;
-			$q2 = "UPDATE inv_master SET quantity_on_order=?,last_update_by=?,last_update_date=NOW() WHERE inventory_id=?";
+			$this->total_on_order += $quantity;
+			$q2 = "UPDATE inv_master SET total_on_order=?,last_update_by=?,last_update_date=NOW() WHERE inventory_id=?";
 			$stmt2 = $this->dbconn->prepare($q2);
 			$stmt2->bind_param('dii',$u1,$u2,$u3);
-			$u1 = $this->quantity_on_order;
+			$u1 = $this->total_on_order;
 			$u2 = $_SESSION['dbuserid'];
 			$u3 = $invid;
 			$result = $stmt2->execute();
@@ -221,8 +249,13 @@ class InventoryManager extends ERPBase {
 	} // purchasingPlaceOrder()
 	public function purchasingChangeOrder($purdetailid,$entity1,$item1,$quantity1,$entity2,$item2,$quantity2) {
 		// For a location or item change, $quantity1 should be negative and $quantity2 positive.
-		// For a simple quantity change of the same location and item, $quantity1 should be the delta and $quantity2 null.
+		// For a simple quantity change of the same location and item, $quantity1 should still contain a negative of the old number, and $quantity2 a positive of the new.
+		// The delta will be calculated here.
 		$invid1 = $this->getInventoryId($entity1,$item1);
+		if (is_null($invid1)) {
+			echo 'fail|Could not get or create the Entity Inventory ID. '.$this->dbconn->error;
+			return false;
+		}
 		if (!empty($entity2) && !empty($item2)) $invid2 = $this->getInventoryId($entity2,$item2);
 		else $invid2 = $invid1;
 		$type = 'Q';
@@ -237,7 +270,7 @@ class InventoryManager extends ERPBase {
 		$o2 = $purdetailid;
 		$o3 = $invid1;
 		$o4 = $invid2;
-		$o5 = $quantity1;
+		$o5 = ($type=='Q')?$quantity2+$quantity1:$quantity1;
 		$o6 = ($type!='Q')?$quantity2:null;
 		$o7 = $o8 = $_SESSION['dbuserid'];
 		$result1 = $stmt1->execute();
@@ -245,11 +278,12 @@ class InventoryManager extends ERPBase {
 			$success = true;
 			$stmt1->close();
 			$this->display($invid1,'update');
-			$this->quantity_on_order += $quantity1;
-			$q2 = "UPDATE inv_master SET quantity_on_order=?,last_update_by=?,last_update_date=NOW() WHERE inventory_id=?";
+			if ($type=='Q') $this->total_on_order += $quantity1 + $quantity2;
+			else $this->total_on_order += $quantity1;
+			$q2 = "UPDATE inv_master SET total_on_order=?,last_update_by=?,last_update_date=NOW() WHERE inventory_id=?";
 			$stmt2 = $this->dbconn->prepare($q2);
 			$stmt2->bind_param('dii',$u1,$u2,$u3);
-			$u1 = $this->quantity_on_order;
+			$u1 = $this->total_on_order;
 			$u2 = $_SESSION['dbuserid'];
 			$u3 = $invid1;
 			$result = $stmt2->execute();
@@ -257,11 +291,11 @@ class InventoryManager extends ERPBase {
 			if ($result===false) $success = false;
 			if ($type!='Q' && !empty($quantity2)) {
 				$this->display($invid2,'update');
-				$this->quantity_on_order += $quantity2;
-				$q3 = "UPDATE inv_master SET quantity_on_order=?,last_update_by=?,last_update_date=NOW() WHERE inventory_id=?";
+				$this->total_on_order += $quantity2;
+				$q3 = "UPDATE inv_master SET total_on_order=?,last_update_by=?,last_update_date=NOW() WHERE inventory_id=?";
 				$stmt3 = $this->dbconn->prepare($q3);
 				$stmt3->bind_param('dii',$u4,$u5,$u6);
-				$u4 = $this->quantity_on_order;
+				$u4 = $this->total_on_order;
 				$u5 = $_SESSION['dbuserid'];
 				$u6 = $invid2;
 				$result = $stmt3->execute();
@@ -277,28 +311,35 @@ class InventoryManager extends ERPBase {
 	public function purchasingReceiveOrder($purdetailid,$entity,$item,$quantity) {
 		// $quantity received should be a positive number.  It will be deducted from on_order, and added to on_hand.
 		$invid = $this->getInventoryId($entity,$item);
-		if (is_null($invid)) return false;
-		$q1 = "INSERT INTO inv_transactions (inv_transaction_type,reference_table,reference_key_int,inventory_id_1,
+		if (is_null($invid)) {
+			echo 'fail|Could not get or create the Entity Inventory ID. '.$this->dbconn->error;
+			return false;
+		}
+		$q1 = "INSERT INTO inv_transactions (inv_transaction_type,reference_table,reference_key_int,inventory_id_1,inventory_id_2,
 			quantity_on_hand_delta_1,quantity_on_order_delta_1,created_by,creation_date,last_update_by,last_update_date)
-			VALUES ('Q','pur_detail',?,?,?,?,?,NOW(),?,NOW());";
+			VALUES ('Q','pur_detail',?,?,?,?,?,?,NOW(),?,NOW());";
 		$stmt1 = $this->dbconn->prepare($q1);
-		$stmt1->bind_param('iiddii',$o1,$o2,$o3,$o4,$o5,$o6);
+		if ($stmt1===false) {
+			echo '|'.$this->dbconn->error;
+			return false;
+		}
+		$stmt1->bind_param('iiiddii',$o1,$o2,$o3,$o4,$o5,$o6,$o7);
 		$o1 = $purdetailid;
-		$o2 = $invid;
-		$o3 = $quantity;
-		$o4 = $quantity * -1;
-		$o5 = $o6 = $_SESSION['dbuserid'];
+		$o2 = $o3 = $invid;
+		$o4 = $quantity;
+		$o5 = $quantity * -1;
+		$o6 = $o7 = $_SESSION['dbuserid'];
 		$result1 = $stmt1->execute();
 		if ($result1!==false) {
 			$stmt1->close();
 			$this->display($invid,'update');
-			$this->quantity_on_order -= $quantity;
-			$this->quantity_on_hand += $quantity;
-			$q2 = "UPDATE inv_master SET quantity_on_hand=?,quantity_on_order=?,last_update_by=?,last_update_date=NOW() WHERE inventory_id=?";
+			$this->total_on_order -= $quantity;
+			$this->total_on_hand += $quantity;
+			$q2 = "UPDATE inv_master SET total_on_hand=?,total_on_order=?,last_update_by=?,last_update_date=NOW() WHERE inventory_id=?";
 			$stmt2 = $this->dbconn->prepare($q2);
 			$stmt2->bind_param('ddii',$u1,$u2,$u3,$u4);
-			$u1 = $this->quantity_on_hand;
-			$u2 = $this->quantity_on_order;
+			$u1 = $this->total_on_hand;
+			$u2 = $this->total_on_order;
 			$u3 = $_SESSION['dbuserid'];
 			$u4 = $invid;
 			$result = $stmt2->execute();
@@ -306,6 +347,7 @@ class InventoryManager extends ERPBase {
 			if ($result!==false) return true;
 			else return false;
 		} else {
+			echo '|'.$this->dbconn->error;
 			$stmt1->close();
 			return false;
 		}
@@ -405,31 +447,84 @@ class InventoryManager extends ERPBase {
 		$result = $stmt->execute();
 		if ($result!==false) {
 			$this->inventory_id = $id;
-			$stmt->bind_result($this->product_id,$this->total_on_hand,$this->total_in_wip,$this->total_on_order,$this->total_reserved,
+			$stmt->bind_result($this->entity_id,$this->product_id,$this->total_on_hand,$this->total_in_wip,$this->total_on_order,$this->total_reserved,
 				$this->total_unshipped_sold,$this->total_shipped_sold,$this->inv_created_by,$this->inv_creation_date,
 				$this->inv_last_update_by,$this->inv_last_update_date);
 			$stmt->store_result();
 			$stmt->fetch();
 			$this->currentRecord = $id;
 			$stmt->close();
-
-			$this->detail_array = null; // TODO
+			
+			$q = 'SELECT inv_transaction_id,inv_transaction_type,reference_table,COALESCE(reference_key_int,reference_key_char) AS reference_key,
+				quantity_on_hand_delta_1 AS on_hand_delta,quantity_in_wip_delta_1 AS in_wip_delta,
+				quantity_on_order_delta_1 AS on_order_delta,quantity_reserved_delta_1 AS reserved_delta,
+				quantity_unshipped_delta_1 AS unshipped_delta,quantity_shipped_delta_1 AS shipped_delta
+				FROM inv_transactions
+				WHERE inventory_id_1=?
+				UNION ALL
+				SELECT inv_transaction_id,inv_transaction_type,reference_table,COALESCE(reference_key_int,reference_key_char) AS reference_key,
+				quantity_on_hand_delta_2 AS on_hand_delta,quantity_in_wip_delta_2 AS in_wip_delta,
+				quantity_on_order_delta_2 AS on_order_delta,quantity_reserved_delta_2 AS reserved_delta,
+				quantity_unshipped_delta_2 AS unshipped_delta,quantity_shipped_delta_2 AS shipped_delta
+				FROM inv_transactions
+				WHERE inventory_id_2=? AND inventory_id_1<>inventory_id_2';
+			$stmt = $this->dbconn->prepare($q);
+			if ($stmt===false) {
+				echo 'fail|'.$this->dbconn->error;
+				return;
+			}
+			$stmt->bind_param('ii',$t1,$t2);
+			$t1 = $t2 = $id;
+			$result = $stmt->execute();
+			$dtl_array = array();
+			if ($result!==false) {
+				$stmt->bind_result(
+					$txid,
+					$txtype,
+					$reftable,
+					$refkey,
+					$qoh,
+					$wip,
+					$ord,
+					$reserved,
+					$unshipped,
+					$shipped
+				);
+				$stmt->store_result();
+				while ($stmt->fetch()) {
+					$dtl_array[$txid] = array(
+						'inv_transaction_id'=>$txid
+						,'inv_transaction_type'=>$txtype
+						,'reference_table'=>$reftable
+						,'reference_key'=>$refkey
+						,'on_hand_delta'=>$qoh
+						,'in_wip_delta'=>$wip
+						,'on_order_delta'=>$ord
+						,'reserved_delta'=>$reserved
+						,'unshipped_delta'=>$unshipped
+						,'shipped_delta'=>$shipped
+					);
+				}
+				$stmt->close();
+			}
 			if ($mode!='update') {
-				$hdata = $this->arrayifyHeader();
-				echo parent::abstractRecord($mode,'InventoryManager','',$hdata,$this->detail_array);
+				$hdata = $this->arrayifyEntityInventory();
+				echo parent::abstractRecord($mode,'InventoryManager','',$hdata,$dtl_array);
 			}
 		} else $this->inventory_id = null;
-		$_SESSION['currentScreen'] = 2018;
-		if (!isset($_SESSION['searchResults']) && !isset($_SESSION['searchResults']['InventoryManager']))
-			$_SESSION['idarray'] = array(0,0,$id,0,0);
-		else {
-			$idloc = array_search($id,$_SESSION['searchResults']['InventoryManager'],false);
-			$f = $_SESSION['searchResults']['InventoryManager'][0];
-			$l = $_SESSION['searchResults']['InventoryManager'][] = array_pop($_SESSION['searchResults']['InventoryManager']); // https://stackoverflow.com/questions/3687358/whats-the-best-way-to-get-the-last-element-of-an-array-without-deleting-it#comment63556865_3687358
-			if ($idloc > 0) $p = $_SESSION['searchResults']['InventoryManager'][$idloc-1]; else $p = $f;
-			if ($l != $id) $n = $_SESSION['searchResults']['InventoryManager'][$idloc+1]; else $n = $l;
-			$_SESSION['idarray'] = array($f,$p,$id,$n,$l);
-		}		
+		if ($mode!='update') {
+			$_SESSION['currentScreen'] = 2018;
+			if (!isset($_SESSION['searchResults']) && !isset($_SESSION['searchResults']['InventoryManager']))
+				$_SESSION['idarray'] = array(0,0,$id,0,0);
+			else {
+				$idloc = array_search($id,$_SESSION['searchResults']['InventoryManager'],false);
+				$f = $_SESSION['searchResults']['InventoryManager'][0];
+				$l = $_SESSION['searchResults']['InventoryManager'][] = array_pop($_SESSION['searchResults']['InventoryManager']); // https://stackoverflow.com/questions/3687358/whats-the-best-way-to-get-the-last-element-of-an-array-without-deleting-it#comment63556865_3687358
+				if ($idloc > 0) $p = $_SESSION['searchResults']['InventoryManager'][$idloc-1]; else $p = $f;
+				if ($l != $id) $n = $_SESSION['searchResults']['InventoryManager'][$idloc+1]; else $n = $l;
+				$_SESSION['idarray'] = array($f,$p,$id,$n,$l);
+			}		
+		}
 	} // display()
 } // class InventoryManager
 ?>

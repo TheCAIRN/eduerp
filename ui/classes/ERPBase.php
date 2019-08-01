@@ -109,7 +109,7 @@ class ERPBase {
 				} elseif ($field[3]=='endfieldtable') {
 					$html .= '<TR>'.$tableheader.'</TR>';
 					if ($view!='view') $html .= '<TR id="row'.$tablerow.'">'.$tableentry.'</TR>';
-					if (strpos($field[0],'_detail')!==false && is_array($ddata)) {
+					if ((strpos($field[0],'_detail')!==false || strpos($field[0],'_transactions')!==false) && is_array($ddata)) {
 						foreach($ddata as $dkey=>$drow) {
 							$tablerow++;
 							$html .= '<TR id="row'.$tablerow.'">';
@@ -117,7 +117,7 @@ class ERPBase {
 							foreach ($drow as $dlabel=>$dfield) {
 								$html .= '<TD id="row'.$tablerow.'-'.$dlabel.'">'.$dfield.'</TD>';
 							}
-							$html .= "<TD id=\"row{$tablerow}-editButton\"><BUTTON onClick=\"editDetailRow('{$field[0]}','row{$tablerow}');\">Edit</BUTTON></TD>";
+							if ($view!='view') $html .= "<TD id=\"row{$tablerow}-editButton\"><BUTTON onClick=\"editDetailRow('{$field[0]}','row{$tablerow}');\">Edit</BUTTON></TD>";
 							$html .= '</TR>';
 						}
 					}
@@ -328,16 +328,16 @@ class ERPBase {
 					}
 				}
 				if ($field[3]=='Item') {
+					$item = new ItemManager($this->dbconn);
 					if ($view=='view') {
 						if (!$intable) {
-							if (is_array($hdata) && strpos($field[0],'_detail')===false && isset($hdata[$field[1]])) $html .= '<DIV id="'.$field[1].'-div">'.$hdata[$field[1]].'</DIV>';
+							if (is_array($hdata) && strpos($field[0],'_detail')===false && isset($hdata[$field[1]])) $html .= '<DIV id="'.$field[1].'-div" class="embedded">'.$item->embed($field[1],'display readonly',$hdata[$field[1]]).'</DIV>';
 						} else {
 							$tableentry .= '<TD id="row'.$tablerow.'-'.$field[1].'">';
 							if (is_array($hdata) && strpos($field[0],'_detail')===false && isset($hdata[$field[1]])) $tableentry .= '<DIV id="'.$field[1].'-div" class="embedded">'.$hdata[$field[1]].'</DIV>';
 							$tableentry .= '</TD>';
 						}
 					} else {
-						$item = new ItemManager($this->dbconn);
 						if (!$intable) {
 							if ($view=='edit' && is_array($hdata) && strpos($field[0],'_detail')===false && isset($hdata[$field[1]])) 
 								$html .= '<DIV id="'.$field[1].'-div" class="embedded">'.$item->embed($field[1],'display',$hdata[$field[1]]).'</DIV>';
