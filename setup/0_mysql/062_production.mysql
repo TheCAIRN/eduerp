@@ -7,6 +7,7 @@ CREATE TABLE prod_header (
 	,prod_due datetime
 	,prod_finished datetime
 	,resulting_product_id int not null
+	,maximum_quantity decimal(24,5)
 	,bom_id int not null
 	,rev_enabled char(1) not null DEFAULT 'N'
 	,rev_number int not null default 1
@@ -35,6 +36,8 @@ CREATE TABLE prod_detail (
 	,step_finished datetime
 	,step_cost decimal(11,3)
 	,currency_code char(3) not null
+	,planned_consumed decimal(24,5) not null default 0.00
+	,planned_generated decimal(24,5) not null default 0.00
 	,quantity_consumed decimal(24,5) not null default 0.00
 	,quantity_generated decimal(24,5) not null default 0.00
 	,rev_enabled char(1) not null DEFAULT 'N'
@@ -43,10 +46,10 @@ CREATE TABLE prod_detail (
 	,creation_date datetime not null
 	,last_update_by int not null
 	,last_update_date datetime not null
-	,FOREIGN KEY (prod_id) REFERENCES prod_header(prod_id)
-	,FOREIGN KEY (bom_detail_id) REFERENCES bom_detail(bom_detail_id)
-	,FOREIGN KEY (item_consumed_id) REFERENCES item_master(product_id)
-	,FOREIGN KEY (item_generated_id) REFERENCES item_master(product_id)
+	,FOREIGN KEY (prod_id) REFERENCES prod_header (prod_id)
+	,FOREIGN KEY (bom_detail_id) REFERENCES bom_detail (bom_detail_id)
+	,FOREIGN KEY (item_consumed_id) REFERENCES item_master (product_id)
+	,FOREIGN KEY (item_generated_id) REFERENCES item_master (product_id)
 	,FOREIGN KEY (currency_code) REFERENCES aa_currency (code)
 	,FOREIGN KEY (created_by) REFERENCES sec_users (user_id)
 	,FOREIGN KEY (last_update_by) REFERENCES sec_users (user_id)	

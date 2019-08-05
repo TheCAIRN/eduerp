@@ -19,7 +19,7 @@ class Workspace {
 			case 5: $vend = new Vendor($this->dbconn); echo $vend->searchPage(); break;
 			case 6: echo $this->freightSubmenu(); break;
 			case 7: $purch = new Purchasing($this->dbconn); echo $purch->searchPage(); break;
-			case 8: $this->notInstalled("Production"); break; // $prod = new Production($this->dbconn); echo $prod->searchPage(); break;
+			case 8: $prod = new Production($this->dbconn); echo $prod->searchPage(); break;
 			case 9: echo $this->customerSubMenu(); break; 
 			case 10: echo $this->salesSubmenu(); break;
 			case 11: $this->notInstalled("People"); /* TO DO People */ break;
@@ -79,6 +79,7 @@ class Workspace {
 			case 1002: $ent = new Entity($this->dbconn); $ent->listRecords(); break;
 			case 1005: $vend = new Vendor($this->dbconn); $vend->listRecords(); break;
 			case 1007: $pur = new Purchasing($this->dbconn); $pur->listRecords(); break;
+			case 1008: $prod = new Production($this->dbconn); $prod->listRecords(); break;
 			case 1012: $addr = new Addresses($this->dbconn); $addr->listRecords(); break;
 			case 1013: $item = new ItemManager($this->dbconn); $item->listRecords(); break;
 			case 1018: $im = new InventoryManager($this->dbconn); $im->listRecords(); break;

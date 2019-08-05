@@ -131,6 +131,9 @@ class BOM extends ERPBase {
 			'ddate_modify'=>$this->ddate_modify
 		);
 	}
+	public function getDetailArray() {
+		return $this->detail_array;
+	}
 	public function listRecords() {
 		parent::abstractListRecords('BOM');
 	} // function listRecords()

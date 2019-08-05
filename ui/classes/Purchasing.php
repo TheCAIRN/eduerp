@@ -169,6 +169,7 @@ class Purchasing extends ERPBase {
 			if (is_array($criteria[0]) && count($criteria[0])>=2 && $criteria[0][0]=='unified_search') $criteria = $criteria[0][1];
 			else $criteria='';
 			$q .= " WHERE h.purchase_order_number=? OR vendor_name LIKE ? OR purchase_order_reference LIKE ? OR d.item_id = ? OR product_code LIKE ? OR product_description LIKE ? OR product_catalog_title LIKE ? or gtin=?";
+			$q .= ' ORDER BY h.purchase_order_number';
 			$stmt = $this->dbconn->prepare($q);
 			$stmt->bind_param('ississss',$p1,$p2,$p3,$p4,$p5,$p6,$p7,$p8);
 			$p2 = $p3 = $p5 = $p6 = $p7 = '%'.$criteria.'%';

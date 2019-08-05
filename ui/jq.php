@@ -127,6 +127,13 @@ function jquery() {
 				$modObject = new Purchasing($link);
 				$_SESSION['activeModule'] = $modObject;
 			}
+		} elseif ($module=='ProductionSearch') {
+			if (isset($_SESSION['activeModule']) && $_SESSION['activeModule'] instanceof Production) 
+				$modObject = $_SESSION['activeModule'];
+			else {
+				$modObject = new Production($link);
+				$_SESSION['activeModule'] = $modObject;
+			}
 		} elseif ($module=='ItemSearch') {
 			if (isset($_SESSION['activeModule']) && $_SESSION['activeModule'] instanceof ItemManager) 
 				$modObject = $_SESSION['activeModule'];
@@ -264,6 +271,8 @@ function jquery() {
 			$modObject = new Entity($link);
 		} elseif ($module=='Purchasing') {
 			$modObject = new Purchasing($link);
+		} elseif ($module=='Production') {
+			$modObject = new Production($link);
 		} elseif ($module=='ItemManager') {
 			$modObject = new ItemManager($link);
 		} elseif ($module=='Addresses') {
@@ -323,6 +332,7 @@ function jquery() {
 		switch ($_SESSION['currentScreen']%1000) {
 			case 5: $modObject = new Vendor($link); break;
 			case 7: $modObject = new Purchasing($link); break;
+			case 8: $modObject = new Production($link); break;
 			case 12: $modObject = new Addresses($link); break;
 			case 13: $modObject = new ItemManager($link); break;
 			case 19: $modObject = new BOM($link); break;
