@@ -19,6 +19,17 @@ class Options extends ERPBase {
 		$stmt->close();
 		return $rtn;
 	} // GetOptionValue
+	public static function LoadSessionOptions($link=null) {
+		if (!($link instanceof mysqli)) return null;
+		$_SESSION['Options'] = array();
+		$q = "SELECT option_code,option_value FROM aa_options WHERE option_group='SESSION'";
+		$result = $link->query($q);
+		if ($result!==false) {
+			while ($row = $result->fetch_assoc()) {
+				$_SESSION['Options'][$row['option_code']] = $row['option_value'];
+			}
+		}
+	}
 	/* TODO: Everything from here on down */
 	public function __construct ($link=null) {
 		parent::__construct($link);

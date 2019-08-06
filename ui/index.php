@@ -6,22 +6,15 @@ spl_autoload_register(function ($class) {
     include 'classes/' . $class . '.php';
 });
 $messagebar = new Messagebar();
-//if (!isset($_SESSION['link'])) {
-	include('globals.php');
-	$link = new mysqli($dbhost,$dbuser,$dbpass,$dbname);
-	if ($link->connect_error) {
-		$messagebar->addError($link->connect_error);
-		unset($link);
-//	} else {
-//		$_SESSION['link'] = $link;
-	}
-//} else {
-//	$link = $_SESSION['link'];
-//}
+include('globals.php');
+$link = new mysqli($dbhost,$dbuser,$dbpass,$dbname);
+if ($link->connect_error) {
+	$messagebar->addError($link->connect_error);
+	unset($link);
+}
+Options::LoadSessionOptions($link);
 $logobar = new Logobar();
 $toolbar = new Toolbar();
-//$navbar = new Navbar();
-//$footerbar = new Footerbar();
 $workspace = new Workspace($link);
 /* TODO: Add security module */
 $_SESSION['dbuserid'] = 1;
@@ -43,6 +36,7 @@ $_SESSION['dbuserid'] = 1;
 <SCRIPT type="text/javascript" src="js/addresses.js"></SCRIPT>
 <SCRIPT type="text/javascript" src="js/item.js"></SCRIPT>
 <SCRIPT type="text/javascript" src="js/purchasing.js"></SCRIPT>
+<SCRIPT type="text/javascript" src="js/production.js"></SCRIPT>
 <SCRIPT type="text/javascript" src="js/BOM.js"></SCRIPT>
 <SCRIPT type="text/javascript" src="js/customers.js"></SCRIPT>
 <SCRIPT type="text/javascript" src="js/salesorders.js"></SCRIPT>

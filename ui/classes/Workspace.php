@@ -98,6 +98,7 @@ class Workspace {
 			case 2002: $ent = new Entity($this->dbconn); $ent->display($_SESSION['idarray'][2]); break;
 			case 2005: $vend = new Vendor($this->dbconn); $vend->display($_SESSION['idarray'][2]); break;
 			case 2007: $pur = new Purchasing($this->dbconn); $pur->display($_SESSION['idarray'][2]); break;
+			case 2008: $prod = new Production($this->dbconn); $prod->display($_SESSION['idarray'][2]); break;
 			case 2012: $addr = new Addresses($this->dbconn); $addr->display($_SESSION['idarray'][2]); break;
 			case 2013: $item = new ItemManager($this->dbconn); $item->display($_SESSION['idarray'][2]); break;
 			case 2018: $im = new InventoryManager($this->dbconn); $im->display($_SESSION['idarray'][2]); break;
@@ -116,6 +117,7 @@ class Workspace {
 			//case 3002: $ent = new Entity($this->dbconn); $ent->newRecord(); break;
 			case 3005: $vend = new Vendor($this->dbconn); $vend->newRecord(); break;
 			case 3007: $purch = new Purchasing($this->dbconn); $purch->newRecord(); break;
+			case 3008: $prod = new Production($this->dbconn); $prod->newRecord(); break;
 			case 3012: $addr = new Addresses($this->dbconn); $addr->newRecord(); break;
 			case 3013: $item = new ItemManager($this->dbconn); $item->newRecord(); break;
 			case 3019: $bom = new BOM($this->dbconn); $bom->newRecord(); break;
@@ -133,6 +135,7 @@ class Workspace {
 			//case 4002: $ent = new Entity($this->dbconn); $ent->editRecord($_SESSION['idarray'][2]); break;
 			case 4005: $vend = new Vendor($this->dbconn); $vend->editRecord($_SESSION['idarray'][2]); break;
 			case 4007: $purch = new Purchasing($this->dbconn); $purch->editRecord($_SESSION['idarray'][2]); break;
+			case 4008: $prod = new Production($this->dbconn); $prod->editRecord($_SESSION['idarray'][2]); break;
 			case 4012: $addr = new Addresses($this->dbconn); $addr->editRecord($_SESSION['idarray'][2]); break;
 			case 4013: $item = new ItemManager($this->dbconn); $item->editRecord($_SESSION['idarray'][2]); break;
 			case 4019: $bom = new BOM($this->dbconn); $bom->editRecord($_SESSION['idarray'][2]); break;

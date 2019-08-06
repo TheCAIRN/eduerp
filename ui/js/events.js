@@ -110,6 +110,9 @@ function saveRecord(whichModule) {
 	if (whichModule=="Purchasing") {
 		savePurchasingHeader();
 	}
+	if (whichModule=="Production") {
+		saveProductionHeader();
+	}
 	if (whichModule=="Addresses") {
 		saveAddressesHeader('');
 	}

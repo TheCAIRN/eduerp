@@ -167,8 +167,9 @@ CREATE TABLE aa_options (
 	,last_update_date datetime not null
 ) ENGINE=InnoDB;
 INSERT INTO aa_options VALUES
-(1,'OPEN_LOGIN',NULL,'Classrooms will benefit from having all modules open to all users (set to true).  Enterprises require strict security with detailed access controls (set to false).','TRUE',NOW(),1,NOW())
+(1,'OPEN_LOGIN','SESSION','Classrooms will benefit from having all modules open to all users (set to true).  Enterprises require strict security with detailed access controls (set to false).','TRUE',NOW(),1,NOW())
 ,(2,'ATTACHMENT_LOCATION',NULL,'Default location for storing uploaded attachments','./images/',NOW(),1,NOW())
+,(3,'DEFAULT_CURRENCY_CODE','SESSION','If not specified, this currency code will be used where needed.','USD',NOW(),1,NOW())
 ;
 
 -- Cancellation reason codes

@@ -73,7 +73,29 @@ class Production extends ERPBase {
 		$this->resetHeader();
 	} // __construct
 	private function entryFieldsAddDetail() {
-		
+		$this->entryFields[] = array('prod_detail','','Production Detail','fieldtable');
+		$this->entryFields[] = array('prod_detail','prod_detail_id','ID','integerid');
+		$this->entryFields[] = array('prod_detail','prod_step_number','Step #','integer');
+		$this->entryFields[] = array('prod_detail','bom_detail_id','BOM Step','integerid');
+		$this->entryFields[] = array('prod_detail','item_consumed_id','Item consumed','embedded');
+		$this->entryFields[] = array('prod_detail','item_consumed_id','Item consumed','Item');
+		$this->entryFields[] = array('prod_detail','','','endembedded');
+		$this->entryFields[] = array('prod_detail','item_generated_id','Item generated','embedded');
+		$this->entryFields[] = array('prod_detail','item_generated_id','Item generated','Item');
+		$this->entryFields[] = array('prod_detail','','','endembedded');
+		$this->entryFields[] = array('prod_detail','step_started','Step Started Date','datetime');
+		$this->entryFields[] = array('prod_detail','step_due','Step Due Date','datetime');
+		$this->entryFields[] = array('prod_detail','step_finished','Step Finished Date','datetime');
+		$this->entryFields[] = array('prod_detail','step_cost','Cost','decimal',11,3);
+		$this->entryFields[] = array('prod_detail','currency_code','Currency','dropdown','aa_currency',
+			array('code','code'),isset($_SESSION['Options']['DEFAULT_CURRENCY_CODE'])?$_SESSION['Options']['DEFAULT_CURRENCY_CODE']:'USD');
+		$this->entryFields[] = array('prod_detail','planned_consumed','Planned Consumed','decimal',24,5);
+		$this->entryFields[] = array('prod_detail','planned_generated','Planned Ganerated','decimal',24,5);
+		$this->entryFields[] = array('prod_detail','quantity_consumed','Qty Consumed','decimal',24,5);
+		$this->entryFields[] = array('prod_detail','quantity_generated','Qty Generated','decimal',24,5);
+		$this->entryFields[] = array('prod_detail','rev_enabled','Enable Revision Tracking','checkbox','rev_number');
+		$this->entryFields[] = array('prod_detail','rev_number','Revision number','integer');
+		$this->entryFields[] = array('prod_detail','','','endfieldtable');
 	} // entryFieldsAddDetail
 	private function entryFieldsRemoveDetail() {
 		$this->entryFields = array_filter($this->entryFields,function($e) {
@@ -124,10 +146,48 @@ class Production extends ERPBase {
 		$this->detail_last_update_date = null;
 	} // resetDetail()
 	public function arrayifyHeader() {
-		
+		return array(
+			'prod_id'=>$this->prod_id,
+			'entity_id'=>$this->entity_id,
+			'division_id'=>$this->division_id,
+			'department_id'=>$this->department_id,
+			'resulting_product_id'=>$this->resulting_product_id,
+			'maximum_quantity'=>$this->maximum_quantity,
+			'prod_start'=>$this->prod_start,
+			'prod_due'=>$this->prod_due,
+			'prod_finished'=>$this->prod_finished,
+			'bom_id'=>$this->bom_id,
+			'rev_enabled'=>$this->rev_enabled,
+			'rev_number'=>$this->rev_number,
+			'created_by'=>$this->created_by,
+			'creation_date'=>$this->creation_date,
+			'last_update_by'=>$this->last_update_by,
+			'last_update_date'=>$this->last_update_date		
+		);
 	} // arrayifyHeader()
 	public function arrayifyDetail() {
-		
+		return array(
+			'prod_detail_id'=>$this->prod_detail_id,
+			'prod_step_number'=>$this->prod_step_number,
+			'bom_detail_id'=>$this->bom_detail_id,
+			'item_consumed_id'=>$this->item_consumed_id,
+			'item_generated_id'=>$this->item_generated_id,
+			'step_started'=>$this->step_started,
+			'step_due'=>$this->step_due,
+			'step_finished'=>$this->step_finished,
+			'step_cost'=>$this->step_cost,
+			'currency_code'=>$this->currency_code,
+			'planned_consumed'=>$this->planned_consumed,
+			'planned_generated'=>$this->planned_generated,
+			'quantity_consumed'=>$this->quantity_consumed,
+			'quantity_generated'=>$this->quantity_generated,
+			'rev_enabled'=>$this->detail_rev_enabled,
+			'rev_number'=>$this->detail_rev_number,
+			'created_by'=>$this->detail_created_by,
+			'creation_date'=>$this->detail_creation_date,
+			'last_update_by'=>$this->detail_last_update_by,
+			'last_update_date'=>$this->detail_last_update_date
+		);
 	} // arrayifyDetail()
 	public function listRecords() {
 		parent::abstractListRecords('Production');
@@ -137,7 +197,7 @@ class Production extends ERPBase {
 	} // searchPage()
 	public function executeSearch($criteria) {
 		$result = null;
-		$q = "SELECT prod_id,entity_name,division_name,product_name,maximum_quantity,prod_start,prod_due,prod_finished 
+		$q = "SELECT h.prod_id,entity_name,division_name,i.product_description,maximum_quantity,prod_start,prod_due,prod_finished 
 			FROM prod_header h
 			LEFT OUTER JOIN ent_entities e ON h.entity_id=e.entity_id 
 			LEFT OUTER JOIN ent_division_master d ON h.division_id=d.division_id
@@ -196,11 +256,12 @@ class Production extends ERPBase {
 		if (ctype_digit($id)) return true;
 		return false;
 	} // isIDValid()
-	public function display($id) {
+	public function display($id,$mode='view') {
 		if (!$this->isIDValid($id)) return;
 		$readonly = true;
 		$html = '';
-		$q = "SELECT *
+		$q = "SELECT prod_id,entity_id,division_id,department_id,resulting_product_id,maximum_quantity,prod_start,prod_due,prod_finished,
+			bom_id,rev_enabled,rev_number,created_by,creation_date,last_update_by,last_update_date
 			FROM prod_header h
 			WHERE prod_id=?";
 		$stmt = $this->dbconn->prepare($q);
@@ -213,20 +274,78 @@ class Production extends ERPBase {
 		$result = $stmt->execute();
 		// TODO: What if another user deletes the record while it's still in my search results?
 		if ($result!==false) {
+			$stmt->store_result();
 			$stmt->bind_result(
-			
+				$this->prod_id
+				,$this->entity_id
+				,$this->division_id
+				,$this->department_id
+				,$this->resulting_product_id
+				,$this->maximum_quantity
+				,$this->prod_start
+				,$this->prod_due
+				,$this->prod_finished
+				,$this->bom_id
+				,$this->rev_enabled
+				,$this->rev_number
+				,$this->created_by
+				,$this->creation_date
+				,$this->last_update_by
+				,$this->last_update_date
 			);
 			$stmt->fetch();
-			if ($readonly) $cls = 'RecordView'; else $cls = 'RecordEdit';
-			if ($readonly) $inputtextro = ' readonly="readonly"'; else $inputtextro = '';
-			$html .= '<FIELDSET id="ProductionRecord" class="'.$cls.'">';
-			$html .= '<LABEL for="prod_id">Production ID:</LABEL><B id="prod_id">'.$id.'</B>';
-			$html .= $this->statusSelect($status,$readonly);
-			$html .= parent::displayRecordAudit($inputtextro,$crevyn,$crevnumber,$cuser_creation,$cdate_creation,$cuser_modify,$cdate_modify);
-			$html .= '</FIELDSET>';
+			$this->currentRecord = $id;
+			$stmt->close();		
+			$q = 'SELECT prod_detail_id,prod_id,prod_step_number,bom_detail_id,item_consumed_id,item_generated_id,step_started,
+				step_due,step_finished,step_cost,currency_code,planned_consumed,planned_generated,quantity_consumed,quantity_generated,
+				rev_enabled,rev_number,created_by,creation_date,last_update_by,last_update_date
+				FROM prod_detail
+				WHERE prod_id=?';
+			$stmt = $this->dbconn->prepare($q);
+			if ($stmt===false) {
+				echo $this->dbconn->error;
+				return;
+			}
+			$stmt->bind_param('i',$prodid);
+			$prodid = $this->prod_id;
+			$dresult = $stmt->execute();
+			if ($dresult!==false) {
+				$stmt->store_result();
+				$stmt->bind_result(
+					$this->prod_detail_id
+					,$this->prod_id
+					,$this->prod_step_number
+					,$this->bom_detail_id
+					,$this->item_consumed_id
+					,$this->item_generated_id
+					,$this->step_started
+					,$this->step_due
+					,$this->step_finished
+					,$this->step_cost
+					,$this->currency_code
+					,$this->planned_consumed
+					,$this->planned_generated
+					,$this->quantity_consumed
+					,$this->quantity_generated
+					,$this->detail_rev_enabled
+					,$this->detail_rev_number
+					,$this->detail_created_by
+					,$this->detail_creation_date
+					,$this->detail_last_update_by
+					,$this->detail_last_update_date
+				);
+				while ($stmt->fetch()) {
+					$this->detail_array[$this->prod_detail_id] = $this->arrayifyDetail();
+				}
+				$stmt->close();
+			}
+			if ($mode!='update') {
+				$this->entryFieldsRemoveDetail();
+				$this->entryFieldsAddDetail();
+				$hdata = $this->arrayifyHeader();
+				echo parent::abstractRecord($mode,'Production','',$hdata,$this->detail_array);
+			}
 		} // if result
-		$stmt->close();			
-		echo $html;
 		$_SESSION['currentScreen'] = 2008;
 		if (!isset($_SESSION['searchResults']) && !isset($_SESSION['searchResults']['Production']))
 			$_SESSION['idarray'] = array(0,0,$id,0,0);
@@ -240,20 +359,23 @@ class Production extends ERPBase {
 		}		
 	} // display()
 	public function newRecord() {
+		$this->entryFieldsRemoveDetail();
 		echo parent::abstractNewRecord('Production');
 		$_SESSION['currentScreen'] = 3008;
 	} // newRecord()
 	public function editRecord($id) {
+		$this->entryFieldsRemoveDetail();
+		$this->entryFieldsAddDetail();
 		$this->display($id,'edit');
 		$_SESSION['currentScreen'] = 4008;
 	}
 	private function insertHeader() {
 		$this->resetHeader();
 		$this->resetDetail();
-		$this->entity_id = isset($_POST['entity_id'])?$_POST['entity_id']:null;
-		$this->division_id = isset($_POST['division_id'])?$_POST['divsion_id']:null;
-		$this->department_id = isset($_POST['department_id'])?$_POST['department_id']:null;
-		$this->resulting_product_id = isset($_POST['resulting_product_id'])?$_POST['resulting_product_id']:null;
+		$this->entity_id = !empty($_POST['entity_id'])?$_POST['entity_id']:null;
+		$this->division_id = !empty($_POST['division_id'])?$_POST['division_id']:null;
+		$this->department_id = !empty($_POST['department_id'])?$_POST['department_id']:null;
+		$this->resulting_product_id = !empty($_POST['resulting_product_id'])?$_POST['resulting_product_id']:null;
 		$this->maximum_quantity = isset($_POST['maximum_quantity'])?$_POST['maximum_quantity']:0.00;
 		$start_date = isset($_POST['prod_start_date'])?$_POST['prod_start_date']:null;
 		$start_time = isset($_POST['prod_start_time'])?$_POST['prod_start_time']:null;
@@ -261,7 +383,7 @@ class Production extends ERPBase {
 		$due_time = isset($_POST['prod_due_time'])?$_POST['prod_due_time']:null;
 		$finished_date = isset($_POST['prod_finished_date'])?$_POST['prod_finished_date']:null;
 		$finished_time = isset($_POST['prod_finished_time'])?$_POST['prod_finished_time']:null;
-		$this->bom_id = isset($_POST['bom_id'])?$_POST['bom_id']:null;
+		$this->bom_id = !empty($_POST['bom_id'])?$_POST['bom_id']:null;
 		$this->rev_enabled = isset($_POST['rev_enabled'])?$_POST['rev_enabled']:false;
 		$this->rev_number = isset($_POST['rev_number'])?$_POST['rev_number']:1;
 		$this->prod_start = !empty($start_date)?new DateTime($start_date.' '.$start_time):null;
@@ -270,14 +392,19 @@ class Production extends ERPBase {
 		$this->creation_date = new DateTime();
 		$this->last_update_date = new DateTime();
 		
+		if (!isset($_SESSION['Options']) || !isset($_SESSION['Options']['DEFAULT_CURRENCY_CODE'])) {
+			echo 'fail|Please set the default currency code in the Options module.';
+			return;
+		}
 		if (empty($this->entity_id)) {
 			echo 'fail|All production must be assigned to an entity';
 			return;
 		}
-		if (emtpy($this->bom_id)) {
+		if (empty($this->bom_id)) {
 			echo 'fail|Production is the application of a Bill of Materials to inventory.  Please select one before saving.';
 			return;
 		}
+		if (isset($_SESSION['searchResults']) && isset($_SESSION['searchResults']['BOM'])) unset($_SESSION['searchResults']['BOM']);
 		$bom = new BOM($this->dbconn);
 		$bom->display($this->bom_id,'update');
 		$bomh = $bom->arrayifyHeader();
@@ -299,9 +426,9 @@ class Production extends ERPBase {
 		$p5 = $this->department_id;
 		$p6 = $this->resulting_product_id;
 		$p7 = $this->maximum_quantity;
-		$p8 = $this->prod_start;
-		$p9 = $this->prod_due;
-		$p10 = $this->prod_finished;
+		$p8 = !empty($this->prod_start)?$this->prod_start->format('Y-m-d H:i:s'):null;
+		$p9 = !empty($this->prod_due)?$this->prod_due->format('Y-m-d H:i:s'):null;
+		$p10 = !empty($this->prod_finished)?$this->prod_finished->format('Y-m-d H:i:s'):null;
 		$p11 = $this->bom_id;
 		$p12 = ($this->rev_enabled=='true')?'Y':'N';
 		if ($this->rev_number<1) $rev_number = 1;
@@ -316,15 +443,32 @@ class Production extends ERPBase {
 			$this->step_timer = $this->prod_start;
 			$bomd = $bom->getDetailArray();
 			$stmt->close();
+			$update_done = null;
 			foreach ($bomd as $bomdid=>$bomstep) {
 				$this->insertDetail($bomdid,$bomstep,$multiplier);
+				// Sub-BOMs will set the generated fields at the end.
+				if ($bomstep['step_type']=='B') $update_done = true;
+				else $update_done = false;
 			}
 			// Update final step to set item_generated_id.
+			$lastid = $this->dbconn->insert_id;
+			if (!$update_done) {
+				$lq = 'UPDATE prod_detail SET item_generated_id=?,planned_generated=? WHERE prod_detail_id=?';
+				$sq = $this->dbconn->prepare($lq);
+				$sq->bind_param('idi',$l1,$l2,$l3);
+				$this->item_generated_id = $l1 = $bom['resulting_product_id'];
+				$this->planned_generated = $l2 = $bom['resulting_quantity']*$multiplier;
+				$l3 = $lastid;
+				$sq->execute();
+			}
+			if (!isset($_SESSION['searchResults'])) $_SESSION['searchResults'] = array();
+			if (!isset($_SESSION['searchResults']['Production'])) $_SESSION['searchResults']['Production'] = array();
+			$_SESSION['searchResults']['Production'][] = $this->prod_id;		
 			$this->display($this->prod_id);
 		} else {
-			$stmt->close();
-			echo 'fail|'.$this->dbconn->error;
+			echo 'fail|'.$this->dbconn->errno.': '.$this->dbconn->error;
 			$this->mb->addError($this->dbconn->error);
+			$stmt->close();
 		}
 	} // insertHeader()
 	private function insertDetail($bomdid=null,$bomstep=null,$multiplier=1) {
@@ -344,22 +488,24 @@ class Production extends ERPBase {
 			$this->bom_detail_id = $bomdid;
 			$this->item_consumed_id = $bomstep['component_product_id'];
 			$this->planned_consumed = $bomstep['component_quantity_used'] * $multiplier;
-			if (!is_null($prod_finished)) {
+			if (!is_null($this->prod_finished)) {
 				$this->step_finished = $this->prod_finished;
 				$this->quantity_consumed = $this->planned_consumed;
 			} else {
 				$this->quantity_consumed = 0.00;
 			}
-			if (!is_null($prod_due)) $this->step_due = $this->prod_due;
-			if (!is_null($prod_start)) $this->step_start = $this->step_timer->format('Y-m-d H:i:s');
-			$q = 'INSERT INTO prod_detail (prod_step_number,bom_detail_id,item_consumed_id,step_started,step_due,step_finished,planned_consumed,quantity_consumed,
-				rev_enabled,rev_number,created_by,creation_date,last_update_by,last_update_date) VALUES (?,?,?,?,?,?,?,?,?,?,?,NOW(),?,NOW())';
+			if (!is_null($this->prod_due)) $this->step_due = $this->prod_due;
+			if (!is_null($this->prod_start)) $this->step_started = $this->step_timer;
+			$q = 'INSERT INTO prod_detail (prod_id,prod_step_number,bom_detail_id,item_consumed_id,step_started,
+				step_due,step_finished,planned_consumed,quantity_consumed,currency_code,
+				rev_enabled,rev_number,created_by,creation_date,last_update_by,last_update_date) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,NOW(),?,NOW())';
 			$stmt = $this->dbconn->prepare($q);
 			if ($stmt===false) {
 				echo 'fail|'.$this->dbconn->error;
 				return;
 			} 
-			$stmt->bind_param('iiisssddsiii',$p1,$p2,$p3,$p4,$p5,$p6,$p7,$p8,$p9,$p10,$p11,$p12);
+			$stmt->bind_param('iiiisssddssiii',$h1,$p1,$p2,$p3,$p4,$p5,$p6,$p7,$p8,$cc,$p9,$p10,$p11,$p12);
+			$h1 = $this->prod_id;
 			$p1 = $this->prod_step_number;
 			$p2 = $this->bom_detail_id;
 			$p3 = $this->item_consumed_id;
@@ -368,53 +514,70 @@ class Production extends ERPBase {
 			$p6 = !empty($this->step_finished)?$this->step_finished->format('Y-m-d H:i:s'):null;
 			$p7 = $this->planned_consumed;
 			$p8 = $this->quantity_consumed;
+			$this->currency_code = $cc = $_SESSION['Options']['DEFAULT_CURRENCY_CODE'];
 			$p9 = ($this->detail_rev_enabled=='true')?'Y':'N';
 			$p10 = $this->detail_rev_number;
 			$p11 = $this->detail_created_by;
 			$p12 = $this->detail_last_update_by;
-			$stmt->execute();
+			if (!$stmt->execute()) echo 'fail|Detail - '.$this->dbconn->error.'|';
 			$this->step_counter++;
 			$stmt->close();
 			return;
 		} elseif ($bomstep['step_type']=='P') {
 			$this->bom_detail_id = $bomdid;
-			if (!is_null($prod_finished)) $this->step_finished = $this->prod_finished;
-			if (!is_null($prod_due)) $this->step_due = $this->prod_due;
-			if (!is_null($prod_start)) {
-				$this->step_timer = $this->step_timer->add(new DateInterval('P'.$bomstep['seconds_to_process'].'S'));
-				$this->step_start = $this->step_timer->format('Y-m-d H:i:s');
+			if (!is_null($this->prod_finished)) $this->step_finished = $this->prod_finished;
+			if (!is_null($this->prod_due)) $this->step_due = $this->prod_due;
+			if (!is_null($this->prod_start)) {
+				$this->step_timer = $this->step_timer->add(new DateInterval('PT'.(int)$bomstep['seconds_to_process'].'S'));
+				$this->step_started = $this->step_timer;
 			}
-			$q = 'INSERT INTO prod_detail (prod_step_number,bom_detail_id,step_started,step_due,step_finished,
-				rev_enabled,rev_number,created_by,creation_date,last_update_by,last_update_date) VALUES (?,?,?,?,?,?,?,?,NOW(),?,NOW())';
+			$q = 'INSERT INTO prod_detail (prod_id,prod_step_number,bom_detail_id,step_started,step_due,step_finished,currency_code,
+				rev_enabled,rev_number,created_by,creation_date,last_update_by,last_update_date) VALUES (?,?,?,?,?,?,?,?,?,?,NOW(),?,NOW())';
 			$stmt = $this->dbconn->prepare($q);
 			if ($stmt===false) {
 				echo 'fail|'.$this->dbconn->error;
 				return;
 			} 
-			$stmt->bind_param('iissssiii',$p1,$p2,$p4,$p5,$p6,$p9,$p10,$p11,$p12);
+			$stmt->bind_param('iiisssssiii',$h1,$p1,$p2,$p4,$p5,$p6,$cc,$p9,$p10,$p11,$p12);
+			$h1 = $this->prod_id;
 			$p1 = $this->prod_step_number;
 			$p2 = $this->bom_detail_id;
 			$p4 = !empty($this->step_started)?$this->step_started->format('Y-m-d H:i:s'):null;
 			$p5 = !empty($this->step_due)?$this->step_due->format('Y-m-d H:i:s'):null;
 			$p6 = !empty($this->step_finished)?$this->step_finished->format('Y-m-d H:i:s'):null;
+			$this->currency_code = $cc = $_SESSION['Options']['DEFAULT_CURRENCY_CODE'];
 			$p9 = ($this->detail_rev_enabled=='true')?'Y':'N';
 			$p10 = $this->detail_rev_number;
 			$p11 = $this->detail_created_by;
 			$p12 = $this->detail_last_update_by;
-			$stmt->execute();
+			if (!$stmt->execute()) echo 'fail|Detail - '.$this->dbconn->error.'|';
 			$this->step_counter++;
 			$stmt->close();
 			return;
 		} elseif ($bomstep['step_type']=='B') {
+			// Use a recursive algorithm.
 			$subbom = new BOM($this->dbconn);
 			$subbom->display($bomstep['sub_bom_id'],'update');
-			$subbomd = $subbom->arrayifyDetail();
+			$subbomh = $subbom->arrayifyHeader();
+			$subbomd = $subbom->getDetailArray();
+			$update_done = null;
 			foreach ($subbomd as $subbomdid=>$subbomstep) {
 				$this->insertDetail($subbomdid,$subbomstep,$multiplier);
+				if ($subbomstep['step_type']=='B') $update_done = true;
+				else $update_done = false;
 			}
 			// Update final step to set item_generated_id.	
 			$lastid = $this->dbconn->insert_id;
-		}
+			if (!$update_done) {
+				$lq = 'UPDATE prod_detail SET item_generated_id=?,planned_generated=? WHERE prod_detail_id=?';
+				$sq = $this->dbconn->prepare($lq);
+				$sq->bind_param('idi',$l1,$l2,$l3);
+				$this->item_generated_id = $l1 = $subbomh['resulting_product_id'];
+				$this->planned_generated = $l2 = $subbomh['resulting_quantity']*$multiplier;
+				$l3 = $lastid;
+				$sq->execute();
+			}
+		} // if step_type
 	} // insertDetail()
 	private function updateHeader() {
 	

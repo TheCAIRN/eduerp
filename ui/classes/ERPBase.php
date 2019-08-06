@@ -115,7 +115,10 @@ class ERPBase {
 							$html .= '<TR id="row'.$tablerow.'">';
 							// TODO: Match the array fields to the ids in $tableentry
 							foreach ($drow as $dlabel=>$dfield) {
-								$html .= '<TD id="row'.$tablerow.'-'.$dlabel.'">'.$dfield.'</TD>';
+								if (!empty($dfield) && (strpos($dlabel,'product_id')!==false || (strpos($dlabel,'item_')!==false && strpos($dlabel,'_id')!==false))) {
+									$html .= '<TD><DIV id="row'.$tablerow.'-'.$dlabel.'-div" class="embedded">'.$item->embed($dlabel,'display readonly',$dfield).'</DIV></TD>';
+								} else
+									$html .= '<TD id="row'.$tablerow.'-'.$dlabel.'">'.$dfield.'</TD>';
 							}
 							if ($view!='view') $html .= "<TD id=\"row{$tablerow}-editButton\"><BUTTON onClick=\"editDetailRow('{$field[0]}','row{$tablerow}');\">Edit</BUTTON></TD>";
 							$html .= '</TR>';
@@ -331,7 +334,7 @@ class ERPBase {
 					$item = new ItemManager($this->dbconn);
 					if ($view=='view') {
 						if (!$intable) {
-							if (is_array($hdata) && strpos($field[0],'_detail')===false && isset($hdata[$field[1]])) $html .= '<DIV id="'.$field[1].'-div" class="embedded">'.$item->embed($field[1],'display readonly',$hdata[$field[1]]).'</DIV>';
+							if (is_array($hdata) && strpos($field[0],'_detail')===false && !empty($hdata[$field[1]])) $html .= '<DIV id="'.$field[1].'-div" class="embedded">'.$item->embed($field[1],'display readonly',$hdata[$field[1]]).'</DIV>';
 						} else {
 							$tableentry .= '<TD id="row'.$tablerow.'-'.$field[1].'">';
 							if (is_array($hdata) && strpos($field[0],'_detail')===false && isset($hdata[$field[1]])) $tableentry .= '<DIV id="'.$field[1].'-div" class="embedded">'.$hdata[$field[1]].'</DIV>';

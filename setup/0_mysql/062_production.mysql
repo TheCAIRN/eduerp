@@ -2,7 +2,7 @@ CREATE TABLE prod_header (
 	prod_id int not null auto_increment PRIMARY KEY
 	,entity_id int not null
 	,division_id int not null
-	,department_id int not null
+	,department_id int 
 	,prod_start datetime
 	,prod_due datetime
 	,prod_finished datetime

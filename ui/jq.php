@@ -369,6 +369,8 @@ function jquery() {
 			$modObject = new Entity($link);
 		} elseif ($module=='Purchasing') {
 			$modObject = new Purchasing($link);
+		} elseif ($module=='Production') {
+			$modObject = new Production($link);
 		} elseif ($module=='ItemManager') {
 			$modObject = new ItemManager($link);
 		} elseif ($module=='Addresses') {
@@ -423,6 +425,8 @@ function jquery() {
 			$modObject = new ItemManager($link);
 		} elseif ($_POST['module']=='purchasing') {
 			$modObject = new Purchasing($link);
+		} elseif ($_POST['module']=='production') {
+			$modObject = new Production($link);
 		} elseif ($_POST['module']=='bom') {
 			$modObject = new BOM($link);
 		} elseif ($_POST['module']=='entityresource') {

@@ -19,10 +19,19 @@ function saveProductionHeader() {
 	if (prodkey<=0) mode = "insertRecord";
 	else mode = "updateRecord";
 	$.post("jq.php",{jquery:mode,module:"production",level:"header",prod_id:prodkey,entity_id:entityid,division_id:divisionid,department_id:departmentid,
-		resulting_product_id:resultingproductid,maximum_quantity:maxqty,prod_start_date:start_date,prod_start_time:start_time,prod_due_date:due:date,
+		resulting_product_id:resultingproductid,maximum_quantity:maxqty,prod_start_date:start_date,prod_start_time:start_time,prod_due_date:due_date,
 		prod_due_time:due_time,prod_finished_date:finished_date,prod_finished_time:finished_time,bom_id:bomid,rev_enabled:rev_enabled,
 		rev_number:rev_number},	function(data) {
-			
+		if (data.length > 8 && data.substr(0,8)=='inserted') {
+			var cpos = data.indexOf("\n");
+			$("#core").html(data.substr(cpos+1));	
+			updateDiv('messagebar');
+			updateDiv('toolbar');
+		} else if (data.length > 5 && data.substr(0,5)=='fail|') {
+			$("#messagebar").html('<DIV class="errorMessage">'+data.substr(5)+'</DIV>');			
+		} else {
+			updateDiv('messagebar');
+		}
 	})
 	.fail(function() {
 		$("#messagebar").html('<DIV class="errorMessage">I could not contact the database. Your data has <B>NOT</B> been saved.</DIV>');

@@ -155,10 +155,10 @@ class BOM extends ERPBase {
 					$result = $stmt->execute();
 					if ($result !== false) {
 						$stmt->store_result();
-						$stmt->bind_result($this->bom_id,$this->resulting_product_id,$this->product_code,$this->product_description,
+						$stmt->bind_result($this->bom_id,$this->resulting_product,$this->product_code,$this->product_description,
 							$this->resulting_quantity,$this->description);
 						while ($stmt->fetch()) {
-							$this->recordSet[$this->bom_id] = array('product'=>$this->resulting_product_id,'code'=>$this->product_code,
+							$this->recordSet[$this->bom_id] = array('product'=>$this->resulting_product,'code'=>$this->product_code,
 								'product_description'=>$this->product_description,'quantity'=>$this->resulting_quantity,'description'=>$this->description);
 						}
 					}
@@ -272,7 +272,7 @@ class BOM extends ERPBase {
 			if ($mode!='update') {
 				$hdata = $this->arrayifyHeader();
 				if ($mode=='view') {
-					$hdata['resulting_product_id'] = $this->resulting_product.' '.$product_code.' '.$product_description;
+					//$hdata['resulting_product_id'] = $this->resulting_product.' '.$product_code.' '.$product_description;
 					$hdata['huser_creation'] = $hcre_name;
 					$hdata['huser_modify'] = $hmod_name;
 				}
@@ -281,7 +281,7 @@ class BOM extends ERPBase {
 		} // if result
 		else $this->bom_id = null;
 		$_SESSION['currentScreen'] = 2019;
-		if (!isset($_SESSION['searchResults']) && !isset($_SESSION['searchResults']['BOM']))
+		if (!isset($_SESSION['searchResults']) || !isset($_SESSION['searchResults']['BOM']))
 			$_SESSION['idarray'] = array(0,0,$id,0,0);
 		else {
 			$idloc = array_search($id,$_SESSION['searchResults']['BOM'],false);
