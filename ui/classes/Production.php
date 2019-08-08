@@ -90,11 +90,12 @@ class Production extends ERPBase {
 		$this->entryFields[] = array('prod_detail','currency_code','Currency','dropdown','aa_currency',
 			array('code','code'),isset($_SESSION['Options']['DEFAULT_CURRENCY_CODE'])?$_SESSION['Options']['DEFAULT_CURRENCY_CODE']:'USD');
 		$this->entryFields[] = array('prod_detail','planned_consumed','Planned Consumed','decimal',24,5);
-		$this->entryFields[] = array('prod_detail','planned_generated','Planned Ganerated','decimal',24,5);
+		$this->entryFields[] = array('prod_detail','planned_generated','Planned Generated','decimal',24,5);
 		$this->entryFields[] = array('prod_detail','quantity_consumed','Qty Consumed','decimal',24,5);
 		$this->entryFields[] = array('prod_detail','quantity_generated','Qty Generated','decimal',24,5);
 		$this->entryFields[] = array('prod_detail','rev_enabled','Enable Revision Tracking','checkbox','rev_number');
 		$this->entryFields[] = array('prod_detail','rev_number','Revision number','integer');
+		$this->entryFields[] = array('prod_detail','','Save Changes','newlinebutton','saveProductionDetail();');
 		$this->entryFields[] = array('prod_detail','','','endfieldtable');
 	} // entryFieldsAddDetail
 	private function entryFieldsRemoveDetail() {
@@ -238,7 +239,7 @@ class Production extends ERPBase {
 			if ($result!==false) {
 				$this->recordSet = array();
 				while ($row=$result->fetch_assoc()) {
-					$this->recordSet[$row['prod_id']] = array('Entity'=>$row['entity_name'],'Division'=>$row['divsion_name'],'Resulting Product'=>$row['product_name'],
+					$this->recordSet[$row['prod_id']] = array('Entity'=>$row['entity_name'],'Division'=>$row['division_name'],'Resulting Product'=>$row['product_description'],
 						'Start date'=>$row['prod_start'],'Due date'=>$row['prod_due'],'Finished date'=>$row['prod_finished']);
 				} // while rows
 			} // if query succeeded
@@ -368,6 +369,20 @@ class Production extends ERPBase {
 		$this->entryFieldsAddDetail();
 		$this->display($id,'edit');
 		$_SESSION['currentScreen'] = 4008;
+		echo 
+		'<SCRIPT type="text/javascript">
+			$("#entity_id").prop("disabled",true);
+			$("#division_id").prop("disabled",true);
+			$("#department_id").prop("disabled",true);
+			embeddedItemSelectReadonly("resulting_product_id",$("#resulting_product_id-div #resulting_product_id-product_id").text());
+			$("#bom_id").prop("disabled",true);
+			$("#prod_step_number").prop("readonly",true);
+			$("#bom_detail_id").prop("readonly",true);
+			$("#planned_consumed").prop("readonly",true);
+			$("#planned_generated").prop("readonly",true);
+			$("#item_consumed_id-div").html("<DIV id=\"item_consumed_id-product_id\">None selected</DIV>");
+			$("#item_generated_id-div").html("<DIV id=\"item_generated_id-product_id\">None selected</DIV>");
+		</SCRIPT>';
 	}
 	private function insertHeader() {
 		$this->resetHeader();
@@ -439,6 +454,10 @@ class Production extends ERPBase {
 		if ($result!==false) {
 			$this->prod_id = $this->dbconn->insert_id;
 			echo 'inserted|'.$this->prod_id."\r\n";
+			// Update inventory WIP
+			$inv = new InventoryManager($this->dbconn);
+			$inv->productionUpdateWIP($this->prod_id,$this->entity_id,$this->resulting_product_id,$this->maximum_quantity);
+			// Create detail records
 			$multiplier = floor($this->maximum_quantity/$bomh['resulting_quantity']);
 			$this->step_timer = $this->prod_start;
 			$bomd = $bom->getDetailArray();
@@ -580,16 +599,216 @@ class Production extends ERPBase {
 		} // if step_type
 	} // insertDetail()
 	private function updateHeader() {
-	
+		$this->resetHeader();
+		$this->resetDetail();
+		$now = new DateTime();
+		$id = $_POST['prod_id'];
+		if ((!is_integer($id) && !ctype_digit($id)) || $id<1) {
+			echo 'fail|Invalid Production id for updating';
+			return;
+		}
+		$this->display($id,'update'); // Display already has the logic for loading the record.  TODO: Refactor into separate function.
+		if (is_null($this->prod_id)) {
+			echo 'fail|Invalid Production id for updating';
+			return;
+		}
+		$update = array();
+		if (isset($_POST['maximum_quantity']) && $_POST['maximum_quantity']!=$this->maximum_quantity) $update['maximum_quantity'] = array('d',$_POST['maximum_quantity']);
+		if (!empty($_POST['prod_start_date']) && !is_null($_POST['prod_start_time'])) {
+			$start = new DateTime($_POST['prod_start_date'].' '.$_POST['prod_start_time']);
+			if ($start->format('Y-m-d H:i:s')!=$this->prod_start) $update['prod_start'] = array('s',$start->format('Y-m-d H:i:s'));
+		}
+		if (!empty($_POST['prod_due_date']) && !is_null($_POST['prod_due_time'])) {
+			$due = new DateTime($_POST['prod_due_date'].' '.$_POST['prod_due_time']);
+			if ($due->format('Y-m-d H:i:s')!=$this->prod_due) $update['prod_due'] = array('s',$due->format('Y-m-d H:i:s'));
+		}
+		if (!empty($_POST['prod_finished_date']) && !is_null($_POST['prod_finished_time'])) {
+			$finished = new DateTime($_POST['prod_finished_date'].' '.$_POST['prod_finished_time']);
+			if ($finished->format('Y-m-d H:i:s')!=$this->prod_finished) $update['prod_finished'] = array('s',$finished->format('Y-m-d H:i:s'));
+		}
+		$reven = null;
+		if (isset($_POST['rev_enabled'])) $reven = ($_POST['rev_enabled']=='true')?'Y':'N';
+		if (!is_null($reven) && $reven!=$this->rev_enabled) $update['rev_enabled'] = array('s',$reven);
+		if ((!is_null($reven)) && $reven=='Y' && isset($_POST['rev_number']) && $_POST['rev_number']!=$this->rev_number) $update['rev_number'] = array('i',$_POST['rev_number']);
+		$update['last_update_date'] = array('s',$now->format('Y-m-d H:i:s'));
+		$update['last_update_by'] = array('i',$_SESSION['dbuserid']);
+		
+		// Create UPDATE String
+		
+		if (count($update)==2) { // last_update is always there
+			echo 'fail|Nothing to update';
+			return;
+		}
+		$q = 'UPDATE prod_header SET ';
+		$ctr = 0;
+		$bp_types = '';
+		$bp_values = array_fill(0,count($update),null);
+		foreach ($update as $field=>$data) {
+			if ($ctr > 0) $q .= ',';
+			$q .= "$field=?";
+			$bp_types .= $data[0];
+			$bp_values[$ctr] = $data[1];
+			$ctr++;
+		}
+		$q .= ' WHERE prod_id=?';
+		$ctr++;
+		$bp_types .= 'i';
+		$bp_values[$ctr] = $this->prod_id;
+		$stmt = $this->dbconn->prepare($q);
+		/* The internet has a lot of material about different ways to pass a variable number of arguments to bind_param.
+		   I feel that using Reflection is the best tool for the job.
+		   Reference: https://www.php.net/manual/en/mysqli-stmt.bind-param.php#107154
+		*/
+		$bp_method = new ReflectionMethod('mysqli_stmt','bind_param');
+		$bp_refs = array();
+		foreach ($bp_values as $key=>$value) {
+			$bp_refs[$key] = &$bp_values[$key];
+		}
+		array_unshift($bp_values,$bp_types);
+		$bp_method->invokeArgs($stmt,$bp_values);
+		$stmt->execute();
+		if ($stmt->affected_rows > 0) {
+			echo 'updated';
+			if (isset($update['maximum_quantity'])) {
+				// Update inventory WIP
+				$inv = new InventoryManager($this->dbconn);
+				$inv->productionUpdateWIP($this->prod_id,$this->entity_id,$this->resulting_product_id,$update['maximum_quantity']-$this->maximum_quantity);			
+			}
+		} else {
+			if ($this->dbconn->error) {
+				echo 'fail|'.$this->dbconn->error;
+				$this->mb->addError($this->dbconn->error);
+			} else echo 'fail|No rows updated';
+		}
+		$stmt->close();
 	} // updateHeader()
 	private function updateDetail() {
+		$this->resetDetail();
+		$now = new DateTime();
+		$id = $_POST['prod_id'];
+		$dtlid = $_POST['prod_detail_id'];
+		if ((!is_integer($id) && !ctype_digit($id)) || $id<1) {
+			echo 'fail|Invalid Production id for updating';
+			return;
+		}
+		if ((!is_integer($dtlid) && !ctype_digit($dtlid)) || $dtlid<1) {
+			echo 'fail|Invalid Production detail id for updating';
+			return;
+		}
+		$this->display($id,'update'); // Display already has the logic for loading the header record.  TODO: Refactor into separate function.
+		if (is_null($this->prod_id)) {
+			echo 'fail|Invalid Production id for updating';
+			return;
+		}
+		$update = array();
+		// Set existing fields from detail_array.
+		$this->prod_detail_id = $dtlid;
+		$this->prod_step_number = $this->detail_array[$dtlid]['prod_step_number'];
+		$this->bom_detail_id = $this->detail_array[$dtlid]['bom_detail_id'];
+		$this->item_consumed_id = $this->detail_array[$dtlid]['item_consumed_id'];
+		$this->item_generated_id = $this->detail_array[$dtlid]['item_generated_id'];
+		$this->step_started = new DateTime($this->detail_array[$dtlid]['step_started']);
+		$this->step_due = new DateTime($this->detail_array[$dtlid]['step_due']);
+		$this->step_finished = new DateTime($this->detail_array[$dtlid]['step_finished']);
+		$this->step_cost = $this->detail_array[$dtlid]['step_cost'];
+		$this->currency_code = $this->detail_array[$dtlid]['currency_code'];
+		$this->planned_consumed = $this->detail_array[$dtlid]['planned_consumed'];
+		$this->planned_generated = $this->detail_array[$dtlid]['planned_generated'];
+		$this->quantity_consumed = $this->detail_array[$dtlid]['quantity_consumed'];
+		$this->quantity_generated = $this->detail_array[$dtlid]['quantity_generated'];
+		$this->detail_rev_enabled = $this->detail_array[$dtlid]['rev_enabled'];
+		$this->detail_rev_number = $this->detail_array[$dtlid]['rev_number'];
+		$this->detail_created_by = $this->detail_array[$dtlid]['created_by'];
+		$this->detail_creation_date = $this->detail_array[$dtlid]['creation_date'];
+		$this->detail_last_update_by = $this->detail_array[$dtlid]['last_update_by'];
+		$this->detail_last_update_date = $this->detail_array[$dtlid]['last_update_date'];
+		// Compare updatable fields
+		if (!empty($_POST['step_started_date']) && !is_null($_POST['step_started_time'])) {
+			$startdate = new DateTime($_POST['step_started_date'].' '.$_POST['step_started_time']);
+			if (!empty($startdate) && $startdate->format('Y-m-d H:i:s')==$this->step_started->format('Y-m-d H:i:s')) 
+				$update['step_started'] = array('s',$startdate->format('Y-m-d H:i:s'));
+		}
+		if (!empty($_POST['step_due_date']) && !is_null($_POST['step_due_time'])) {
+			$duedate = new DateTime($_POST['step_due_date'].' '.$_POST['step_due_time']);
+			if (!empty($duedate) && $duedate->format('Y-m-d H:i:s')==$this->step_due->format('Y-m-d H:i:s')) 
+				$update['step_due'] = array('s',$duedate->format('Y-m-d H:i:s'));
+		}
+		if (!empty($_POST['step_finished_date']) && !is_null($_POST['step_finished_time'])) {
+			$finisheddate = new DateTime($_POST['step_finished_date'].' '.$_POST['step_finished_time']);
+			if (!empty($finisheddate) && $finisheddate->format('Y-m-d H:i:s')==$this->step_finished->format('Y-m-d H:i:s')) 
+				$update['step_finished'] = array('s',$finisheddate->format('Y-m-d H:i:s'));
+		}
+		if (isset($_POST['step_cost']) && $_POST['step_cost']!=$this->step_cost) $update['step_cost'] = array('d',$_POST['step_cost']);
+		if (isset($_POST['currency_code']) && $_POST['currency_code']!=$this->currency_code) $update['currency_code'] = array('s',$_POST['currency_code']);
+		if (isset($_POST['quantity_consumed']) && $_POST['quantity_consumed']!=$this->quantity_consumed) $update['quantity_consumed'] = array('d',$_POST['quantity_consumed']);
+		if (isset($_POST['quantity_generated']) && $_POST['quantity_generated']!=$this->quantity_generated) $update['quantity_generated'] = array('d',$_POST['quantity_generated']);
+		$reven = null;
+		if (isset($_POST['rev_enabled'])) $reven = ($_POST['rev_enabled']=='true')?'Y':'N';
+		if (!is_null($reven) && $reven!=$this->detail_rev_enabled) $update['rev_enabled'] = array('s',$reven);
+		if ((!is_null($reven)) && $reven=='Y' && isset($_POST['rev_number']) && $_POST['rev_number']!=$this->detail_rev_number) $update['rev_number'] = array('i',$_POST['rev_number']);
+		$update['last_update_date'] = array('s',$now->format('Y-m-d H:i:s'));
+		$update['last_update_by'] = array('i',$_SESSION['dbuserid']);
+
+		// Create UPDATE String
 		
+		if (count($update)==2) { // last_update is always there
+			echo 'fail|Nothing to update';
+			return;
+		}
+		$q = 'UPDATE prod_detail SET ';
+		$ctr = 0;
+		$bp_types = '';
+		$bp_values = array_fill(0,count($update),null);
+		foreach ($update as $field=>$data) {
+			if ($ctr > 0) $q .= ',';
+			$q .= "$field=?";
+			$bp_types .= $data[0];
+			$bp_values[$ctr] = $data[1];
+			$ctr++;
+		}
+		$q .= ' WHERE prod_detail_id=?';
+		$ctr++;
+		$bp_types .= 'i';
+		$bp_values[$ctr] = $dtlid;
+		$stmt = $this->dbconn->prepare($q);
+		/* The internet has a lot of material about different ways to pass a variable number of arguments to bind_param.
+		   I feel that using Reflection is the best tool for the job.
+		   Reference: https://www.php.net/manual/en/mysqli-stmt.bind-param.php#107154
+		*/
+		$bp_method = new ReflectionMethod('mysqli_stmt','bind_param');
+		$bp_refs = array();
+		foreach ($bp_values as $key=>$value) {
+			$bp_refs[$key] = &$bp_values[$key];
+		}
+		array_unshift($bp_values,$bp_types);
+		$bp_method->invokeArgs($stmt,$bp_values);
+		$stmt->execute();
+		if ($stmt->affected_rows > 0) {
+			echo 'updated';
+			// Update Inventory
+			$inv = new InventoryManager($this->dbconn);
+			if (isset($update['quantity_consumed'])) {
+				$inv->productionConsume($dtlid,$this->entity_id,$this->item_consumed_id,$update['quantity_consumed']-$this->quantity_consumed);
+			}
+			if (isset($update['quantity_generated'])) {
+				$inv->productionGenerate($dtlid,$this->entity_id,$this->item_generated_id,$update['quantity_generated']-$this->quantity_generated);
+			}
+		} else {
+			if ($this->dbconn->error) {
+				echo 'fail|'.$this->dbconn->error;
+				$this->mb->addError($this->dbconn->error);
+			} else echo 'fail|No rows updated';
+		}
+		$stmt->close();		
 	} // updateDetail()
 	public function insertRecord() {
 		$this->insertHeader();
+		// There can be no insertDetail called from the UI in this module.
 	} // insertRecord()
 	public function updateRecord() {
-		$this->updateHeader();
+		// Assumes values are stored in $_POST
+		if (isset($_POST['level']) && $_POST['level']=='header') $this->updateHeader();
+		if (isset($_POST['level']) && $_POST['level']=='detail') $this->updateDetail();
 	} // updateRecord()
 	public function saveRecord() {
 	

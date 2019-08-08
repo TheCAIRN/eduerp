@@ -351,8 +351,128 @@ class InventoryManager extends ERPBase {
 			$stmt1->close();
 			return false;
 		}
-	} // purchasingReceiveOrder
-	
+	} // purchasingReceiveOrder()
+	public function productionUpdateWIP($prodid,$entity,$item,$quantity) {
+		$invid = $this->getInventoryId($entity,$item);
+		if (is_null($invid)) {
+			echo 'fail|Could not get or create the Entity Inventory ID. '.$this->dbconn->error;
+			return false;
+		}
+		$q1 = "INSERT INTO inv_transactions (inv_transaction_type,reference_table,reference_key_int,inventory_id_1,inventory_id_2,
+			quantity_in_wip_delta_1,created_by,creation_date,last_update_by,last_update_date)
+			VALUES ('Q','prod_header',?,?,?,?,?,NOW(),?,NOW());";
+		$stmt1 = $this->dbconn->prepare($q1);
+		if ($stmt1===false) {
+			echo '|'.$this->dbconn->error;
+			return false;
+		}
+		$stmt1->bind_param('iiidii',$o1,$o2,$o3,$o4,$o6,$o7);
+		$o1 = $prodid;
+		$o2 = $o3 = $invid;
+		$o4 = $quantity;
+		$o6 = $o7 = $_SESSION['dbuserid'];
+		$result1 = $stmt1->execute();
+		if ($result1!==false) {
+			$stmt1->close();
+			$this->display($invid,'update');
+			$this->total_in_wip += $quantity;
+			$q2 = "UPDATE inv_master SET total_in_wip=?,last_update_by=?,last_update_date=NOW() WHERE inventory_id=?";
+			$stmt2 = $this->dbconn->prepare($q2);
+			$stmt2->bind_param('dii',$u1,$u3,$u4);
+			$u1 = $this->total_in_wip;
+			$u3 = $_SESSION['dbuserid'];
+			$u4 = $invid;
+			$result = $stmt2->execute();
+			$stmt2->close();
+			if ($result!==false) return true;
+			else return false;
+		} else {
+			echo '|'.$this->dbconn->error;
+			$stmt1->close();
+			return false;
+		}				
+	}
+	public function productionConsume($proddetailid,$entity,$item,$quantity) {
+		// $quantity is expected to be positive.  The transaction will negate it for consumption.
+		$invid = $this->getInventoryId($entity,$item);
+		if (is_null($invid)) {
+			echo 'fail|Could not get or create the Entity Inventory ID. '.$this->dbconn->error;
+			return false;
+		}
+		$q1 = "INSERT INTO inv_transactions (inv_transaction_type,reference_table,reference_key_int,inventory_id_1,inventory_id_2,
+			quantity_on_hand_delta_1,created_by,creation_date,last_update_by,last_update_date)
+			VALUES ('Q','prod_detail',?,?,?,?,?,NOW(),?,NOW());";
+		$stmt1 = $this->dbconn->prepare($q1);
+		if ($stmt1===false) {
+			echo '|'.$this->dbconn->error;
+			return false;
+		}
+		$stmt1->bind_param('iiidii',$o1,$o2,$o3,$o4,$o6,$o7);
+		$o1 = $proddetailid;
+		$o2 = $o3 = $invid;
+		$o4 = $quantity * -1;
+		$o6 = $o7 = $_SESSION['dbuserid'];
+		$result1 = $stmt1->execute();
+		if ($result1!==false) {
+			$stmt1->close();
+			$this->display($invid,'update');
+			$this->total_on_hand -= $quantity;
+			$q2 = "UPDATE inv_master SET total_on_hand=?,last_update_by=?,last_update_date=NOW() WHERE inventory_id=?";
+			$stmt2 = $this->dbconn->prepare($q2);
+			$stmt2->bind_param('dii',$u1,$u3,$u4);
+			$u1 = $this->total_on_hand;
+			$u3 = $_SESSION['dbuserid'];
+			$u4 = $invid;
+			$result = $stmt2->execute();
+			$stmt2->close();
+			if ($result!==false) return true;
+			else return false;
+		} else {
+			echo '|'.$this->dbconn->error;
+			$stmt1->close();
+			return false;
+		}		
+	} // productionConsume()
+	public function productionGenerate($proddetailid,$entity,$item,$quantity) {
+		$invid = $this->getInventoryId($entity,$item);
+		if (is_null($invid)) {
+			echo 'fail|Could not get or create the Entity Inventory ID. '.$this->dbconn->error;
+			return false;
+		}
+		$q1 = "INSERT INTO inv_transactions (inv_transaction_type,reference_table,reference_key_int,inventory_id_1,inventory_id_2,
+			quantity_on_hand_delta_1,created_by,creation_date,last_update_by,last_update_date)
+			VALUES ('Q','prod_detail',?,?,?,?,?,NOW(),?,NOW());";
+		$stmt1 = $this->dbconn->prepare($q1);
+		if ($stmt1===false) {
+			echo '|'.$this->dbconn->error;
+			return false;
+		}
+		$stmt1->bind_param('iiidii',$o1,$o2,$o3,$o4,$o6,$o7);
+		$o1 = $proddetailid;
+		$o2 = $o3 = $invid;
+		$o4 = $quantity;
+		$o6 = $o7 = $_SESSION['dbuserid'];
+		$result1 = $stmt1->execute();
+		if ($result1!==false) {
+			$stmt1->close();
+			$this->display($invid,'update');
+			$this->total_on_hand += $quantity;
+			$q2 = "UPDATE inv_master SET total_on_hand=?,last_update_by=?,last_update_date=NOW() WHERE inventory_id=?";
+			$stmt2 = $this->dbconn->prepare($q2);
+			$stmt2->bind_param('dii',$u1,$u3,$u4);
+			$u1 = $this->total_on_hand;
+			$u3 = $_SESSION['dbuserid'];
+			$u4 = $invid;
+			$result = $stmt2->execute();
+			$stmt2->close();
+			if ($result!==false) return true;
+			else return false;
+		} else {
+			echo '|'.$this->dbconn->error;
+			$stmt1->close();
+			return false;
+		}				
+	} // productionGenerate()
 	
 	/***************************************************************
 	 *** UI SUPPORT ************************************************

@@ -154,6 +154,9 @@ function addDetailRow(whichModule) {
 	if (whichModule=="Purchasing") {
 		newPurchasingDetailRow();
 	}
+	if (whichModule=="Production") {
+		saveProductionDetail();
+	}
 	if (whichModule=="BOM") {
 		newBOMDetailRow();
 	}
@@ -162,6 +165,7 @@ function addDetailRow(whichModule) {
 	}
 } // addDetailRow()
 function editDetailRow(whichModule,id) {
+	if (whichModule=="prod_detail") editProductionDetailRow(id);
 	if (whichModule=="bom_detail") editBOMDetailRow(id);
 	if (whichModule=="pur_detail") editPurchasingDetailRow(id);
 } // editDetailRow()
@@ -201,7 +205,6 @@ function onClick_addFile() {
 			console.log(data);
 		}
 	});
-	
 } // onClick_addFile()
 function onClick_addNote() {
 	var supportsNotes = $("#supportsNotes").val();
