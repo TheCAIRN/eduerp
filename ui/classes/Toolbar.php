@@ -109,11 +109,15 @@ class Toolbar {
 				$html .= '<BUTTON class="toolbarButton" id="nextButton" title="Next" onClick="viewRecord('.$mod.','.$_SESSION['idarray'][3].');">&gt;</BUTTON>';
 				$html .= '<BUTTON class="toolbarButton" id="lastButton" title="Last" onClick="viewRecord('.$mod.','.$_SESSION['idarray'][4].');">&gt;&gt;</BUTTON>';
 				$html .= '<BUTTON class="toolbarButton" id="listResultsButton" title="Results" onClick="returnToResultsList('.($cs-1000).')">L</BUTTON>';
-				$html .= '&nbsp;';
-				$html .= '<BUTTON class="toolbarButton" id="editRecordButton" title="Edit Record" onClick="editRecord('.$mod.','.$_SESSION['idarray'][2].');">E</BUTTON>'; 
+				if ($cs!=2018) {
+					// Inventory Management can't edit records.
+					$html .= '&nbsp;';
+					$html .= '<BUTTON class="toolbarButton" id="editRecordButton" title="Edit Record" onClick="editRecord('.$mod.','.$_SESSION['idarray'][2].');">E</BUTTON>'; 
+				}
 				$html .= '&nbsp;';
 			}
-			if (!in_array($cs,$subscreens))
+			if (!in_array($cs,$subscreens) && $cs%1000!=18)
+				// Inventory Management and subscreens can't create new records.
 				$html .= '<BUTTON class="toolbarButton" id="newRecordButton" title="New Record" onClick="newRecord();">N</BUTTON>';
 			if ($cs >= 3000 && $cs < 4000) {
 				// Create record

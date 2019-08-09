@@ -475,8 +475,8 @@ class Production extends ERPBase {
 				$lq = 'UPDATE prod_detail SET item_generated_id=?,planned_generated=? WHERE prod_detail_id=?';
 				$sq = $this->dbconn->prepare($lq);
 				$sq->bind_param('idi',$l1,$l2,$l3);
-				$this->item_generated_id = $l1 = $bom['resulting_product_id'];
-				$this->planned_generated = $l2 = $bom['resulting_quantity']*$multiplier;
+				$this->item_generated_id = $l1 = $bomh['resulting_product_id'];
+				$this->planned_generated = $l2 = $bomh['resulting_quantity']*$multiplier;
 				$l3 = $lastid;
 				$sq->execute();
 			}
@@ -669,10 +669,13 @@ class Production extends ERPBase {
 		$stmt->execute();
 		if ($stmt->affected_rows > 0) {
 			echo 'updated';
+			// Update inventory WIP
+			$inv = new InventoryManager($this->dbconn);
 			if (isset($update['maximum_quantity'])) {
-				// Update inventory WIP
-				$inv = new InventoryManager($this->dbconn);
-				$inv->productionUpdateWIP($this->prod_id,$this->entity_id,$this->resulting_product_id,$update['maximum_quantity']-$this->maximum_quantity);			
+				$inv->productionUpdateWIP($this->prod_id,$this->entity_id,$this->resulting_product_id,($update['maximum_quantity'][1])-($this->maximum_quantity));			
+			}
+			if (isset($update['prod_finished']) && is_null($this->prod_finished)) {
+				$inv->productionUpdateWIP($this->prod_id,$this->entity_id,$this->resulting_product_id,-1*($this->maximum_quantity));			
 			}
 		} else {
 			if ($this->dbconn->error) {
@@ -788,10 +791,10 @@ class Production extends ERPBase {
 			// Update Inventory
 			$inv = new InventoryManager($this->dbconn);
 			if (isset($update['quantity_consumed'])) {
-				$inv->productionConsume($dtlid,$this->entity_id,$this->item_consumed_id,$update['quantity_consumed']-$this->quantity_consumed);
+				$inv->productionConsume($dtlid,$this->entity_id,$this->item_consumed_id,($update['quantity_consumed'][1])-($this->quantity_consumed));
 			}
 			if (isset($update['quantity_generated'])) {
-				$inv->productionGenerate($dtlid,$this->entity_id,$this->item_generated_id,$update['quantity_generated']-$this->quantity_generated);
+				$inv->productionGenerate($dtlid,$this->entity_id,$this->item_generated_id,($update['quantity_generated'][1])-($this->quantity_generated));
 			}
 		} else {
 			if ($this->dbconn->error) {

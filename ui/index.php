@@ -55,7 +55,7 @@ var currentScreen = 0;
 <LI>&#x2714; Create new bill of materials</LI>
 <LI>&#x2714; Update inventory table</LI>
 <LI>&#x2714; Search inventory and transactions</LI>
-<LI>Create new production</LI>
+<LI>&#x2714; Create new production</LI>
 <LI>Add functionality to Entities: <UL><LI>production capacity</LI><LI>create new entity</LI><LI>Modify entity</LI></UL></LI>
 <LI>&#x2714; Lookup customers</LI>
 <LI>&#x2714; Create sales orders</LI>
