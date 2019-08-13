@@ -473,6 +473,22 @@ class InventoryManager extends ERPBase {
 			return false;
 		}				
 	} // productionGenerate()
+	public function salesReserve($salesdetailid,$entity,$item,$quantity) {
+		
+	} // salesReserve
+	public function salesMoveReservation($salesdetailid,$fromentity,$toentity,$fromitem,$toitem,$quantity) {
+		
+	} // salesMoveReservation
+	public function salesSold($salesdetailid,$entity,$item,$quantity,$wasreserved=true) {
+		
+	} // salesSold
+	public function salesMoveSold($salesdetailid,$fromentity,$toentity,$fromitem,$toitem,$quantity) {
+		
+	} // SalesMoveSold
+	public function salesShip($salesdetailid,$entity,$item,$quantity) {
+		
+	} // SalesShip
+	
 	
 	/***************************************************************
 	 *** UI SUPPORT ************************************************

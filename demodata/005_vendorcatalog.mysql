@@ -13,7 +13,22 @@ INSERT INTO item_master (entity_id,division_id,department_id,item_type_code,item
 ,(1,1,1,'SI',6,'FISHTAL4','Tilapia Nearly Grown','','USD','IN','LBS',1,NOW(),1,NOW())
 ,(1,1,1,'SI',6,'FISHTAL5','Tilapia Full Grown','','USD','IN','LBS',1,NOW(),1,NOW())
 ,(1,1,1,'SI',6,'FISHTAL6','Tilapia Breeder','','USD','IN','LBS',1,NOW(),1,NOW())
+,(1,2,1,'SI',6,'FCFLOUNDER','Fresh Catch Flounder','','USD','IN','LBS',1,NOW(),1,NOW())
+,(1,4,1,'SI',1,'TRINKET01','Jar of Sand','','USD','IN','EA',1,NOW(),1,NOW())
+,(1,4,1,'PI',1,'MASON69','Mason jar 6inch diameter 9inch high','','USD','IN','EA',1,NOW(),1,NOW())
+,(1,4,1,'PI',1,'MASONLID6','Mason jar lid 6in diameter','','USD','IN','EA',1,NOW(),1,NOW())
+,(1,4,1,'PI',1,'SANDCOL01','Colored sand - multiple colors','','USD','IN','LBS',1,NOW(),1,NOW())
+,(1,1,1,'PI',1,'WGWHEATGLENN','Whole Grain Spring Wheat (Glenn) Seed','','USD','IN','LBS',1,NOW(),1,NOW())
+,(1,1,1,'CG',1,'COMPOST','Compost','','USD','IN','LBS',1,NOW(),1,NOW())
+,(1,1,1,'PI',1,'GRWHEATGLENN','Spring wheat (Glenn) grass stem','','USD','IN','LBS',1,NOW(),1,NOW())
+,(1,1,1,'SI',1,'FLOUR1WHGL','Unsifted whole grain flour: wheat (Glenn)','','USD','IN','LBS',1,NOW(),1,NOW())
 ;
+
+UPDATE item_master SET standard_cost=3.55,suggested_retail=9.99,wholesale_price=7.99,length=12,width=8,height=0.5,weight=1,gtin='00400000200040' WHERE product_code='FCFLOUNDER';
+UPDATE item_master SET standard_cost=4,suggested_retail=9.99,wholesale_price=7.99,length=6,width=6,height=9,weight=1.25 WHERE product_code='TRINKET01';
+UPDATE item_master SET standard_cost=3,length=6,width=6,hieght=9,weight=.25 WHERE product_code='MASON69';
+UPDATE item_master SET length=6,width=6,height=0.01,weight=0.01 WHERE product_code='MASONLID6';
+UPDATE item_master SET standard_cost=1,length=6,width=6,height=9,weight=1 WHERE product_code='SANDCOL1';
 
 -- Vendor Catalog
 INSERT INTO pur_vendor_catalog (vendor_catalog_id,vendor_id,currency,product_id,
