@@ -32,12 +32,14 @@ VALUES
 INSERT INTO acgl_accounts (gl_account_id,account_number,entity_id,division_id,department_id,sub_account_number,gl_account_string,
 gl_account_name,gl_account_balance,currency_code,rev_enabled,rev_number,created_by,creation_date,last_update_by,last_update_date)
 VALUES
-(1001,41001,1,NULL,NULL,1001,'41001.1001','Hannaford Supermarkets',0.00,'USD','N',1,1,NOW(),1,NOW())
-,(1002,41001,1,NULL,NULL,1002,'41001.1002','Price Chopper',0.00,'USD','N',1,1,NOW(),1,NOW())
-,(1003,41001,8,NULL,NULL,1003,'41001.1003','Catskill Country Store',0.00,'USD','N',1,1,NOW(),1,NOW())
-,(1004,41001,8,NULL,NULL,1004,'41001.1004','Serro Foods, LLC',0.00,'USD','N',1,1,NOW(),1,NOW())
-,(1005,41001,8,NULL,NULL,1005,'41001.1005','Catskill Central School District',0.00,'USD','N',1,1,NOW(),1,NOW())
-,(1006,41001,8,NULL,NULL,1006,'41001.1006','Catskill Area Co-op',0.00,'USD','N',1,1,NOW(),1,NOW())
+(1001,41001,1,NULL,NULL,1001,'41001.01001','Hannaford Supermarkets',0.00,'USD','N',1,1,NOW(),1,NOW())
+,(1002,41001,1,NULL,NULL,1002,'41001.01002','Price Chopper',0.00,'USD','N',1,1,NOW(),1,NOW())
+,(1003,41001,8,NULL,NULL,1003,'41001.01003','Catskill Country Store',0.00,'USD','N',1,1,NOW(),1,NOW())
+,(1004,41001,8,NULL,NULL,1004,'41001.01004','Serro Foods, LLC',0.00,'USD','N',1,1,NOW(),1,NOW())
+,(1005,41001,8,NULL,NULL,1005,'41001.01005','Catskill Central School District',0.00,'USD','N',1,1,NOW(),1,NOW())
+,(1006,41001,8,NULL,NULL,1006,'41001.01006','Catskill Area Co-op',0.00,'USD','N',1,1,NOW(),1,NOW())
+,(1208,41002,8,1,NULL,8,'41002.00008','Catskill Farm U-Pick',0.00,'USD','N',1,1,NOW(),1,NOW())
+,(1308,41002,8,1,NULL,308,'41002.00308','Catskill Farm Farmer''s Market',0.00,'USD','N',1,1,NOW(),1,NOW())
 ;
 
 INSERT INTO cust_master (customer_id,customer_code,customer_name,cust_type_code,primary_address,billing_address,gl_account_id,default_terms,created_by,creation_date,last_update_by,last_update_date) VALUES

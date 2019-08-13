@@ -296,6 +296,7 @@ class ItemManager extends ERPBase {
 			// The only key for Addresses is unified_search.
 			if (is_array($criteria[0]) && count($criteria[0])>=2 && $criteria[0][0]=='unified_search') $criteria = $criteria[0][1];
 			else $criteria='';
+			$criteria = str_replace('berry','berr',$criteria); // The PLU master typically uses plural for berries, but most people search singular
 			$q .= " WHERE item_category_description LIKE ? OR product_id = ? OR product_code LIKE ? OR product_description LIKE ? OR product_catalog_title LIKE ? or gtin=?";
 			$stmt = $this->dbconn->prepare($q);
 			$stmt->bind_param('sissss',$p1,$p2,$p3,$p4,$p5,$p6);

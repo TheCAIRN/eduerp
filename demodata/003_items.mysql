@@ -24,6 +24,8 @@ INSERT INTO item_categories (item_category_id,item_category_description) VALUES
 ,(4,'Trees')
 ,(5,'Bushes')
 ,(6,'Fish')
+,(7,'Plant')
+,(8,'Packaged items')
 ;
 
 INSERT INTO item_gtin_master (entity_id,division_id,department_id,item_type_code,manufacturer_id,description,first_used,created_by,creation_date,last_update_by,last_update_date) VALUES
