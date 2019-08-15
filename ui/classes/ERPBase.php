@@ -116,7 +116,7 @@ class ERPBase {
 							// TODO: Match the array fields to the ids in $tableentry
 							foreach ($drow as $dlabel=>$dfield) {
 								if (!empty($dfield) && (strpos($dlabel,'product_id')!==false || (strpos($dlabel,'item_')!==false && strpos($dlabel,'_id')!==false))) {
-									$html .= '<TD><DIV id="row'.$tablerow.'-'.$dlabel.'-div" class="embedded">'.$item->embed($dlabel,'display readonly',$dfield).'</DIV></TD>';
+									$html .= '<TD><DIV id="row'.$tablerow.'-'.$dlabel.'-div" class="embedded">'.$item->embed('row'.$tablerow.'-'.$dlabel,'display readonly',$dfield).'</DIV></TD>';
 								} else
 									$html .= '<TD id="row'.$tablerow.'-'.$dlabel.'">'.$dfield.'</TD>';
 							}

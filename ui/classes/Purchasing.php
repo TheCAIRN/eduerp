@@ -463,8 +463,10 @@ class Purchasing extends ERPBase {
 			// Update inventory
 			$inv = new InventoryManager($this->dbconn);
 			if ($qtyreceived==0) {
+				// echo '|Inventory +PUR '.$quantity;
 				$inv->purchasingPlaceOrder($this->pur_detail_id,$entityid,$itemid,$quantity);
 			} else {
+				// echo '|Inventory +QOH '.$qtyreceived;
 				// If we are creating a line just for the purpose of receiving it, we don't want to end up with negative on_order.
 				$inv->purchasingPlaceOrder($this->pur_detail_id,$entityid,$itemid,$qtyreceived);
 				$inv->purchasingReceiveOrder($this->pur_detail_id,$entityid,$itemid,$qtyreceived);

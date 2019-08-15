@@ -219,12 +219,12 @@ class InventoryManager extends ERPBase {
 			echo 'fail|Could not get or create the Entity Inventory ID. '.$this->dbconn->error;
 			return false;
 		}
-		$q1 = "INSERT INTO inv_transactions (inv_transaction_type,reference_table,reference_key_int,inventory_id_1,quantity_on_order_delta_1,created_by,creation_date,last_update_by,last_update_date)
-			VALUES ('Q','pur_detail',?,?,?,?,NOW(),?,NOW());";
+		$q1 = "INSERT INTO inv_transactions (inv_transaction_type,reference_table,reference_key_int,inventory_id_1,inventory_id_2,quantity_on_order_delta_1,created_by,creation_date,last_update_by,last_update_date)
+			VALUES ('Q','pur_detail',?,?,?,?,?,NOW(),?,NOW());";
 		$stmt1 = $this->dbconn->prepare($q1);
-		$stmt1->bind_param('iidii',$o1,$o2,$o3,$o4,$o5);
+		$stmt1->bind_param('iiidii',$o1,$o2,$o2a,$o3,$o4,$o5);
 		$o1 = $purdetailid;
-		$o2 = $invid;
+		$o2 = $o2a = $invid;
 		$o3 = $quantity;
 		$o4 = $o5 = $_SESSION['dbuserid'];
 		$result1 = $stmt1->execute();
@@ -243,6 +243,7 @@ class InventoryManager extends ERPBase {
 			if ($result!==false) return true;
 			else return false;
 		} else {
+			echo '|Inv tx fail: '.$this->dbconn->error;
 			$stmt1->close();
 			return false;
 		}

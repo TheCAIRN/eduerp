@@ -53,7 +53,7 @@ function savePurchasingDetail() {
 	var orderlinekey = $("#pur_detail_id").val();
 	var orderlinenum = $("#po_line").val();
 	var parentlinenum = $("#parent_line").val();
-	var itemid = $("#item_id-product_id").text();
+	var itemid = $("#row0 #item_id-product_id").text();
 	var quantity = $("#quantity").val();
 	var quantity_uom = $("#quantity_uom option:selected").val();
 	var price = $("#price").val();
@@ -76,6 +76,11 @@ function savePurchasingDetail() {
 	if (orderkey=="" || orderkey < 1) orderkey = pur_orderkey;
 	if (orderkey=="" || orderkey < 1) {
 		$("#messagebar").html('<DIV class="errorMessage">It appears there was an issue getting the purchase order number for the header.  The details require that number in order to save.</DIV>');
+		return;
+	}
+	if (itemid=="undefined" || itemid=="") {
+		$("#messagebar").html('<DIV class="warningMessage">Please press "SELECT" under the Item before pressing "Add Row" or "Save".</DIV>');
+		return;
 	}
 	if (rev_number < 0) rev_number = 1;	
 	// Submit to server
@@ -92,7 +97,84 @@ function savePurchasingDetail() {
 		if (fields[0]=="inserted") {
 			$("#pur_detail_id").val(fields[1]);
 			$("#messagebar").html('<DIV class="successMessage">Data saved.</DIV>');
-		} else if (fields[0]=='updated') {
+			// Create new detail line
+			var detailtable = document.getElementById("pur_detail_table");
+			var oldtr = $("#pur_detail_table tr:last");
+			var newtr = detailtable.insertRow(1);
+			var newrow = "row"+(Number($("#pur_detail_table tr").length-2)); // Headers count as a row, but don't take a number, and the input row starts with 0.
+			newtr.id=newrow;
+			var newcell = newtr.insertCell(0);
+			newcell.id = newrow+"-pur_detail_id";
+			newcell.innerText = fields[1];
+			$("#pur_detail_id").val("");
+			var newcell = newtr.insertCell(1);
+			newcell.id = newrow+"-po_line";
+			newcell.innerText = $("#po_line").val();
+			$("#po_line").val("");
+			var newcell = newtr.insertCell(2);
+			newcell.id = newrow+"-parent_line";
+			newcell.innerText = $("#parent_line").val();
+			$("#parent_line").val("");
+			newcell = newtr.insertCell(3);
+			newcell.id = newrow+"-item_id";
+			newcell.innerText = $("#row0 #item_id-product_id").text()+" "+$("#row0 #item_id-product_code").text();
+			var newcell = newtr.insertCell(4);
+			newcell.id = newrow+"-quantity";
+			newcell.innerText = $("#quantity").val();
+			$("#quantity").val("");
+			var newcell = newtr.insertCell(5);
+			newcell.id = newrow+"-quantity_uom";
+			newcell.innerText = $("#quantity_uom").val();
+			$("#quantity_uom").val("");
+			var newcell = newtr.insertCell(6);
+			newcell.id = newrow+"-price";
+			newcell.innerText = $("#price").val();
+			$("#price").val("");
+			var newcell = newtr.insertCell(7);
+			newcell.id = newrow+"-gl_account_id";
+			newcell.innerText = $("#gl_account_id").val();
+			$("#gl_account_id").val("");
+			var newcell = newtr.insertCell(8);
+			newcell.id = newrow+"-fv_vendor_id";
+			newcell.innerText = $("#fv_vendor_id").val();
+			$("#fv_vendor_id").val("");
+			var newcell = newtr.insertCell(9);
+			newcell.id = newrow+"-quantity_shipped";
+			newcell.innerText = $("#quantity_shipped").val();
+			$("#quantity_shipped").val("");
+			var newcell = newtr.insertCell(10);
+			newcell.id = newrow+"-date_shipped";
+			newcell.innerText = $("#date_shipped-date").val()+" "+$("#date_shipped-time").val();
+			$("#date_shipped-date").val("");
+			$("#date_shipped-time").val("");
+			var newcell = newtr.insertCell(11);
+			newcell.id = newrow+"-tracking_number";
+			newcell.innerText = $("#tracking_number").val();
+			$("#tracking_number").val("");
+			var newcell = newtr.insertCell(12);
+			newcell.id = newrow+"-quantity_received";
+			newcell.innerText = $("#quantity_received").val();
+			$("#quantity_received").val("");
+			var newcell = newtr.insertCell(13);
+			newcell.id = newrow+"-date_received";
+			newcell.innerText = $("#date_received-date").val()+" "+$("#date_received-time").val();
+			$("#date_received-date").val("");
+			$("#date_received-time").val("");
+			var newcell = newtr.insertCell(14);
+			newcell.id = newrow+"-received_by";
+			newcell.innerText = $("#received_by").val();
+			$("#received_by").val("");
+			newcell = newtr.insertCell(15);
+			newcell.id = newrow+"-rev_enabled";
+			if (rev_enabled) newcell.innerText = "Yes"; else newcell.innerText = "No";
+			newcell = newtr.insertCell(16);
+			newcell.id = newrow+"-rev_number";
+			newcell.innerText = rev_number;
+			$("#"+row+"-rev_number:first-child").val("");
+			newcell = newtr.insertCell(17);
+			newcell.innerHTML = "<BUTTON onClick=\"editPurchasingDetailRow('"+newrow+"');\">Edit</BUTTON>";
+			embeddedItemNewSearch("item_id");
+	} else if (fields[0]=='updated') {
 			var updrow = $("#pur_detail_edit td:nth-child(1):contains("+orderlinekey+")").closest("tr").attr("id");
 			if (!updrow) {
 				alert("Cannot update the screen.  Please click the 'view' button in the toolbar, then 'edit' to refresh.");
@@ -134,7 +216,7 @@ function savePurchasingDetail() {
 			}
 		}
 		if (fields[0]=="fail") {
-			updateDiv('messagebar');
+			$("#messagebar").html('<DIV class="errorMessage">'+fields[1]+'</DIV>');
 		}
 	})
 	.fail(function() {
