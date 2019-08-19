@@ -152,7 +152,8 @@ class InventoryManager extends ERPBase {
 	} // arrayifyLocationInventory
 	private function getInventoryId($entity,$item,$variant=null) {
 		if ($entity==0 || $item==0) return null;
-		$q = 'SELECT inventory_id FROM inv_master WHERE entity_id=? AND product_id=?';
+		$q = 'SELECT inventory_id,total_on_hand,total_in_wip,total_on_order,total_reserved,total_unshipped_sold,total_shipped_sold 
+			FROM inv_master WHERE entity_id=? AND product_id=?';
 		if (!is_null($variant)) {
 			$q .= ' AND variant_code=?';
 			$stmt = $this->dbconn->prepare($q);
@@ -194,6 +195,7 @@ class InventoryManager extends ERPBase {
 					$this->inv_last_update_date = new DateTime();
 					$this->inv_created_by = $_SESSION['dbuserid'];
 					$this->inv_last_update_by = $_SESSION['dbuserid'];
+					// The quantity fields are set to 0.00 in resetEntityInventory()
 					$stmt->close();
 					return $this->inventory_id;
 				} else {
@@ -202,7 +204,8 @@ class InventoryManager extends ERPBase {
 				}
 			} else {
 				$this->resetEntityInventory();
-				$stmt->bind_result($this->inventory_id);
+				$stmt->bind_result($this->inventory_id,$this->total_on_hand,$this->total_in_wip,$this->total_on_order,$this->total_reserved,
+					$this->total_unshipped_sold,$this->total_shipped_sold);
 				$stmt->fetch();
 				$stmt->close();
 				return $this->inventory_id;
@@ -475,21 +478,171 @@ class InventoryManager extends ERPBase {
 		}				
 	} // productionGenerate()
 	public function salesReserve($salesdetailid,$entity,$item,$quantity) {
-		
+		// Record the quote in inventory transactions, and update the inventory master accordingly.
+		$invid = $this->getInventoryId($entity,$item);
+		if (is_null($invid)) {
+			echo 'fail|Could not get or create the Entity Inventory ID. '.$this->dbconn->error;
+			return false;
+		}
+		$q1 = "INSERT INTO inv_transactions (inv_transaction_type,reference_table,reference_key_int,inventory_id_1,inventory_id_2,quantity_reserved_delta_1,created_by,creation_date,last_update_by,last_update_date)
+			VALUES ('Q','pur_detail',?,?,?,?,?,NOW(),?,NOW());";
+		$stmt1 = $this->dbconn->prepare($q1);
+		$stmt1->bind_param('iiidii',$o1,$o2,$o2a,$o3,$o4,$o5);
+		$o1 = $salesdetailid;
+		$o2 = $o2a = $invid;
+		$o3 = $quantity;
+		$o4 = $o5 = $_SESSION['dbuserid'];
+		$result1 = $stmt1->execute();
+		if ($result1!==false) {
+			$stmt1->close();
+			$this->display($invid,'update');
+			$this->total_reserved += $quantity;
+			$q2 = "UPDATE inv_master SET total_reserved=?,last_update_by=?,last_update_date=NOW() WHERE inventory_id=?";
+			$stmt2 = $this->dbconn->prepare($q2);
+			$stmt2->bind_param('dii',$u1,$u2,$u3);
+			$u1 = $this->total_reserved;
+			$u2 = $_SESSION['dbuserid'];
+			$u3 = $invid;
+			$result = $stmt2->execute();
+			$stmt2->close();
+			if ($result!==false) return true;
+			else return false;
+		} else {
+			echo '|Inv tx fail: '.$this->dbconn->error;
+			$stmt1->close();
+			return false;
+		}
 	} // salesReserve
 	public function salesMoveReservation($salesdetailid,$fromentity,$toentity,$fromitem,$toitem,$quantity) {
 		
 	} // salesMoveReservation
 	public function salesSold($salesdetailid,$entity,$item,$quantity,$wasreserved=true) {
-		
+		// Record the sales in inventory transactions, and update the inventory master accordingly.
+		// Reduce reserved if this order previously existed as a quote.
+		$invid = $this->getInventoryId($entity,$item);
+		if (is_null($invid)) {
+			echo 'fail|Could not get or create the Entity Inventory ID. '.$this->dbconn->error;
+			return false;
+		}
+		$q1 = "INSERT INTO inv_transactions (inv_transaction_type,reference_table,reference_key_int,inventory_id_1,inventory_id_2,
+			quantity_unshipped_delta_1,quantity_reserved_delta_1,created_by,creation_date,last_update_by,last_update_date)
+			VALUES ('Q','pur_detail',?,?,?,?,?,?,NOW(),?,NOW());";
+		$stmt1 = $this->dbconn->prepare($q1);
+		$stmt1->bind_param('iiiddii',$o1,$o2,$o2a,$o3,$o3b,$o4,$o5);
+		$o1 = $salesdetailid;
+		$o2 = $o2a = $invid;
+		$o3 = $quantity;
+		$o3b = ($wasreserved)?(-1 * $quantity):0;
+		$o4 = $o5 = $_SESSION['dbuserid'];
+		$result1 = $stmt1->execute();
+		if ($result1!==false) {
+			$stmt1->close();
+			$this->display($invid,'update');
+			$this->total_unshipped_sold += $quantity;
+			$this->total_reserved -= $quantity;
+			$q2 = "UPDATE inv_master SET total_reserved=?,total_unshipped_sold=?,last_update_by=?,last_update_date=NOW() WHERE inventory_id=?";
+			$stmt2 = $this->dbconn->prepare($q2);
+			$stmt2->bind_param('ddii',$u1,$u1b,$u2,$u3);
+			$u1 = $this->total_reserved;
+			$u1b = $this->total_unshipped_sold;
+			$u2 = $_SESSION['dbuserid'];
+			$u3 = $invid;
+			$result = $stmt2->execute();
+			$stmt2->close();
+			if ($result!==false) return true;
+			else return false;
+		} else {
+			echo '|Inv tx fail: '.$this->dbconn->error;
+			$stmt1->close();
+			return false;
+		}
 	} // salesSold
 	public function salesMoveSold($salesdetailid,$fromentity,$toentity,$fromitem,$toitem,$quantity) {
 		
 	} // SalesMoveSold
 	public function salesShip($salesdetailid,$entity,$item,$quantity) {
-		
+		// Record the shipment in inventory transactions, and update the inventory master accordingly.
+		$invid = $this->getInventoryId($entity,$item);
+		if (is_null($invid)) {
+			echo 'fail|Could not get or create the Entity Inventory ID. '.$this->dbconn->error;
+			return false;
+		}
+		$q1 = "INSERT INTO inv_transactions (inv_transaction_type,reference_table,reference_key_int,inventory_id_1,inventory_id_2,
+			quantity_on_hand_delta_1,quantity_unshipped_delta_1,quantity_shipped_delta_1,created_by,creation_date,last_update_by,last_update_date)
+			VALUES ('Q','pur_detail',?,?,?,?,?,?,NOW(),?,NOW());";
+		$stmt1 = $this->dbconn->prepare($q1);
+		$stmt1->bind_param('iiidddii',$o1,$o2,$o2a,$o3,$o3b,$o3c,$o4,$o5);
+		$o1 = $salesdetailid;
+		$o2 = $o2a = $invid;
+		$o3 = -1 * $quantity;
+		$o3b = -1 * $quantity;
+		$o3c = $quantity;
+		$o4 = $o5 = $_SESSION['dbuserid'];
+		$result1 = $stmt1->execute();
+		if ($result1!==false) {
+			$stmt1->close();
+			$this->display($invid,'update');
+			$this->total_on_hand -= $quantity;
+			$this->total_unshipped_sold -= $quantity;
+			$this->total_shipped_sold += $quantity;
+			$q2 = "UPDATE inv_master SET total_on_hand=?,total_unshipped_sold=?,total_shipped_sold=?,last_update_by=?,last_update_date=NOW() WHERE inventory_id=?";
+			$stmt2 = $this->dbconn->prepare($q2);
+			$stmt2->bind_param('dddii',$u1,$u1b,$u1c,$u2,$u3);
+			$u1 = $this->total_on_hand;
+			$u1b = $this->total_unshipped_sold;
+			$u1c = $this->total_shipped_sold;
+			$u2 = $_SESSION['dbuserid'];
+			$u3 = $invid;
+			$result = $stmt2->execute();
+			$stmt2->close();
+			if ($result!==false) return true;
+			else return false;
+		} else {
+			echo '|Inv tx fail: '.$this->dbconn->error;
+			$stmt1->close();
+			return false;
+		}
 	} // SalesShip
-	
+	public function physicalSet($entity,$item,$quantity) {
+		$invid = $this->getInventoryId($entity,$item);
+		$delta = $quantity - $this->total_on_hand;
+		if (is_null($invid)) {
+			echo 'fail|Could not get or create the Entity Inventory ID. '.$this->dbconn->error;
+			return false;
+		}
+		$q1 = "INSERT INTO inv_transactions (inv_transaction_type,reference_table,reference_key_int,inventory_id_1,inventory_id_2,
+			quantity_on_hand_delta_1,created_by,creation_date,last_update_by,last_update_date)
+			VALUES ('P','inv_transactions',0,?,?,?,?,NOW(),?,NOW());";
+		$stmt1 = $this->dbconn->prepare($q1);
+		if ($stmt1===false) {
+			echo '|'.$this->dbconn->error;
+			return false;
+		}
+		$stmt1->bind_param('iidii',$o2,$o3,$o4,$o6,$o7);
+		$o2 = $o3 = $invid;
+		$o4 = $delta;
+		$o6 = $o7 = $_SESSION['dbuserid'];
+		$result1 = $stmt1->execute();
+		if ($result1!==false) {
+			$stmt1->close();
+			$this->display($invid,'update');
+			$this->total_on_hand += $delta;
+			$q2 = "UPDATE inv_master SET total_on_hand=?,last_update_by=?,last_update_date=NOW() WHERE inventory_id=?";
+			$stmt2 = $this->dbconn->prepare($q2);
+			$stmt2->bind_param('dii',$u1,$u3,$u4);
+			$u1 = $this->total_on_hand;
+			$u3 = $_SESSION['dbuserid'];
+			$u4 = $invid;
+			$result = $stmt2->execute();
+			$stmt2->close();
+			if ($result!==false) return true;
+			else return false;
+		} else {
+			echo '|'.$this->dbconn->error;
+			$stmt1->close();
+			return false;
+		}				
+	} // physicalSet
 	
 	/***************************************************************
 	 *** UI SUPPORT ************************************************

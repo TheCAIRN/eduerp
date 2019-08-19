@@ -285,6 +285,17 @@ class ItemManager extends ERPBase {
 	public function listRecords() {
 		parent::abstractListRecords('ItemManager');
 	} // function listRecords()
+	public function apiSearch($product_code) {
+		$q = "SELECT product_id FROM item_master WHERE product_code=?;";
+		$stmt = $this->dbconn->prepare($q);
+		$stmt->bind_param('s',$p1);
+		$p1 = $product_code;
+		$result = $stmt->execute();
+		$stmt->store_result();
+		$stmt->bind_result($pid);
+		$stmt->fetch();
+		return $pid;
+	} // apiSearch()
 	public function executeSearch($criteria) {
 		$result = null;
 		$q = "SELECT product_id,product_code,product_description,gtin,item_type_description,item_category_description,product_catalog_title,i.visible 
