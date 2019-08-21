@@ -513,8 +513,66 @@ class InventoryManager extends ERPBase {
 			return false;
 		}
 	} // salesReserve
-	public function salesMoveReservation($salesdetailid,$fromentity,$toentity,$fromitem,$toitem,$quantity) {
-		
+	public function salesMoveReservation($salesdetailid,$fromentity,$fromitem,$fromquantity,$toentity,$toitem,$toquantity) {
+		// For a location or item change, $quantity1 should be negative and $quantity2 positive.
+		// For a simple quantity change of the same location and item, $quantity1 should still contain a negative of the old number, and $quantity2 a positive of the new.
+		// The delta will be calculated here.
+		$invid1 = $this->getInventoryId($fromentity,$fromitem);
+		if (is_null($invid1)) {
+			echo 'fail|Could not get or create the Entity Inventory ID. '.$this->dbconn->error;
+			return false;
+		}
+		if (!empty($toentity) && !empty($toitem)) $invid2 = $this->getInventoryId($toentity,$toitem);
+		else $invid2 = $invid1;
+		$type = 'Q';
+		if ($invid2 != $invid1)
+			if ($fromentity != $toentity && !empty($toentity)) $type = 'M';
+			else $type = 'C';
+		$q1 = "INSERT INTO inv_transactions (inv_transaction_type,reference_table,reference_key_int,inventory_id_1,inventory_id_2,quantity_reserved_delta_1,quantity_reserved_delta_2,
+			created_by,creation_date,last_update_by,last_update_date) VALUES (?,'pur_detail',?,?,?,?,?,?,NOW(),?,NOW());";
+		$stmt1 = $this->dbconn->prepare($q1);
+		$stmt1->bind_param('siiiddii',$o1,$o2,$o3,$o4,$o5,$o6,$o7,$o8);
+		$o1 = $type;
+		$o2 = $salesdetailid;
+		$o3 = $invid1;
+		$o4 = $invid2;
+		$o5 = ($type=='Q')?$toquantity+$fromquantity:$fromquantity;
+		$o6 = ($type!='Q')?$toquantity:null;
+		$o7 = $o8 = $_SESSION['dbuserid'];
+		$result1 = $stmt1->execute();
+		if ($result1!==false) {
+			$success = true;
+			$stmt1->close();
+			$this->display($invid1,'update');
+			if ($type=='Q') $this->total_reserved += $fromquantity + $toquantity;
+			else $this->total_reserved += $fromquantity;
+			$q2 = "UPDATE inv_master SET total_reserved=?,last_update_by=?,last_update_date=NOW() WHERE inventory_id=?";
+			$stmt2 = $this->dbconn->prepare($q2);
+			$stmt2->bind_param('dii',$u1,$u2,$u3);
+			$u1 = $this->total_reserved;
+			$u2 = $_SESSION['dbuserid'];
+			$u3 = $invid1;
+			$result = $stmt2->execute();
+			$stmt2->close();
+			if ($result===false) $success = false;
+			if ($type!='Q' && !empty($toquantity)) {
+				$this->display($invid2,'update');
+				$this->total_reserved += $toquantity;
+				$q3 = "UPDATE inv_master SET total_reserved=?,last_update_by=?,last_update_date=NOW() WHERE inventory_id=?";
+				$stmt3 = $this->dbconn->prepare($q3);
+				$stmt3->bind_param('dii',$u4,$u5,$u6);
+				$u4 = $this->total_reserved;
+				$u5 = $_SESSION['dbuserid'];
+				$u6 = $invid2;
+				$result = $stmt3->execute();
+				$stmt3->close();
+				if ($result===false) $success = false;
+			}
+			return $success;
+		} else {
+			$stmt1->close();
+			return false;
+		}
 	} // salesMoveReservation
 	public function salesSold($salesdetailid,$entity,$item,$quantity,$wasreserved=true) {
 		// Record the sales in inventory transactions, and update the inventory master accordingly.
@@ -557,8 +615,67 @@ class InventoryManager extends ERPBase {
 			return false;
 		}
 	} // salesSold
-	public function salesMoveSold($salesdetailid,$fromentity,$toentity,$fromitem,$toitem,$quantity) {
-		
+	public function salesMoveSold($salesdetailid,$fromentity,$fromitem,$fromquantity,$toentity,$toitem,$toquantity) {
+		// For a location or item change, $quantity1 should be negative and $quantity2 positive.
+		// For a simple quantity change of the same location and item, $quantity1 should still contain a negative of the old number, and $quantity2 a positive of the new.
+		// The delta will be calculated here.
+		$invid1 = $this->getInventoryId($fromentity,$fromitem);
+		if (is_null($invid1)) {
+			echo 'fail|Could not get or create the Entity Inventory ID. '.$this->dbconn->error;
+			return false;
+		}
+		if (!empty($toentity) && !empty($toitem)) $invid2 = $this->getInventoryId($toentity,$toitem);
+		else $invid2 = $invid1;
+		$type = 'Q';
+		if ($invid2 != $invid1)
+			if ($fromentity != $toentity && !empty($toentity)) $type = 'M';
+			else $type = 'C';
+		$q1 = "INSERT INTO inv_transactions (inv_transaction_type,reference_table,reference_key_int,inventory_id_1,inventory_id_2,
+			quantity_unshipped_delta_1,quantity_unshipped_delta_2,
+			created_by,creation_date,last_update_by,last_update_date) VALUES (?,'pur_detail',?,?,?,?,?,?,NOW(),?,NOW());";
+		$stmt1 = $this->dbconn->prepare($q1);
+		$stmt1->bind_param('siiiddii',$o1,$o2,$o3,$o4,$o5,$o6,$o7,$o8);
+		$o1 = $type;
+		$o2 = $salesdetailid;
+		$o3 = $invid1;
+		$o4 = $invid2;
+		$o5 = ($type=='Q')?$toquantity+$fromquantity:$fromquantity;
+		$o6 = ($type!='Q')?$toquantity:null;
+		$o7 = $o8 = $_SESSION['dbuserid'];
+		$result1 = $stmt1->execute();
+		if ($result1!==false) {
+			$success = true;
+			$stmt1->close();
+			$this->display($invid1,'update');
+			if ($type=='Q') $this->total_unshipped_sold += $fromquantity + $toquantity;
+			else $this->total_reserved += $fromquantity;
+			$q2 = "UPDATE inv_master SET total_unshipped_sold=?,last_update_by=?,last_update_date=NOW() WHERE inventory_id=?";
+			$stmt2 = $this->dbconn->prepare($q2);
+			$stmt2->bind_param('dii',$u1,$u2,$u3);
+			$u1 = $this->total_unshipped_sold;
+			$u2 = $_SESSION['dbuserid'];
+			$u3 = $invid1;
+			$result = $stmt2->execute();
+			$stmt2->close();
+			if ($result===false) $success = false;
+			if ($type!='Q' && !empty($toquantity)) {
+				$this->display($invid2,'update');
+				$this->total_unshipped_sold += $toquantity;
+				$q3 = "UPDATE inv_master SET total_unshipped_sold=?,last_update_by=?,last_update_date=NOW() WHERE inventory_id=?";
+				$stmt3 = $this->dbconn->prepare($q3);
+				$stmt3->bind_param('dii',$u4,$u5,$u6);
+				$u4 = $this->total_unshipped_sold;
+				$u5 = $_SESSION['dbuserid'];
+				$u6 = $invid2;
+				$result = $stmt3->execute();
+				$stmt3->close();
+				if ($result===false) $success = false;
+			}
+			return $success;
+		} else {
+			$stmt1->close();
+			return false;
+		}
 	} // SalesMoveSold
 	public function salesShip($salesdetailid,$entity,$item,$quantity) {
 		// Record the shipment in inventory transactions, and update the inventory master accordingly.

@@ -190,6 +190,12 @@ class Production extends ERPBase {
 			'last_update_date'=>$this->detail_last_update_date
 		);
 	} // arrayifyDetail()
+	private function unarrayifyDetail($index) {
+		if (!is_array($this->detail_array)) return false;
+		if (!isset($this->detail_array[$index])) return false;
+		$rec = $this->detail_array[$index];
+		// TODO
+	}
 	public function listRecords() {
 		parent::abstractListRecords('Production');
 	} // listRecords()

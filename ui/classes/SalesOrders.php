@@ -439,10 +439,58 @@ class SalesOrders extends ERPBase {
 			'ddate_modify'=>$this->ddate_modify
 		);
 	} // arrayifyDetail
+	private function unarrayifyDetail($index) {
+		if (!is_array($this->detail_array)) return false;
+		if (!isset($this->detail_array[$index])) return false;
+		$rec = $this->detail_array[$index];
+		$this->sales_order_line = $rec['sales_order_line'];
+		$this->parent_line = $rec['parent_line'];
+		$this->dentity_id = $rec['entity_id'];
+		$this->ddivision_id = $rec['division_id'];
+		$this->ddepartment_id = $rec['department_id'];
+		$this->customer_line = $rec['customer_line'];
+		$this->edi_raw1 = $rec['edi_raw1'];
+		$this->edi_raw2 = $rec['edi_raw2'];
+		$this->item_id = $rec['item_id'];
+		$this->quantity_requested = $rec['quantity_requested'];
+		$this->quantity_shipped = $rec['quantity_shipped'];
+		$this->quantity_returned = $rec['quantity_returned'];
+		$this->quantity_backordered = $rec['quantity_backordered'];
+		$this->quantity_cancelled = $rec['quantity_cancelled'];
+		$this->quantity_uom = $rec['quantity_uom'];
+		$this->price = $rec['price'];
+		$this->discount_percent = $rec['discount_percent'];
+		$this->discount_amount = $rec['discount_amount'];
+		$this->retail_high = $rec['retail_high'];
+		$this->retail_low = $rec['retail_low'];
+		$this->dcredit_release_date = $rec['credit_release_date'];
+		$this->dwave_date = $rec['wave_date'];
+		$this->assigned_to = $rec['assigned_to'];
+		$this->dinventory_needed_by = $rec['inventory_needed_by'];
+		$this->dinventory_location = $rec['inventory_location'];
+		$this->dinventory_pulled = $rec['inventory_pulled'];
+		$this->dinventory_pulled_by = $rec['inventory_pulled_by'];
+		$this->dinventory_packed = $rec['inventory_packed'];
+		$this->dinventory_packed_by = $rec['inventory_packed_by'];
+		$this->dinventory_loaded = $rec['inventory_loaded'];
+		$this->dinventory_loaded_by = $rec['inventory_loaded_by'];
+		$this->line_shipped_date = $rec['line_shipped_date'];
+		$this->line_invoiced_date = $rec['line_invoiced_date'];
+		$this->line_cancelled_date = $rec['line_cancelled_date'];
+		$this->dvisible = $rec['visible'];
+		$this->drev_enabled = $rec['rev_enabled'];
+		$this->drev_number = $rec['rev_number'];
+		$this->duser_creation = $rec['duser_creation'];
+		$this->ddate_creation = $rec['ddate_creation'];
+		$this->duser_modify = $rec['duser_modify'];
+		$this->ddate_modify = $rec['ddate_modify'];
+		return true;
+	} // unarrayifyDetail
 	public function _templateSelect($id=0,$readonly=false) {
 		return parent::abstractSelect($id,$readonly,'sales_header','sales_order_number','sales_order_number','SalesOrders');
 	} // _templateSelect()
 	public function statusSelect($status='',$readonly=false,$include_label=false) {
+		// QqOoHhPpBbSsIiCc
 		$html = '';
 		if ($include_label) $html .= '<LABEL for="SalesOrdersStatus">Status:</LABEL>';
 		$html .= '<SELECT id="salesOrderStatus">';
@@ -454,6 +502,7 @@ class SalesOrders extends ERPBase {
 		if ($status=='S' || !$readonly) $html .= '<OPTION value="S"'.($status=='S'?' selected="selected">':'>').'Shipped</OPTION>';
 		if ($status=='I' || !$readonly) $html .= '<OPTION value="I"'.($status=='I'?' selected="selected">':'>').'Invoiced</OPTION>';
 		if ($status=='C' || !$readonly) $html .= '<OPTION value="C"'.($status=='C'?' selected="selected">':'>').'Cancelled</OPTION>';
+		if ($status=='R' || !$readonly) $html .= '<OPTION value="R"'.($status=='R'?' selected="selected">':'>').'Misdirected Return</OPTION>';
 		$html .= '</SELECT>';
 		return $html;
 	} // statusSelect()
@@ -790,6 +839,10 @@ class SalesOrders extends ERPBase {
 		// TODO: Validate all fields & send appropriate error messages
 		if (is_integer($parent) || ctype_digit($parent)) $h2 = $parent; else $h2 = null;
 		if (is_integer($ordertype) || ctype_digit($ordertype)) $h3 = $ordertype; else $h3 = null;
+		if (strpos($orderstatus,'QqOoHhPpBbSsIiCcRr')===false) {
+			echo 'fail|The order status provided is not a valid choice.';
+			return;
+		}
 		$h4 = $orderstatus;
 		if (is_integer($customerid) || ctype_digit($customerid)) $h5 = $customerid; else $h5 = null;
 		if (is_integer($buyer) || ctype_digit($buyer)) $h6 = $buyer; else $h6 = null;
@@ -858,6 +911,11 @@ class SalesOrders extends ERPBase {
 			return;
 		}
 		$this->sales_order_number = $_POST['sales_order_number'];
+		$this->display($this->sales_order_number,'update'); // Display already has the logic for loading the record.  TODO: Refactor into separate function.
+		if (is_null($this->sales_order_number)) {
+			echo 'fail|Invalid sales order number for adding items.';
+			return;
+		}
 		$this->sales_order_line = !empty($_POST['sales_order_line'])?$_POST['sales_order_line']:0;
 		if (empty($this->sales_order_line)) {
 			$sq = 'SELECT MAX(sales_order_line)+1 AS linenum FROM sales_detail WHERE sales_order_number=?;';
@@ -977,6 +1035,17 @@ class SalesOrders extends ERPBase {
 		$result = $stmt->execute();
 		if ($result!==false) {
 			echo 'inserted|'.$this->sales_order_line;
+			$inv = new InventoryManager($this->dbconn);
+			if ($this->sales_order_status=='Q' || $this->sales_order_status=='H') {
+				$inv->salesReserve(($this->sales_order_number*100)+$this->sales_order_line,$this->dentity_id,$this->item_id,$this->quantity_requested);
+			} elseif ($this->sales_order_status=='S' || $this->sales_order_status=='I') {
+				$inv->salesShip(($this->sales_order_number*100)+$this->sales_order_line,$this->dentity_id,$this->item_id,$this->quantity_shipped - $this->quantity_returned);
+			} else {
+				$inv->salesSold(($this->sales_order_number*100)+$this->sales_order_line,$this->dentity_id,$this->item_id,$this->quantity_requested - $this->quantity_shipped - 
+					$this->quantity_returned - $this->quantity_cancelled);
+				$inv->salesShip(($this->sales_order_number*100)+$this->sales_order_line,$this->dentity_id,$this->item_id,$this->quantity_shipped - $this->quantity_returned);
+			}
+			
 		} else {
 			echo 'fail|'.$this->dbconn->error;
 			$this->mb->addError($this->dbconn->error);
@@ -1167,7 +1236,31 @@ class SalesOrders extends ERPBase {
 		$stmt->close();
 	} // updateHeader()
 	private function updateDetail() {
+		$this->resetHeader();
 		$this->resetDetail();
+		$now = new DateTime();
+		$id = $_POST['sales_order_number'];
+		if ((!is_integer($id) && !ctype_digit($id)) || $id<1) {
+			echo 'fail|Invalid sales order number for updating';
+			return;
+		}
+		$this->display($id,'update'); // Display already has the logic for loading the record.  TODO: Refactor into separate function.
+		if (is_null($this->sales_order_number)) {
+			echo 'fail|Invalid sales order number for updating';
+			return;
+		}
+		if ((!isset($_POST['sales_order_line']) || (!is_integer($_POST['sales_order_line']) && !ctype_digit($_POST['sales_order_line']))) || 
+			!isset($this->detail_array[$_POST['sales_order_line']])) {
+			echo 'fail|Invalid sales order line for updating';
+			return;
+		}
+		$result = $this->unarrayifyDetail($_POST['sales_order_line']);
+		if (!$result) {
+			echo 'fail|Cannot update detail line '.$_POST['sales_order_line'].'. There is a problem getting the detail record.';
+			return;
+		}
+		$update = array();
+		if (isset($_POST['parent_line']) && $_POST['parent_line']!=$this->parent_line) $update[] = array('i',$_POST['parent_line']);
 		
 	}
 	public function insertRecord() {
