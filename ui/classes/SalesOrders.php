@@ -1227,6 +1227,22 @@ class SalesOrders extends ERPBase {
 		$stmt->execute();
 		if ($stmt->affected_rows > 0) {
 			echo 'updated';
+			$inv = new InventoryManager($this->dbconn);
+			if (isset($update['sales_order_status'])) {
+				foreach($this->detail_array as $line=>$record) {
+					$this->unarrayifyDetail($line);
+					if ($update['sales_order_status'][1]=='I' || $update['sales_order_status'][1]=='S') {
+						if ($this->sales_order_status=='Q') {
+							$inv->salesSold(($this->sales_order_number*100)+$this->sales_order_line,$this->dentity_id,$this->ditem_id,$this->quantity_shipped,true);
+						}
+						$inv->salesShip(($this->sales_order_number*100)+$this->sales_order_line,$this->dentity_id,$this->ditem_id,$this->quantity_shipped);
+					} elseif ($this->sales_order_status=='Q') {
+						$inv->salesSold(($this->sales_order_number*100)+$this->sales_order_line,$this->dentity_id,$this->ditem_id,$this->quantity_requested,true);
+					} elseif ($update['sales_order_status'][1]=='Q') {
+						$inv->salesSold(($this->sales_order_number*100)+$this->sales_order_line,$this->dentity_id,$this->ditem_id,-1 * $this->quantity_requested,true);
+					}
+				}
+			}
 		} else {
 			if ($this->dbconn->error) {
 				echo 'fail|'.$this->dbconn->error;
@@ -1260,8 +1276,113 @@ class SalesOrders extends ERPBase {
 			return;
 		}
 		$update = array();
-		if (isset($_POST['parent_line']) && $_POST['parent_line']!=$this->parent_line) $update[] = array('i',$_POST['parent_line']);
+		if (isset($_POST['parent_line']) && $_POST['parent_line']!=$this->parent_line) $update['parent_line'] = array('i',$_POST['parent_line']);
+		if (isset($_POST['dentity_id']) && $_POST['dentity_id']!=$this->dentity_id) $update['entity_id'] = array('i',$_POST['dentity_id']);
+		if (isset($_POST['ddivision_id']) && $_POST['ddivision_id']!=$this->ddivision_id) $update['division_id'] = array('i',$_POST['ddivision_id']);
+		if (isset($_POST['ddepartment_id']) && $_POST['ddepartment_id']!=$this->ddepartment_id) $update['department_id'] = array('i',$_POST['ddepartment_id']);
+		if (isset($_POST['customer_line']) && $_POST['customer_line']!=$this->customer_line) $update['customer_line'] = array('i',$_POST['customer_line']);
+		if (isset($_POST['edi_raw1']) && $_POST['edi_raw1']!=$this->edi_raw1) $update['edi_raw1'] = array('s',$_POST['edi_raw1']);
+		if (isset($_POST['edi_raw2']) && $_POST['edi_raw2']!=$this->edi_raw2) $update['edi_raw2'] = array('s',$_POST['edi_raw2']);
+		if (isset($_POST['item_id']) && $_POST['item_id']!=$this->item_id) $update['item_id'] = array('i',$_POST['item_id']);
+		if (isset($_POST['quantity_requested']) && $_POST['quantity_requested']!=$this->quantity_requested) $update['quantity_requested'] = array('d',$_POST['quantity_requested']);
+		if (isset($_POST['quantity_shipped']) && $_POST['quantity_shipped']!=$this->quantity_shipped) $update['quantity_shipped'] = array('d',$_POST['quantity_shipped']);
+		if (isset($_POST['quantity_returned']) && $_POST['quantity_returned']!=$this->quantity_returned) $update['quantity_returned'] = array('d',$_POST['quantity_returned']);
+		if (isset($_POST['quantity_backordered']) && $_POST['quantity_backordered']!=$this->quantity_backordered) $update['quantity_backordered'] = array('d',$_POST['quantity_backordered']);
+		if (isset($_POST['quantity_cancelled']) && $_POST['quantity_cancelled']!=$this->quantity_cancelled) $update['quantity_cancelled'] = array('d',$_POST['quantity_cancelled']);
+		if (isset($_POST['quantity_uom']) && $_POST['quantity_uom']!=$this->quantity_uom) $update['quantity_uom'] = array('s',$_POST['quantity_uom']);
+		if (isset($_POST['price']) && $_POST['price']!=$this->price) $update['price'] = array('d',$_POST['price']);
+		if (isset($_POST['discount_percent']) && $_POST['discount_percent']!=$this->discount_percent) {
+			$update['discount_percent'] = array('d',$_POST['discount_percent']);
+			// update discount amount
+		}
+		if (isset($_POST['discount_amount']) && $_POST['discount_amount']!=$this->discount_amount) {
+			$update['discount_amount'] = array('d',$_POST['discount_amount']);
+			// update discount percent
+		}
+		if (isset($_POST['retail_high']) && $_POST['retail_high']!=$this->retail_high) $update['retail_high'] = array('d',$_POST['retail_high']);
+		if (isset($_POST['retail_low']) && $_POST['retail_low']!=$this->retail_low) $update['retail_low'] = array('d',$_POST['retail_low']);
+		if (!empty($_POST['dcredit_release_date']) && $_POST['dcredit_release_date']!=$this->dcredit_release_date->format('Y-m-d')) $update['credit_release_date'] = array('s',$_POST['dcredit_release_date']);
+		if (!empty($_POST['dwave_date']) && $_POST['dwave_date']!=$this->dwave_date->format('Y-m-d')) $update['wave_date'] = array('s',$_POST['dwave_date']);
+		if (!empty($_POST['assigned_to']) && $_POST['assigned_to']!=$this->assigned_to) $update['assigned_to'] = array('i',$_POST['assigned_to']);
+		if (!empty($_POST['dinventory_needed_bydate']) && !empty($_POST['dinventory_needed_bytime'])) {
+			$inb = new DateTime($_POST['dinventory_needed_bydate'].' '.$_POST['dinventory_needed_bytime'])
+			if (!empty($inb) && $inb->format('Y-m-d H:i:s')!=$this->dinventory_needed_by->format('Y-m-d H:i:s')) $update['inventory_needed_by'] = array('s',$inb->format('Y-m-d H:i:s'));
+		}
+		if (!empty($_POST['dinventory_location']) && $_POST['dinventory_location']!=$this->dinventory_location) $update['inventory_location'] = array('i',$_POST['dinventory_location']);
+		if (!empty($_POST['dinventory_pulleddate']) && !empty($_POST['dinventory_pulledtime'])) {
+			$ip = new DateTime($_POST['dinventory_pulleddate'].' '.$_POST['dinventory_pulledtime']);
+			if (!empty($ip) && $ip->format('Y-m-d H:i:s')!=$this->dinventory_pulled->format('Y-m-d H:i:s')) $update['inventory_pulled'] = array('s',$ip->format('Y-m-d H:i:s'));
+		}
+		if (!empty($_POST['dinventory_pulled_by']) && $_POST['dinventory_pulled_by']!=$this->dinventory_pulled_by) $update['inventory_pulled_by'] = array('i',$_POST['dinventory_pulled_by']);
+		if (!empty($_POST['dinventory_packeddate']) && !empty($_POST['dinventory_packedtime'])) {
+			$ip = new DateTime($_POST['dinventory_packeddate'].' '.$_POST['dinventory_packedtime']);
+			if (!empty($ip) && $ip->format('Y-m-d H:i:s')!=$this->dinventory_packed->format('Y-m-d H:i:s')) $update['inventory_packed'] = array('s',$ip->format('Y-m-d H:i:s'));
+		}
+		if (!empty($_POST['dinventory_packed_by']) && $_POST['dinventory_packed_by']!=$this->dinventory_packed_by) $update['inventory_packed_by'] = array('i',$_POST['dinventory_packed_by']);
+		if (!empty($_POST['dinventory_loadeddate']) && !empty($_POST['dinventory_loadedtime'])) {
+			$il = new DateTime($_POST['dinventory_loadeddate'].' '.$_POST['dinventory_loadedtime']);
+			if (!empty($il) && $il->format('Y-m-d H:i:s')!=$this->dinventory_loaded->format('Y-m-d H:i:s')) $update['inventory_loaded'] = array('s',$il->format('Y-m-d H:i:s'));
+		}
+		if (!empty($_POST['dinventory_loaded_by']) && $_POST['dinventory_loaded_by']!=$this->dinventory_loaded_by) $update['inventory_loaded_by'] = array('i',$_POST['dinventory_loaded_by']);
+		if (!empty($_POST['line_shipped_date']) && $_POST['line_shipped_date']!=$this->line_shipped_date->format('Y-m-d')) $update['line_shipped_date'] = array('s',$_POST['line_shipped_date']);
+		if (!empty($_POST['line_invoiced_date']) && $_POST['line_invoiced_date']!=$this->line_invoiced_date->format('Y-m-d')) $update['line_invoiced_date'] = array('s',$_POST['line_invoiced_date']);
+		if (!empty($_POST['line_cancelled_date']) && $_POST['line_cancelled_date']!=$this->line_cancelled_date->format('Y-m-d')) $update['line_cancelled_date'] = array('s',$_POST['line_cancelled_date']);
+		$visible = null;
+		if (isset($_POST['dvisible'])) $visible = ($_POST['dvisible']=='true')?'Y':'N';
+		if (!is_null($visible) && $visible!=$this->dvisible) $update['visible'] = array('s',$visible);
+		$reven = null;
+		if (isset($_POST['drev_enabled'])) $reven = ($_POST['drev_enabled']=='true')?'Y':'N';
+		if (!is_null($reven) && $reven!=$this->drev_enabled) $update['rev_enabled'] = array('s',$reven);
+		if ((!is_null($reven)) && $reven=='Y' && isset($_POST['drev_number']) && $_POST['drev_number']!=$this->drev_number) $update['rev_number'] = array('i',$_POST['drev_number']);
+		$update['last_update_date'] = array('s',$now->format('Y-m-d H:i:s'));
+		$update['last_update_by'] = array('i',$_SESSION['dbuserid']);
 		
+		// Create UPDATE String
+		
+		if (count($update)<=2) { // last update is always set
+			echo 'fail|Nothing to update';
+			return;
+		}
+		$q = 'UPDATE sales_detail SET ';
+		$ctr = 0;
+		$bp_types = '';
+		$bp_values = array_fill(0,count($update),null);
+		foreach ($update as $field=>$data) {
+			if ($ctr > 0) $q .= ',';
+			$q .= "$field=?";
+			$bp_types .= $data[0];
+			$bp_values[$ctr] = $data[1];
+			$ctr++;
+		}
+		$q .= ' WHERE sales_order_number=? AND sales_order_line=?';
+		$ctr++;
+		$bp_types .= 'ii';
+		$bp_values[$ctr++] = $this->sales_order_number;
+		$bp_values[$ctr] = $this->sales_order_line;
+		$stmt = $this->dbconn->prepare($q);
+		/* The internet has a lot of material about different ways to pass a variable number of arguments to bind_param.
+		   I feel that using Reflection is the best tool for the job.
+		   Reference: https://www.php.net/manual/en/mysqli-stmt.bind-param.php#107154
+		*/
+		$bp_method = new ReflectionMethod('mysqli_stmt','bind_param');
+		$bp_refs = array();
+		foreach ($bp_values as $key=>$value) {
+			$bp_refs[$key] = &$bp_values[$key];
+		}
+		array_unshift($bp_values,$bp_types);
+		$bp_method->invokeArgs($stmt,$bp_values);
+		$stmt->execute();
+		if ($stmt->affected_rows > 0) {
+			echo 'updated';
+			$stmt->close();
+			// TODO: Adjust inventory
+		} else {
+			if ($this->dbconn->error) {
+				echo 'fail|'.$this->dbconn->error;
+				$this->mb->addError($this->dbconn->error);
+			} else echo 'fail|No rows updated';
+			$stmt->close();
+		}
 	}
 	public function insertRecord() {
 		// Assumes values are stored in $_POST
