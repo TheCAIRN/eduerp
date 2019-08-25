@@ -23,6 +23,37 @@ class ERPBase {
 	public function setDbConn($link) {
 		$this->dbconn = $link;
 	} // function setDbConn()
+	private function dropdownQuery($field,$prefix='',$intable=false,$view='search',$hdata=null) {
+		$html = '';
+		$q = 'SELECT '.$field[5][0].','.$field[5][1].' FROM '.$field[4];
+		if (count($field[5])>2 && $field[4]=='aa_uom' && is_integer($field[5][2])) $q .= ' WHERE uom_type='.$field[5][2].';';
+		else $q .= ';';
+		$result = $this->dbconn->query($q);
+		if ($result!==false) {
+			if (!$intable) {
+				$html .= '<DIV class="labeldiv">';
+				$html .= '<LABEL for="'.$prefix.$field[1].'">'.$field[2].'</LABEL>';
+				$html .= '<SELECT id="'.$prefix.$field[1].'"><OPTION value="">&nbsp;</OPTION>';
+				while ($option = $result->fetch_row()) {
+					$selected='';
+					if (is_array($hdata) && strpos($field[0],'_detail')===false && isset($hdata[$field[1]]) && $hdata[$field[1]]==$option[0]) $selected=' selected="selected"';
+					if ($view=='new' && $selected=='' && count($field)>=7 && $field[6]==$option[0]) $selected=' selected="selected"';
+					if ($view!='view' || $selected!='') $html .= '<OPTION value="'.$option[0].'"'.$selected.'>'.$option[1].'</OPTION>';
+				}
+				$html .= '</SELECT>';
+				$html .= '</DIV>';
+			} else {
+				$tableheader .= '<TH>'.$field[2].'</TH>';
+				$tableentry .= '<TD id="row'.$tablerow.'-'.$field[1].'"><SELECT id="'.$prefix.$field[1].'"><OPTION value="">&nbsp;</OPTION>';
+				while ($option = $result->fetch_row()) {
+					$tableentry .= '<OPTION value="'.$option[0].'">'.$option[1].'</OPTION>';
+				}
+				$tableentry .= '</SELECT></TD>';
+			}
+			$result->free();
+		} else $html .= $this->dbconn->error;
+		return $html;
+	}
 	protected function abstractSearchPage($module) {
 		$html = '<FIELDSET class="searchPage" id="'.$module.'">';
 		foreach ($this->searchFields as $field) {
@@ -49,10 +80,13 @@ class ERPBase {
 				if ($field[3]=='integer') $html .= '<INPUT type="number" id="'.$field[1].'" min="0" step="1" />';
 				if ($field[3]=='checkbox') $html .= '<INPUT type="checkbox" id="'.$field[1].'" indeterminate="true" />';
 				if ($field[3]=='datetime') $html .= '<INPUT type="date" id="'.$field[1].'-date" /><INPUT type="time" id="'.$field[1].'-time" />';
-				if ($field[3]=='dropdown') {
+				if ($field[3]=='dropdown' && count($field)==6 && is_array($field[5])) $html .= $this->dropdownQuery($field);
+				elseif ($field[3]=='dropdown') {
 					$html .= '<SELECT id="'.$field[1].'"><OPTION value="">&nbsp;</OPTION>';
-					foreach ($field[4] as $option) {
-						$html .= '<OPTION value="'.$option[0].'">'.$option[1].'</OPTION>';
+					if (count($field)==5 && is_array($field[4])) {
+						foreach ($field[4] as $option) {
+							$html .= '<OPTION value="'.$option[0].'">'.$option[1].'</OPTION>';
+						}
 					}
 					$html .= '</SELECT>';
 				}
@@ -128,6 +162,8 @@ class ERPBase {
 					$intable = false;
 					$tablerow++;
 				} elseif ($field[3]=='dropdown' && count($field)>=6 && is_array($field[5])) {
+					// TODO: I would like to move this section to just call $this->dropdownQuery; but there are too
+					// many operational variables as part of the field loop to make it easy.
 					$q = 'SELECT '.$field[5][0].','.$field[5][1].' FROM '.$field[4];
 					if (count($field[5])>2 && $field[4]=='aa_uom' && is_integer($field[5][2])) $q .= ' WHERE uom_type='.$field[5][2].';';
 					else $q .= ';';
@@ -313,7 +349,9 @@ class ERPBase {
 					}					
 				if ($field[3]=='function' && count($field)>=6 && is_object($field[4]) && method_exists($field[4],$field[5])) {
 					if (!$intable) {
-						$html .= $field[4]->{$field[5]}();
+						if (is_array($hdata) && strpos($field[0],'_detail')===false && isset($hdata[$field[1]]))
+							$html .= $field[4]->{$field[5]}($hdata[$field[1]]);
+						else $html .= $field[4]->{$field[5]}();
 					} else {
 						$tableentry .= '<TD id="row'.$tablerow.'-'.$prefix.$field[1].'">';
 						$tableentry .= $field[4]->{$field[5]}();

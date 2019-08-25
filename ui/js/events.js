@@ -168,6 +168,7 @@ function editDetailRow(whichModule,id) {
 	if (whichModule=="prod_detail") editProductionDetailRow(id);
 	if (whichModule=="bom_detail") editBOMDetailRow(id);
 	if (whichModule=="pur_detail") editPurchasingDetailRow(id);
+	if (whichModule=="sales_detail") editSalesDetailRow(id);
 } // editDetailRow()
 function showNewRecordAttachmentPane() {
 	

@@ -116,6 +116,7 @@ class SalesOrders extends ERPBase {
 		$this->supportsAttachments = false;
 		$this->primaryKey = 'sales_order_number';
 		$this->searchFields[] = array('sales_header','sales_order_number','Sales Order #','integer');
+		$this->searchFields[] = array('sales_header','customer_id','Customer','dropdown','cust_master',array('customer_id','customer_name'));
 		$this->searchFields[] = array('sales_header','customer_purchase_order_number','PO #','textbox');
 		$this->searchFields[] = array('sales_header','bill_of_lading','BOL #','textbox');
 		$this->searchFields[] = array('sales_header','wave_number','Wave #','textbox');
@@ -395,15 +396,15 @@ class SalesOrders extends ERPBase {
 	} // arrayifyHeader
 	public function arrayifyDetail() {
 		return array(
-			'sales_order_number'=>$this->sales_order_number,
+//			'sales_order_number'=>$this->sales_order_number,
 			'sales_order_line'=>$this->sales_order_line,
 			'parent_line'=>$this->parent_line,
 			'entity_id'=>$this->dentity_id,
 			'division_id'=>$this->ddivision_id,
 			'department_id'=>$this->ddepartment_id,
 			'customer_line'=>$this->customer_line,
-			'edi_raw1'=>$this->edi_raw1,
-			'edi_raw2'=>$this->edi_raw2,
+//			'edi_raw1'=>$this->edi_raw1,
+//			'edi_raw2'=>$this->edi_raw2,
 			'item_id'=>$this->item_id,
 			'quantity_requested'=>$this->quantity_requested,
 			'quantity_shipped'=>$this->quantity_shipped,
@@ -449,8 +450,8 @@ class SalesOrders extends ERPBase {
 		$this->ddivision_id = $rec['division_id'];
 		$this->ddepartment_id = $rec['department_id'];
 		$this->customer_line = $rec['customer_line'];
-		$this->edi_raw1 = $rec['edi_raw1'];
-		$this->edi_raw2 = $rec['edi_raw2'];
+		//$this->edi_raw1 = $rec['edi_raw1'];
+		//$this->edi_raw2 = $rec['edi_raw2'];
 		$this->item_id = $rec['item_id'];
 		$this->quantity_requested = $rec['quantity_requested'];
 		$this->quantity_shipped = $rec['quantity_shipped'];
@@ -540,7 +541,10 @@ class SalesOrders extends ERPBase {
 		return false;
 	} // isIDValid()
 	public function display($id,$mode='view') {
-		if (!$this->isIDValid($id)) return;
+		if (!$this->isIDValid($id)) {
+			echo 'fail|Invalid id: '.$id;
+			return;
+		}
 		$readonly = true;
 		$html = '';
 		$q = "SELECT {$this->column_list_header},h.created_by,h.creation_date,h.last_update_by,h.last_update_date 
@@ -646,6 +650,8 @@ class SalesOrders extends ERPBase {
 					$this->price,
 					$this->discount_percent,
 					$this->discount_amount,
+					$this->retail_high,
+					$this->retail_low,
 					$this->dcredit_release_date,
 					$this->dwave_date,
 					$this->assigned_to,
@@ -673,8 +679,9 @@ class SalesOrders extends ERPBase {
 					$this->detail_array[$this->sales_order_line] = $this->arrayifyDetail();
 				}
 				$stmt->close();
-			}
-			
+				if (count($this->detail_array)==0) $this->sales_order_number = $id; // Invalidates the id when a new record is being created and no detail lines exist yet.
+			} else echo 'fail|'.$this->dbconn->error;
+					
 			if ($mode!='update') {
 				$hdata = $this->arrayifyHeader();
 				echo parent::abstractRecord($mode,'SalesOrders','',$hdata,$this->detail_array);
@@ -686,7 +693,10 @@ class SalesOrders extends ERPBase {
 			</SCRIPT>';
 			}
 		} // if result
-		else $this->sales_order_number = null;
+		else {
+			$this->sales_order_number = null;
+			echo 'fail|'.$this->dbconn->error;
+		}
 		//echo $html;
 		$_SESSION['currentScreen'] = 2044;
 		if (!isset($_SESSION['searchResults']) && !isset($_SESSION['searchResults']['SalesOrders']))
@@ -839,8 +849,8 @@ class SalesOrders extends ERPBase {
 		// TODO: Validate all fields & send appropriate error messages
 		if (is_integer($parent) || ctype_digit($parent)) $h2 = $parent; else $h2 = null;
 		if (is_integer($ordertype) || ctype_digit($ordertype)) $h3 = $ordertype; else $h3 = null;
-		if (strpos($orderstatus,'QqOoHhPpBbSsIiCcRr')===false) {
-			echo 'fail|The order status provided is not a valid choice.';
+		if (strpos('QqOoHhPpBbSsIiCcRr',$orderstatus)===false) {
+			echo 'fail|The order status ('.$orderstatus.') provided is not a valid choice.';
 			return;
 		}
 		$h4 = $orderstatus;
@@ -1233,13 +1243,13 @@ class SalesOrders extends ERPBase {
 					$this->unarrayifyDetail($line);
 					if ($update['sales_order_status'][1]=='I' || $update['sales_order_status'][1]=='S') {
 						if ($this->sales_order_status=='Q') {
-							$inv->salesSold(($this->sales_order_number*100)+$this->sales_order_line,$this->dentity_id,$this->ditem_id,$this->quantity_shipped,true);
+							$inv->salesSold(($this->sales_order_number*100)+$this->sales_order_line,$this->dentity_id,$this->item_id,$this->quantity_shipped,true);
 						}
-						$inv->salesShip(($this->sales_order_number*100)+$this->sales_order_line,$this->dentity_id,$this->ditem_id,$this->quantity_shipped);
+						$inv->salesShip(($this->sales_order_number*100)+$this->sales_order_line,$this->dentity_id,$this->item_id,$this->quantity_shipped);
 					} elseif ($this->sales_order_status=='Q') {
-						$inv->salesSold(($this->sales_order_number*100)+$this->sales_order_line,$this->dentity_id,$this->ditem_id,$this->quantity_requested,true);
+						$inv->salesSold(($this->sales_order_number*100)+$this->sales_order_line,$this->dentity_id,$this->item_id,$this->quantity_requested,true);
 					} elseif ($update['sales_order_status'][1]=='Q') {
-						$inv->salesSold(($this->sales_order_number*100)+$this->sales_order_line,$this->dentity_id,$this->ditem_id,-1 * $this->quantity_requested,true);
+						$inv->salesSold(($this->sales_order_number*100)+$this->sales_order_line,$this->dentity_id,$this->item_id,-1 * $this->quantity_requested,true);
 					}
 				}
 			}
@@ -1301,32 +1311,32 @@ class SalesOrders extends ERPBase {
 		}
 		if (isset($_POST['retail_high']) && $_POST['retail_high']!=$this->retail_high) $update['retail_high'] = array('d',$_POST['retail_high']);
 		if (isset($_POST['retail_low']) && $_POST['retail_low']!=$this->retail_low) $update['retail_low'] = array('d',$_POST['retail_low']);
-		if (!empty($_POST['dcredit_release_date']) && $_POST['dcredit_release_date']!=$this->dcredit_release_date->format('Y-m-d')) $update['credit_release_date'] = array('s',$_POST['dcredit_release_date']);
-		if (!empty($_POST['dwave_date']) && $_POST['dwave_date']!=$this->dwave_date->format('Y-m-d')) $update['wave_date'] = array('s',$_POST['dwave_date']);
+		if (!empty($_POST['dcredit_release_date']) && $_POST['dcredit_release_date']!=$this->dcredit_release_date) $update['credit_release_date'] = array('s',$_POST['dcredit_release_date']);
+		if (!empty($_POST['dwave_date']) && $_POST['dwave_date']!=$this->dwave_date) $update['wave_date'] = array('s',$_POST['dwave_date']);
 		if (!empty($_POST['assigned_to']) && $_POST['assigned_to']!=$this->assigned_to) $update['assigned_to'] = array('i',$_POST['assigned_to']);
 		if (!empty($_POST['dinventory_needed_bydate']) && !empty($_POST['dinventory_needed_bytime'])) {
-			$inb = new DateTime($_POST['dinventory_needed_bydate'].' '.$_POST['dinventory_needed_bytime'])
-			if (!empty($inb) && $inb->format('Y-m-d H:i:s')!=$this->dinventory_needed_by->format('Y-m-d H:i:s')) $update['inventory_needed_by'] = array('s',$inb->format('Y-m-d H:i:s'));
+			$inb = new DateTime($_POST['dinventory_needed_bydate'].' '.$_POST['dinventory_needed_bytime']);
+			if (!empty($inb) && $inb->format('Y-m-d H:i:s')!=$this->dinventory_needed_by) $update['inventory_needed_by'] = array('s',$inb->format('Y-m-d H:i:s'));
 		}
 		if (!empty($_POST['dinventory_location']) && $_POST['dinventory_location']!=$this->dinventory_location) $update['inventory_location'] = array('i',$_POST['dinventory_location']);
 		if (!empty($_POST['dinventory_pulleddate']) && !empty($_POST['dinventory_pulledtime'])) {
 			$ip = new DateTime($_POST['dinventory_pulleddate'].' '.$_POST['dinventory_pulledtime']);
-			if (!empty($ip) && $ip->format('Y-m-d H:i:s')!=$this->dinventory_pulled->format('Y-m-d H:i:s')) $update['inventory_pulled'] = array('s',$ip->format('Y-m-d H:i:s'));
+			if (!empty($ip) && $ip->format('Y-m-d H:i:s')!=$this->dinventory_pulled) $update['inventory_pulled'] = array('s',$ip->format('Y-m-d H:i:s'));
 		}
 		if (!empty($_POST['dinventory_pulled_by']) && $_POST['dinventory_pulled_by']!=$this->dinventory_pulled_by) $update['inventory_pulled_by'] = array('i',$_POST['dinventory_pulled_by']);
 		if (!empty($_POST['dinventory_packeddate']) && !empty($_POST['dinventory_packedtime'])) {
 			$ip = new DateTime($_POST['dinventory_packeddate'].' '.$_POST['dinventory_packedtime']);
-			if (!empty($ip) && $ip->format('Y-m-d H:i:s')!=$this->dinventory_packed->format('Y-m-d H:i:s')) $update['inventory_packed'] = array('s',$ip->format('Y-m-d H:i:s'));
+			if (!empty($ip) && $ip->format('Y-m-d H:i:s')!=$this->dinventory_packed) $update['inventory_packed'] = array('s',$ip->format('Y-m-d H:i:s'));
 		}
 		if (!empty($_POST['dinventory_packed_by']) && $_POST['dinventory_packed_by']!=$this->dinventory_packed_by) $update['inventory_packed_by'] = array('i',$_POST['dinventory_packed_by']);
 		if (!empty($_POST['dinventory_loadeddate']) && !empty($_POST['dinventory_loadedtime'])) {
 			$il = new DateTime($_POST['dinventory_loadeddate'].' '.$_POST['dinventory_loadedtime']);
-			if (!empty($il) && $il->format('Y-m-d H:i:s')!=$this->dinventory_loaded->format('Y-m-d H:i:s')) $update['inventory_loaded'] = array('s',$il->format('Y-m-d H:i:s'));
+			if (!empty($il) && $il->format('Y-m-d H:i:s')!=$this->dinventory_loaded) $update['inventory_loaded'] = array('s',$il->format('Y-m-d H:i:s'));
 		}
 		if (!empty($_POST['dinventory_loaded_by']) && $_POST['dinventory_loaded_by']!=$this->dinventory_loaded_by) $update['inventory_loaded_by'] = array('i',$_POST['dinventory_loaded_by']);
-		if (!empty($_POST['line_shipped_date']) && $_POST['line_shipped_date']!=$this->line_shipped_date->format('Y-m-d')) $update['line_shipped_date'] = array('s',$_POST['line_shipped_date']);
-		if (!empty($_POST['line_invoiced_date']) && $_POST['line_invoiced_date']!=$this->line_invoiced_date->format('Y-m-d')) $update['line_invoiced_date'] = array('s',$_POST['line_invoiced_date']);
-		if (!empty($_POST['line_cancelled_date']) && $_POST['line_cancelled_date']!=$this->line_cancelled_date->format('Y-m-d')) $update['line_cancelled_date'] = array('s',$_POST['line_cancelled_date']);
+		if (!empty($_POST['line_shipped_date']) && $_POST['line_shipped_date']!=$this->line_shipped_date) $update['line_shipped_date'] = array('s',$_POST['line_shipped_date']);
+		if (!empty($_POST['line_invoiced_date']) && $_POST['line_invoiced_date']!=$this->line_invoiced_date) $update['line_invoiced_date'] = array('s',$_POST['line_invoiced_date']);
+		if (!empty($_POST['line_cancelled_date']) && $_POST['line_cancelled_date']!=$this->line_cancelled_date) $update['line_cancelled_date'] = array('s',$_POST['line_cancelled_date']);
 		$visible = null;
 		if (isset($_POST['dvisible'])) $visible = ($_POST['dvisible']=='true')?'Y':'N';
 		if (!is_null($visible) && $visible!=$this->dvisible) $update['visible'] = array('s',$visible);
@@ -1376,6 +1386,33 @@ class SalesOrders extends ERPBase {
 			echo 'updated';
 			$stmt->close();
 			// TODO: Adjust inventory
+			$inv = new InventoryManager($this->dbconn);
+			if ($this->sales_order_status=='Q' || $this->sales_order_status=='H') {
+				if (isset($update['entity_id']) || isset($update['item_id'])) {
+					$inv->salesMoveReservation(($this->sales_order_number*100)+$this->sales_order_line,$this->dentity_id,$this->item_id,$this->quantity_requested,
+						isset($update['entity_id'])?$update['entity_id']:$this->dentity_id,isset($update['item_id'])?$update['item_id']:$this->item_id,
+						isset($update['quantity_requested'])?$update['quantity_requested'][1]:$this->quantity_requested);
+				} 
+			} elseif ($this->sales_order_status!='I' && $this->sales_order_status!='S') {
+				if (isset($update['entity_id']) || isset($update['item_id'])) {
+					$inv->salesMoveSold(($this->sales_order_number*100)+$this->sales_order_line,$this->dentity_id,$this->item_id,$this->quantity_requested,
+						isset($update['entity_id'])?$update['entity_id']:$this->dentity_id,isset($update['item_id'])?$update['item_id']:$this->item_id,
+						isset($update['quantity_requested'])?$update['quantity_requested'][1]:$this->quantity_requested);
+				} 
+			}
+			// Changes in requested, shipped, and returned quantities will always affect inventory regardless of status.
+			if (isset($update['quantity_requested'])) {
+				if ($this->sales_order_status=='Q' || $this->sales_order_status=='H') {
+					$inv->salesReserve(($this->sales_order_number*100)+$this->sales_order_line,$this->dentity_id,$this->item_id,$update['quantity_requested'][1]-($this->quantity_requested));	
+				} else
+					$inv->salesSold(($this->sales_order_number*100)+$this->sales_order_line,$this->dentity_id,$this->item_id,$update['quantity_requested'][1]-($this->quantity_requested));	
+			}
+			if (isset($update['quantity_shipped'])) {
+				$inv->salesShip(($this->sales_order_number*100)+$this->sales_order_line,$this->dentity_id,$this->item_id,$update['quantity_shipped'][1]-($this->quantity_shipped));	
+			}
+			if (isset($update['quantity_returned'])) {
+				$inv->salesReturn(($this->sales_order_number*100)+$this->sales_order_line,$this->dentity_id,$this->item_id,$update['quantity_returned'][1]-($this->quantity_returned));	
+			}
 		} else {
 			if ($this->dbconn->error) {
 				echo 'fail|'.$this->dbconn->error;

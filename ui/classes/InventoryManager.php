@@ -82,6 +82,7 @@ class InventoryManager extends ERPBase {
 		$this->entryFields[] = array('inv_transactions','reserved_delta','Chg Reserved','decimal',24,5);
 		$this->entryFields[] = array('inv_transactions','unshipped_delta','Chg Unshipped','decimal',24,5);
 		$this->entryFields[] = array('inv_transactions','shipped_delta','Chg Shipped','decimal',24,5);
+		$this->entryFields[] = array('inv_transactions','creation_date','Trans date/time','datetime');
 		$this->entryFields[] = array('inv_transactions','','','endfieldtable');		
 	} // constructor
 	public function resetEntityInventory() {
@@ -485,7 +486,7 @@ class InventoryManager extends ERPBase {
 			return false;
 		}
 		$q1 = "INSERT INTO inv_transactions (inv_transaction_type,reference_table,reference_key_int,inventory_id_1,inventory_id_2,quantity_reserved_delta_1,created_by,creation_date,last_update_by,last_update_date)
-			VALUES ('Q','pur_detail',?,?,?,?,?,NOW(),?,NOW());";
+			VALUES ('Q','sales_detail',?,?,?,?,?,NOW(),?,NOW());";
 		$stmt1 = $this->dbconn->prepare($q1);
 		$stmt1->bind_param('iiidii',$o1,$o2,$o2a,$o3,$o4,$o5);
 		$o1 = $salesdetailid;
@@ -529,7 +530,7 @@ class InventoryManager extends ERPBase {
 			if ($fromentity != $toentity && !empty($toentity)) $type = 'M';
 			else $type = 'C';
 		$q1 = "INSERT INTO inv_transactions (inv_transaction_type,reference_table,reference_key_int,inventory_id_1,inventory_id_2,quantity_reserved_delta_1,quantity_reserved_delta_2,
-			created_by,creation_date,last_update_by,last_update_date) VALUES (?,'pur_detail',?,?,?,?,?,?,NOW(),?,NOW());";
+			created_by,creation_date,last_update_by,last_update_date) VALUES (?,'sales_detail',?,?,?,?,?,?,NOW(),?,NOW());";
 		$stmt1 = $this->dbconn->prepare($q1);
 		$stmt1->bind_param('siiiddii',$o1,$o2,$o3,$o4,$o5,$o6,$o7,$o8);
 		$o1 = $type;
@@ -584,7 +585,7 @@ class InventoryManager extends ERPBase {
 		}
 		$q1 = "INSERT INTO inv_transactions (inv_transaction_type,reference_table,reference_key_int,inventory_id_1,inventory_id_2,
 			quantity_unshipped_delta_1,quantity_reserved_delta_1,created_by,creation_date,last_update_by,last_update_date)
-			VALUES ('Q','pur_detail',?,?,?,?,?,?,NOW(),?,NOW());";
+			VALUES ('Q','sales_detail',?,?,?,?,?,?,NOW(),?,NOW());";
 		$stmt1 = $this->dbconn->prepare($q1);
 		$stmt1->bind_param('iiiddii',$o1,$o2,$o2a,$o3,$o3b,$o4,$o5);
 		$o1 = $salesdetailid;
@@ -632,7 +633,7 @@ class InventoryManager extends ERPBase {
 			else $type = 'C';
 		$q1 = "INSERT INTO inv_transactions (inv_transaction_type,reference_table,reference_key_int,inventory_id_1,inventory_id_2,
 			quantity_unshipped_delta_1,quantity_unshipped_delta_2,
-			created_by,creation_date,last_update_by,last_update_date) VALUES (?,'pur_detail',?,?,?,?,?,?,NOW(),?,NOW());";
+			created_by,creation_date,last_update_by,last_update_date) VALUES (?,'sales_detail',?,?,?,?,?,?,NOW(),?,NOW());";
 		$stmt1 = $this->dbconn->prepare($q1);
 		$stmt1->bind_param('siiiddii',$o1,$o2,$o3,$o4,$o5,$o6,$o7,$o8);
 		$o1 = $type;
@@ -686,7 +687,7 @@ class InventoryManager extends ERPBase {
 		}
 		$q1 = "INSERT INTO inv_transactions (inv_transaction_type,reference_table,reference_key_int,inventory_id_1,inventory_id_2,
 			quantity_on_hand_delta_1,quantity_unshipped_delta_1,quantity_shipped_delta_1,created_by,creation_date,last_update_by,last_update_date)
-			VALUES ('Q','pur_detail',?,?,?,?,?,?,NOW(),?,NOW());";
+			VALUES ('Q','sales_detail',?,?,?,?,?,?,?,NOW(),?,NOW());";
 		$stmt1 = $this->dbconn->prepare($q1);
 		$stmt1->bind_param('iiidddii',$o1,$o2,$o2a,$o3,$o3b,$o3c,$o4,$o5);
 		$o1 = $salesdetailid;
@@ -708,6 +709,43 @@ class InventoryManager extends ERPBase {
 			$u1 = $this->total_on_hand;
 			$u1b = $this->total_unshipped_sold;
 			$u1c = $this->total_shipped_sold;
+			$u2 = $_SESSION['dbuserid'];
+			$u3 = $invid;
+			$result = $stmt2->execute();
+			$stmt2->close();
+			if ($result!==false) return true;
+			else return false;
+		} else {
+			echo '|Inv tx fail: '.$this->dbconn->error;
+			$stmt1->close();
+			return false;
+		}
+	} // SalesShip
+	public function salesReturn($salesdetailid,$entity,$item,$quantity) {
+		// Record the return in inventory transactions, and update the inventory master accordingly.
+		$invid = $this->getInventoryId($entity,$item);
+		if (is_null($invid)) {
+			echo 'fail|Could not get or create the Entity Inventory ID. '.$this->dbconn->error;
+			return false;
+		}
+		$q1 = "INSERT INTO inv_transactions (inv_transaction_type,reference_table,reference_key_int,reference_note,inventory_id_1,inventory_id_2,
+			quantity_on_hand_delta_1,created_by,creation_date,last_update_by,last_update_date)
+			VALUES ('Q','sales_detail',?,'Returned merchandise',?,?,?,?,?,NOW(),?,NOW());";
+		$stmt1 = $this->dbconn->prepare($q1);
+		$stmt1->bind_param('iiidii',$o1,$o2,$o2a,$o3,$o4,$o5);
+		$o1 = $salesdetailid;
+		$o2 = $o2a = $invid;
+		$o3 = $quantity;
+		$o4 = $o5 = $_SESSION['dbuserid'];
+		$result1 = $stmt1->execute();
+		if ($result1!==false) {
+			$stmt1->close();
+			$this->display($invid,'update');
+			$this->total_on_hand += $quantity;
+			$q2 = "UPDATE inv_master SET total_on_hand=?,last_update_by=?,last_update_date=NOW() WHERE inventory_id=?";
+			$stmt2 = $this->dbconn->prepare($q2);
+			$stmt2->bind_param('dii',$u1,$u2,$u3);
+			$u1 = $this->total_on_hand;
 			$u2 = $_SESSION['dbuserid'];
 			$u3 = $invid;
 			$result = $stmt2->execute();
@@ -865,14 +903,16 @@ class InventoryManager extends ERPBase {
 			$q = 'SELECT inv_transaction_id,inv_transaction_type,reference_table,COALESCE(reference_key_int,reference_key_char) AS reference_key,
 				quantity_on_hand_delta_1 AS on_hand_delta,quantity_in_wip_delta_1 AS in_wip_delta,
 				quantity_on_order_delta_1 AS on_order_delta,quantity_reserved_delta_1 AS reserved_delta,
-				quantity_unshipped_delta_1 AS unshipped_delta,quantity_shipped_delta_1 AS shipped_delta
+				quantity_unshipped_delta_1 AS unshipped_delta,quantity_shipped_delta_1 AS shipped_delta,
+				creation_date
 				FROM inv_transactions
 				WHERE inventory_id_1=?
 				UNION ALL
 				SELECT inv_transaction_id,inv_transaction_type,reference_table,COALESCE(reference_key_int,reference_key_char) AS reference_key,
 				quantity_on_hand_delta_2 AS on_hand_delta,quantity_in_wip_delta_2 AS in_wip_delta,
 				quantity_on_order_delta_2 AS on_order_delta,quantity_reserved_delta_2 AS reserved_delta,
-				quantity_unshipped_delta_2 AS unshipped_delta,quantity_shipped_delta_2 AS shipped_delta
+				quantity_unshipped_delta_2 AS unshipped_delta,quantity_shipped_delta_2 AS shipped_delta,
+				creation_date
 				FROM inv_transactions
 				WHERE inventory_id_2=? AND inventory_id_1<>inventory_id_2';
 			$stmt = $this->dbconn->prepare($q);
@@ -895,7 +935,8 @@ class InventoryManager extends ERPBase {
 					$ord,
 					$reserved,
 					$unshipped,
-					$shipped
+					$shipped,
+					$creation_date
 				);
 				$stmt->store_result();
 				while ($stmt->fetch()) {
@@ -910,6 +951,7 @@ class InventoryManager extends ERPBase {
 						,'reserved_delta'=>$reserved
 						,'unshipped_delta'=>$unshipped
 						,'shipped_delta'=>$shipped
+						,'creation_date'=>$creation_date
 					);
 				}
 				$stmt->close();

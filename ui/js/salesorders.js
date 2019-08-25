@@ -3,7 +3,7 @@ function saveSalesOrdersHeader() {
 	var ordernum = $("#sales_order_number").val();
 	var parent = $("#parent").val();
 	var ordertype = $("#sales_order_type option:selected").val();
-	var orderstatus = $("#sales_order_status option:selected").val();
+	var orderstatus = $("#salesOrderStatus option:selected").val();
 	var customerid = $("#customer_id option:selected").val();
 	var buyer = $("#buyer option:selected").val();
 	var seller = $("#seller option:selected").val();
@@ -129,21 +129,22 @@ function createNewSalesOrdersDetailLine(line) {
 	$("#parent_line").val("");
 	// Assume that all detail lines will have the same values for entity/department/division
 	newcell = newtr.insertCell(2);
-	newcell.id = newrow+"-dentity_id";
+	newcell.id = newrow+"-entity_id";
 	newcell.innerText = $("#dentity_id option:selected").text();
 	newcell = newtr.insertCell(3);
-	newcell.id = newrow+"-ddepartment_id";
+	newcell.id = newrow+"-department_id";
 	newcell.innerText = $("#ddepartment_id option:selected").text();
 	newcell = newtr.insertCell(4);
-	newcell.id = newrow+"-ddivision_id";
+	newcell.id = newrow+"-division_id";
 	newcell.innerText = $("#ddivision_id option:selected").text();
 	newcell = newtr.insertCell(5);
 	newcell.id = newrow+"-customer_line";
 	newcell.innerText = $("#customer_line").val();
 	$("#customer_line").val("");
 	newcell = newtr.insertCell(6);
-	newcell.id = newrow+"-item_id";
+	newcell.id = newrow+"-item_id-product_id";
 	newcell.innerHtml = $("#item_id").html();
+	embeddedItemNewSearch("item_id");
 	newcell = newtr.insertCell(7);
 	newcell.id = newrow+"-quantity_requested";
 	newcell.innerText = $("#quantity_requested").val();
@@ -187,28 +188,28 @@ function createNewSalesOrdersDetailLine(line) {
 	newcell.id = newrow+"-assigned_to";
 	newcell.innerText = $("#assigned_to option:selected").val();
 	newcell = newtr.insertCell(21);
-	newcell.id = newrow+"-dinventory_needed_by";
+	newcell.id = newrow+"-inventory_needed_by";
 	newcell.innerText = $("#dinventory_needed_by-date").val()+' '+$("#dinventory_needed_by-time").val();
 	newcell = newtr.insertCell(22);
-	newcell.id = newrow+"-dinventory_location";
+	newcell.id = newrow+"-inventory_location";
 	newcell.innerText = $("#dinventory_location option:selected").val();
 	newcell = newtr.insertCell(23);
-	newcell.id = newrow+"-dinventory_pulled_complete";
+	newcell.id = newrow+"-inventory_pulled_complete";
 	newcell.innerText = $("#dinventory_pulled_complete-date").val()+" "+$("#dinventory_pulled_complete-time").val();
 	newcell = newtr.insertCell(24);
-	newcell.id = newrow+"-dinventory_pulled_by";
+	newcell.id = newrow+"-inventory_pulled_by";
 	newcell.innerText = $("#dinventory_pulled_by option:selected").val();
 	newcell = newtr.insertCell(25);
-	newcell.id = newrow+"-dinventory_packed_complete";
+	newcell.id = newrow+"-inventory_packed_complete";
 	newcell.innerText = $("#dinventory_packed_complete-date").val()+" "+$("#dinventory_packed_complete-time").val();
 	newcell = newtr.insertCell(26);
-	newcell.id = newrow+"-dinventory_packed_by";
+	newcell.id = newrow+"-inventory_packed_by";
 	newcell.innerText = $("#dinventory_packed_by option:selected").val();
 	newcell = newtr.insertCell(27);
-	newcell.id = newrow+"-dinventory_loaded_complete";
+	newcell.id = newrow+"-inventory_loaded_complete";
 	newcell.innerText = $("#dinventory_loaded_complete-date").val()+" "+$("#dinventory_loaded_complete-time");
 	newcell = newtr.insertCell(28);
-	newcell.id = newrow+"-dinventory_loaded_by";
+	newcell.id = newrow+"-inventory_loaded_by";
 	newcell.innerText = $("#dinventory_loaded_by option:selected").val();
 	newcell = newtr.insertCell(29);
 	newcell.id = newrow+"-line_shipped_date";
@@ -220,19 +221,66 @@ function createNewSalesOrdersDetailLine(line) {
 	newcell.id = newrow+"-line_cancelled_date";
 	newcell.innerText = $("#line_cancelled_date-date").val();
 	newcell = newtr.insertCell(32);
-	newcell.id = newrow+"-dvisible";
-	newcell.innerText = $("#dvisible").is("checked");
+	newcell.id = newrow+"-visible";
+	newcell.innerText = $("#dvisible").is("checked")?"Y":"N";
 	newcell = newtr.insertCell(33);
-	newcell.id = newrow+"-drev_enabled";
-	newcell.innerText = $("#drev_enabled").is("checked");
+	newcell.id = newrow+"-rev_enabled";
+	newcell.innerText = $("#drev_enabled").is("checked")?"Y":"N";
 	newcell = newtr.insertCell(34);
-	newcell.id = newrow+"-drev_number";
+	newcell.id = newrow+"-rev_number";
 	newcell.innerText = $("#drev_number").val();
 	newcell = newtr.insertCell(35);
 	newcell.id = newrow+"-action";
 	
 	
 } // createNewDetailLine()
+function editSalesDetailRow(row) {
+	$("#sales_order_line").val($("#"+row+"-sales_order_line").text());
+	$("#parent_line").val($("#"+row+"-parent_line").text());
+	$("#dentity_id").val($("#"+row+"-entity_id").text());
+	$("#ddepartment_id").val($("#"+row+"-department_id").text());
+	$("#ddivision_id").val($("#"+row+"-division_id").text());
+	$("#customer_line").val($("#"+row+"-customer_line").text());
+	var itemid = $("#"+row+"-item_id-product_id").text().split(" ");
+	itemid = itemid[0];
+	embeddedItemSelect("item_id",itemid);
+	$("#quantity_requested").val($("#"+row+"-quantity_requested").text());
+	$("#quantity_shipped").val($("#"+row+"-quantity_shipped").text());
+	$("#quantity_returned").val($("#"+row+"-quantity_returned").text());
+	$("#quantity_backordered").val($("#"+row+"-quantity_backordered").text());
+	$("#quantity_cancelled").val($("#"+row+"-quantity_cancelled").text());
+	$("#quantity_uom").val($("#"+row+"-quantity_uom").text());
+	$("#price").val($("#"+row+"-price").text());
+	$("#discount_percent").val($("#"+row+"-discount_percent").text());
+	$("#discount_amount").val($("#"+row+"-discount_amount").text());
+	$("#retail_high").val($("#"+row+"-retail_high").text());
+	$("#retail_low").val($("#"+row+"-retail_low").text());
+	$("#dcredit_release_date-date").val($("#"+row+"-dcredit_release_date").text());
+	$("#dwave_date-date").val($("#"+row+"-dwave_date").text());
+	$("#assigned_to").val($("#"+row+"-assigned_to").text());
+	$("#dinventory_needed_by-date").val($("#"+row+"-inventory_needed_by").text().substring(0,10));
+	$("#dinventory_needed_by-time").val($("#"+row+"-inventory_needed_by").text().substring(11));
+	$("#dinventory_location").val($("#"+row+"-inventory_location").text());
+	$("#dinventory_pulled_complete-date").val($("#"+row+"-inventory_pulled_complete").text().substring(0,10));
+	$("#dinventory_pulled_complete-time").val($("#"+row+"-inventory_pulled_complete").text().substring(11));
+	$("#dinventory_pulled_by").val($("#"+row+"-inventory_pulled_by").text());
+	$("#dinventory_packed_complete-date").val($("#"+row+"-inventory_packed_complete").text().substring(0,10));
+	$("#dinventory_packed_complete-time").val($("#"+row+"-inventory_packed_complete").text().substring(11));
+	$("#dinventory_packed_by").val($("#"+row+"-inventory_packed_by").text());
+	$("#dinventory_loaded_complete-date").val($("#"+row+"-inventory_loaded_complete").text().substring(0,10));
+	$("#dinventory_loaded_complete-time").val($("#"+row+"-inventory_loaded_complete").text().substring(11));
+	$("#dinventory_loaded_by").val($("#"+row+"-inventory_loaded_by").text());
+	$("#line_shipped_date-date").val($("#"+row+"-line_shipped_date").text());
+	$("#line_invoiced_date-date").val($("#"+row+"-line_invoiced_date").text());
+	$("#line_cancelled_date-date").val($("#"+row+"-line_cancelled_date").text());
+	var visible = $("#"+row+"-visible").text();
+	if (visible=="Y") $("#row0-dvisible #dvisible").prop("checked",true);
+	else $("#row0-dvisible #dvisible").prop("checked",false);
+	var rev_enabled = $("#"+row+"-rev_enabled").text();
+	if (rev_enabled=="Y") $("#row0-rev_enabled #rev_enabled").prop("checked",true);
+	else $("#row0-rev_enabled #rev_enabled").prop("checked",false);
+	$("#row0-rev_number #rev_number").val($("#"+row+"-rev_number").text());	
+}
 function saveSalesOrdersDetail() {
 	// In some browsers, the value of the control doesn't become persistent until after this function completes.
 	var ordernum = sales_orderkey;
@@ -301,13 +349,21 @@ function saveSalesOrdersDetail() {
 		line_cancelled_date:line_cancelled,dvisible:visible,drev_enabled:rev_enabled,drev_number:rev_number,
 		},function(data) {
 		var fields = data.split("|");
-		alert(data);
-		alert(fields);
 		if (fields[0]=="inserted") {
 			$("#sales_order_line").val(fields[1]);
 			$("#messagebar").html('<DIV class="successMessage">Data saved.</DIV>');
 			createNewSalesOrdersDetailLine(fields[1]);
 		} // if inserted
+		if (fields[0]=="updated") {
+			$("#messagebar").html('<DIV class="successMessage">Data saved.</DIV>');
+			var updrow = $("#sales_detail_edit td:nth-child(1):contains("+linenum+")").closest("tr").attr("id");
+			if (!updrow) {
+				alert("Cannot update the screen.  Please click the 'view' button in the toolbar, then 'edit' to refresh.");
+			} else {
+				// TO DO:
+				
+			}
+		}
 	})
 	.fail(function() {
 		$("#messagebar").html('<DIV class="errorMessage">I could not contact the database. Your data has <B>NOT</B> been saved.</DIV>');
