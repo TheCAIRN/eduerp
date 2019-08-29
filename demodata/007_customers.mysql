@@ -1,5 +1,6 @@
 INSERT INTO aa_terms (terms_id,terms_code,terms_name,terms_type,terms_basis,discount_percent_1,discount_days_1) VALUES
 (1,'N30','Net 30',1,3,0,30)
+,(2,'PPU','Payment on pickup',1,1,0,0)
 ;
 
 INSERT INTO cust_types (cust_type_code,description) VALUES
@@ -39,7 +40,26 @@ VALUES
 ,(1005,41001,8,NULL,NULL,1005,'41001.01005','Catskill Central School District',0.00,'USD','N',1,1,NOW(),1,NOW())
 ,(1006,41001,8,NULL,NULL,1006,'41001.01006','Catskill Area Co-op',0.00,'USD','N',1,1,NOW(),1,NOW())
 ,(1208,41002,8,1,NULL,8,'41002.00008','Catskill Farm U-Pick',0.00,'USD','N',1,1,NOW(),1,NOW())
+,(1216,41002,8,1,NULL,16,'41002.00016','Better Berries Pick your own',0.00,'USD','N',1,1,NOW(),1,NOW()
+,(1301,41002,8,1,NULL,301,'41002.00301','Langhorne Farm Farmer''s Market',0.00,'USD','N',1,1,NOW(),1,NOW())
+,(1302,41002,8,1,NULL,302,'41002.00302','Styer''s Market',0.00,'USD','N',1,1,NOW(),1,NOW())
+,(1303,41002,8,1,NULL,303,'41002.00303','Willow Haven Farmer''s Market',0.00,'USD','N',1,1,NOW(),1,NOW())
+,(1304,41002,8,1,NULL,304,'41002.00304','Lancaster Dairy',0.00,'USD','N',1,1,NOW(),1,NOW())
+,(1305,41002,8,1,NULL,305,'41002.00305','Bardentown Farmer''s Market',0.00,'USD','N',1,1,NOW(),1,NOW())
+,(1306,41002,8,1,NULL,306,'41002.00306','Rome Street Market',0.00,'USD','N',1,1,NOW(),1,NOW())
+,(1307,41002,8,1,NULL,307,'41002.00307','Little Egg Harbor Fish Market',0.00,'USD','N',1,1,NOW(),1,NOW())
 ,(1308,41002,8,1,NULL,308,'41002.00308','Catskill Farm Farmer''s Market',0.00,'USD','N',1,1,NOW(),1,NOW())
+,(1309,41002,8,1,NULL,309,'41002.00309','PJ''s Market',0.00,'USD','N',1,1,NOW(),1,NOW())
+,(1310,41002,8,1,NULL,310,'41002.00310','New Philadelphia Farmer''s Market',0.00,'USD','N',1,1,NOW(),1,NOW())
+,(1311,41002,8,1,NULL,311,'41002.00311','Rainfield Farm Farmer''s Market',0.00,'USD','N',1,1,NOW(),1,NOW())
+,(1312,41002,8,1,NULL,312,'41002.00312','GR-eat Market',0.00,'USD','N',1,1,NOW(),1,NOW())
+,(1313,41002,8,1,NULL,313,'41002.00313','Nelson-Pade store',0.00,'USD','N',1,1,NOW(),1,NOW())
+,(1314,41002,8,1,NULL,314,'41002.00314','MoPro Market',0.00,'USD','N',1,1,NOW(),1,NOW())
+,(1315,41002,8,1,NULL,315,'41002.00315','Petaluma Farmer''s Market',0.00,'USD','N',1,1,NOW(),1,NOW())
+,(1316,41002,8,1,NULL,316,'41002.00316','Better Berries Store',0.00,'USD','N',1,1,NOW(),1,NOW())
+,(1317,41002,8,1,NULL,317,'41002.00317','San Pedro Farmer''s Market',0.00,'USD','N',1,1,NOW(),1,NOW())
+,(1318,41002,8,1,NULL,318,'41002.00318','Harmony Gills Fish Market',0.00,'USD','N',1,1,NOW(),1,NOW())
+,(1319,41002,8,1,NULL,319,'41002.00319','Kaptain Karl''s Finest',0.00,'USD','N',1,1,NOW(),1,NOW())
 ;
 
 INSERT INTO cust_master (customer_id,customer_code,customer_name,cust_type_code,primary_address,billing_address,gl_account_id,default_terms,created_by,creation_date,last_update_by,last_update_date) VALUES
@@ -49,6 +69,25 @@ INSERT INTO cust_master (customer_id,customer_code,customer_name,cust_type_code,
 ,(4,'SERRO','Serro Foods, LLC','GRSM',1004,1004,1004,1,1,NOW(),1,NOW())
 ,(5,'CCSD','Catskill Central School District','SCHOOL',1005,1005,1005,1,1,NOW(),1,NOW())
 ,(6,'CACOOP','Catskill Area Co-op','DS',1006,1006,1006,1,1,NOW(),1,NOW())
+,(7,'FMLANG','Langhorne Farmer''s Market','FMARK',1,1,1301,2,1,NOW(),1,NOW())
+,(8,'FMSTYER','Styer''s Market','FMARK',2,2,1302,2,1,NOW(),1,NOW())
+,(9,'FMWILLO','Willow Haven Farmer''s Market','FMARK',3,3,1303,2,1,NOW(),1,NOW())
+,(10,'FMLANCD','Lancaster Dairy','FMARK',4,4,1304,2,1,NOW(),1,NOW())
+,(11,'FMBARDN','Bardentown Farmer''s Market','FMARK',5,5,1305,2,1,NOW(),1,NOW())
+,(12,'FMROMST','Rome Street Market','FMARK',6,6,1306,2,1,NOW(),1,NOW())
+,(13,'FMLEGGF','Little Egg Harbor Fish Market','FMARK',7,7,1307,2,1,NOW(),1,NOW())
+,(14,'FMCATSK','Catskill Farm Farmer''s Market','FMARK',8,8,1308,2,1,NOW(),1,NOW())
+,(15,'FMPJS','PJ''s Market','FMARK',9,9,1309,2,1,NOW(),1,NOW())
+,(16,'FMNPHIL','New Philadelphia Farmer''s Market','FMARK',10,10,1310,2,1,NOW(),1,NOW())
+,(17,'FMRAINF','Rainfield Farm Farmer''s Market','FMARK',11,11,1311,2,1,NOW(),1,NOW())
+,(18,'FMGREAT','GR-eat Market','FMARK',12,12,1312,2,1,NOW(),1,NOW())
+,(19,'FMNELPD','Nelson-Pade store','FMARK',13,13,1313,2,1,NOW(),1,NOW())
+,(20,'FMMOPRO','MoPro Market','FMARK',14,14,1314,2,1,NOW(),1,NOW())
+,(21,'FMPETAL','Petaluma Farmer''s Market','FMARK',15,15,1315,2,1,NOW(),1,NOW())
+,(22,'FMBETTB','Better Berries Store','FMARK',16,16,1316,2,1,NOW(),1,NOW())
+,(23,'FMSANPD','San Pedro Farmer''s Market','FMARK',17,17,1317,2,1,NOW(),1,NOW())
+,(24,'FMHARMG','Harmony Gills Fish Market','FMARK',18,18,1318,2,1,NOW(),1,NOW())
+,(25,'FMKKARL','Kaptain Karl''s Finest','FMARK',19,19,1319,2,1,NOW(),1,NOW())
 ;
 
 INSERT INTO cust_dc (customer_id,dc_code,dc_name,dc_address,created_by,creation_date,last_update_by,last_update_date) VALUES
