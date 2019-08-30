@@ -46,7 +46,7 @@ class Workspace {
 			case 32: $this->notInstalled("Dashboards"); break; //$db = new Dashboards($this->dbconn); echo $db->searchPage(); break;
 			case 33: $this->notInstalled("Reports"); break; //$rpt = new Reports($this->dbconn); echo $rpt->searchPage(); break;
 			case 34: echo $this->accountingSubmenu(); break;
-			case 35: $this->notInstalled("Chart of Accounts"); break; // Chart of Accounts
+			case 35: $ac = new COA($this->dbconn); echo $ac->searchPage(); break; // Chart of Accounts
 			case 36: $this->notInstalled("GL Periods"); break; // GL Periods
 			case 37: $this->notInstalled("GL Accounts"); break; // GL Accounts
 			case 38: $this->notInstalled("GL Balances"); break; // GL Balances
@@ -92,6 +92,7 @@ class Workspace {
 			case 1026: $st = new CustomerStoreTypes($this->dbconn); $st->listRecords(); break;
 			case 1027: $st = new CustomerStores($this->dbconn); $st->listRecords(); break;
 			case 1028: $cc = new Consumers($this->dbconn); $cc->listRecords(); break;
+			case 1035: $ac = new COA($this->dbconn); $ac->listRecords(); break;
 			case 1044: $so = new SalesOrders($this->dbconn); $so->listRecords(); break;
 			case 1063: $boms = new BOMSteps($this->dbconn); $boms->listRecords(); break;
 			/* 2000-2999: Display record */
@@ -111,6 +112,7 @@ class Workspace {
 			case 2026: $st = new CustomerStoreTypes($this->dbconn); $st->display($_SESSION['idarray'][2]); break;
 			case 2027: $st = new CustomerStores($this->dbconn); $st->display($_SESSION['idarray'][2]); break;
 			case 2028: $cc = new Consumers($this->dbconn); $cc->display($_SESSION['idarray'][2]); break;
+			case 2035: $ac = new COA($this->$dbconn); $ac->display($_SESSION['idarray'][2]); break;
 			case 2044: $so = new SalesOrders($this->dbconn); $so->display($_SESSION['idarray'][2]); break;
 			case 2063: $boms = new BOMSteps($this->dbconn); $boms->display($_SESSION['idarray'][2]); break;
 			/* 3000-3999: New Record */

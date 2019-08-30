@@ -40,7 +40,7 @@ VALUES
 ,(1005,41001,8,NULL,NULL,1005,'41001.01005','Catskill Central School District',0.00,'USD','N',1,1,NOW(),1,NOW())
 ,(1006,41001,8,NULL,NULL,1006,'41001.01006','Catskill Area Co-op',0.00,'USD','N',1,1,NOW(),1,NOW())
 ,(1208,41002,8,1,NULL,8,'41002.00008','Catskill Farm U-Pick',0.00,'USD','N',1,1,NOW(),1,NOW())
-,(1216,41002,8,1,NULL,16,'41002.00016','Better Berries Pick your own',0.00,'USD','N',1,1,NOW(),1,NOW()
+,(1216,41002,8,1,NULL,16,'41002.00016','Better Berries Pick your own',0.00,'USD','N',1,1,NOW(),1,NOW())
 ,(1301,41002,8,1,NULL,301,'41002.00301','Langhorne Farm Farmer''s Market',0.00,'USD','N',1,1,NOW(),1,NOW())
 ,(1302,41002,8,1,NULL,302,'41002.00302','Styer''s Market',0.00,'USD','N',1,1,NOW(),1,NOW())
 ,(1303,41002,8,1,NULL,303,'41002.00303','Willow Haven Farmer''s Market',0.00,'USD','N',1,1,NOW(),1,NOW())

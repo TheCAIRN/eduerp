@@ -80,7 +80,7 @@ function jquery() {
 		$cs = array('Dashboard','Entities','CoreLookups','Contacts','Items','Vendors','Freight','Purchasing','Production','Customers','Sales',
 			'People','Addresses','ItemSetup','ItemAttributes','ItemCategories','ItemTypes','GTINMaster','InventoryLookup','BillofMaterials','VendorCatalog',
 			'EntityResource','CustomerCatalog','CustomerTypes','Customer','CustomerDC','CustomerStoreTypes','CustomerStores','Consumers','Insights','DashboardSetup',
-			'ReportSetup','Dashboards','Reports','Accounting','ChartOfAccounts','GLPeriods','GLAccounts','GLBalances','GLJournal','FreightVendorTypes','FreightVendors',
+			'ReportSetup','Dashboards','Reports','Accounting','ChartofAccounts','GLPeriods','GLAccounts','GLBalances','GLJournal','FreightVendorTypes','FreightVendors',
 			'InboundFreight','OutboundFreight','SalesOrders','SalesPayments','SalesOrderTypes','Admin','SystemOptions','UserAccounts','SecurityGroups','Permissions',
 			'Currency','Country','Language','State','UOMTypes','UOM','UOMConversions','Terms','NoteTypes','AttachmentTypes','CancellationReasonCodes','BOMSteps'
 			);
@@ -225,6 +225,13 @@ function jquery() {
 				$modObject = new Consumers($link);
 				$_SESSION['activeModule'] = $modObject;
 			}
+		} elseif ($module=='COASearch') {
+			if (isset($_SESSION['activeModule']) && $_SESSION['activeModule'] instanceof COA)
+				$modObject = $_SESSION['COA'];
+			else {
+				$modObject = new COA($link);
+				$_SESSION['activeModule'] = $modObject;
+			}
 		} elseif ($module=='SalesOrdersSearch') {
 			if (isset($_SESSION['activeModule']) && $_SESSION['activeModule'] instanceof SalesOrders) 
 				$modObject = $_SESSION['activeModule'];
@@ -245,7 +252,7 @@ function jquery() {
 			return;			
 		}
 		if (is_null($modObject)) {
-			$messagebar->addWarning("The selected module is not available at the moment.  Please wait a few minutes and try again.");
+			$messagebar->addWarning("The selected module does not have search enabled.");
 			$link->close();
 			return;
 		}
@@ -299,6 +306,8 @@ function jquery() {
 			$modObject = new CustomerStores($link);
 		} elseif ($module=='Consumers') {
 			$modObject = new Consumers($link);
+		} elseif ($module=='COA') {
+			$modObject = new COA($link);
 		} elseif ($module=='SalesOrders') {
 			$modObject = new SalesOrders($link);
 		} elseif ($module=='BOMSteps') {
@@ -309,7 +318,7 @@ function jquery() {
 			return;			
 		}
 		if (is_null($modObject)) {
-			$messagebar->addWarning("The selected module is not available at the moment.  Please wait a few minutes and try again.");
+			$messagebar->addWarning("The selected module does not have record display enabled.");
 			$link->close();
 			return;
 		}
@@ -347,7 +356,7 @@ function jquery() {
 			case 63: $modObject = new BOMSteps($link); break;
 		}
 		if (is_null($modObject)) {
-			$messagebar->addWarning("The selected module is not available at the moment.  Please wait a few minutes and try again.");
+			$messagebar->addWarning("The selected module does not have new record functionality enabled.");
 			$link->close();
 			return;
 		}
@@ -405,7 +414,7 @@ function jquery() {
 			return;			
 		}
 		if (is_null($modObject)) {
-			$messagebar->addWarning("The selected module is not available at the moment.  Please wait a few minutes and try again.");
+			$messagebar->addWarning("The selected module does not have edit record functionality enabled.");
 			$link->close();
 			return;
 		}
