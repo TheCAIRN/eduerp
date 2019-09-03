@@ -34,6 +34,7 @@ function initialInventory() {
 	$pid = $item->apiSearch('FISHTAL0');
 	$inv->physicalSet(1,$pid,560);
 	$inv->physicalSet(5,$pid,560);
+	$inv->physicalSet(8,$pid,1120);
 	$inv->physicalSet(11,$pid,1120);
 	$inv->physicalSet(12,$pid,560);
 	$inv->physicalSet(13,$pid,5200);
@@ -65,5 +66,56 @@ function initialInventory() {
 	$inv->physicalSet(16,$pid,800);
 	$inv->physicalSet(28,$pid,312);
 	$inv->physicalSet(33,$pid,80);
+	// Romain red lettuce
+	$pid = $item->apiSearch('SEED3097');
+	$inv->physicalSet(1,$pid,5000);
+	$inv->physicalSet(5,$pid,5000);
+	$inv->physicalSet(8,$pid,7500);
+	$inv->physicalSet(11,$pid,10000);
+	$inv->physicalSet(12,$pid,7500);
+	$inv->physicalSet(13,$pid,50000);
+	$inv->physicalSet(23,$pid,22500);
+	$inv->physicalSet(34,$pid,12500);
+	// Iceburg lettuce
+	$pid = $item->apiSearch('SEED4061');
+	$inv->physicalSet(1,$pid,7500);
+	$inv->physicalSet(5,$pid,10000);
+	$inv->physicalSet(8,$pid,15000);
+	$inv->physicalSet(11,$pid,18000);
+	$inv->physicalSet(12,$pid,17500);
+	$inv->physicalSet(13,$pid,80000);
+	$inv->physicalSet(23,$pid,42000);
+	$inv->physicalSet(34,$pid,32000);
+	// Other varieties of lettuce
+	$pid = $item->apiSearch('SEED4076');
+	$inv->physicalSet(1,$pid,2500);
+	$inv->physicalSet(5,$pid,20000);
+	$inv->physicalSet(8,$pid,10000);
+	$inv->physicalSet(11,$pid,15000);
+	$inv->physicalSet(12,$pid,7500);
+	$inv->physicalSet(13,$pid,30000);
+	$inv->physicalSet(23,$pid,6000);
+	$inv->physicalSet(34,$pid,5000);
+	// Spinach
+	$pid = $item->apiSearch('SEED4749');
+	$inv->physicalSet(1,$pid,1000);
+	$inv->physicalSet(5,$pid,30000);
+	$inv->physicalSet(8,$pid,4000);
+	$inv->physicalSet(11,$pid,1500);
+	$inv->physicalSet(12,$pid,7500);
+	$inv->physicalSet(13,$pid,20000);
+	$inv->physicalSet(23,$pid,1000);
+	$inv->physicalSet(34,$pid,1000);
+	
 } // initialInventory()	
+function createProductionRecord($entity,$division,$department,$item,$bom,$qty,$start) {
+	
+} // createProductionRecord()
+function updateProductionDetails() {
+	
+} // updateProductionDetails()
+function generateProductionHistory() {
+	
+} // generateProductionHistory()
+initialInventory();
 ?>

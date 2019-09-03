@@ -53,12 +53,34 @@ INSERT INTO item_master (entity_id,division_id,department_id,item_type_code,item
 ,(1,1,1,'PI',5,'PLANT3130A','Jumbo pumpkin plant','','USD',4,'FT','LBS',1,NOW(),1,NOW())
 ;
 
+-- Tilapia lifecycle
 INSERT INTO `bom_header` (`bom_id`, `resulting_product_id`, `resulting_quantity`, `description`, `rev_enabled`, `rev_number`, `created_by`, `creation_date`, `last_update_by`, `last_update_date`) VALUES
 (15, (SELECT product_id FROM item_master WHERE product_code='FISHTAL5'), '1.00000', 'Tilapia egg to maturity', 'N', 1, 1, NOW(), 1, NOW());
 INSERT INTO `bom_detail` (`bom_detail_id`, `bom_id`, `step_number`, `step_type`, `component_product_id`, `component_quantity_used`, `bom_step_id`, `seconds_to_process`, `sub_bom_id`, `description`, `rev_enabled`, `rev_number`, `created_by`, `creation_date`, `last_update_by`, `last_update_date`) VALUES
 (37, 15, 1, 'B', NULL, NULL, NULL, NULL, 4, '', 'N', 1, 1, NOW(), 1, NOW())
-,(38, 15, 1, 'B', NULL, NULL, NULL, NULL, 12, '', 'N', 1, 1, NOW(), 1, NOW())
-,(39, 15, 1, 'B', NULL, NULL, NULL, NULL, 13, '', 'N', 1, 1, NOW(), 1, NOW())
-,(40, 15, 1, 'B', NULL, NULL, NULL, NULL, 14, '', 'N', 1, 1, NOW(), 1, NOW())
+,(38, 15, 2, 'B', NULL, NULL, NULL, NULL, 12, '', 'N', 1, 1, NOW(), 1, NOW())
+,(39, 15, 3, 'B', NULL, NULL, NULL, NULL, 13, '', 'N', 1, 1, NOW(), 1, NOW())
+,(40, 15, 4, 'B', NULL, NULL, NULL, NULL, 14, '', 'N', 1, 1, NOW(), 1, NOW())
 ;
 
+INSERT INTO `bom_header` (`bom_id`, `resulting_product_id`, `resulting_quantity`, `description`, `rev_enabled`, `rev_number`, `created_by`, `creation_date`, `last_update_by`, `last_update_date`) VALUES
+(16, (SELECT product_id FROM item_master WHERE product_code='PLU4061'), '1.00000', 'Iceburg Lettuce', 'N', 1, 1, NOW(), 1, NOW())
+,(17, (SELECT product_id FROM item_master WHERE product_code='PLU3097'), '1.00000', 'Romaine Lettuce', 'N', 1, 1, NOW(), 1, NOW())
+,(18, (SELECT product_id FROM item_master WHERE product_code='SEED4061'), '750.00000', 'Romaine Lettuce', 'N', 1, 1, NOW(), 1, NOW())
+,(19, (SELECT product_id FROM item_master WHERE product_code='SEED3097'), '750.00000', 'Romaine Lettuce', 'N', 1, 1, NOW(), 1, NOW())
+;
+INSERT INTO `bom_detail` (`bom_detail_id`, `bom_id`, `step_number`, `step_type`, `component_product_id`, `component_quantity_used`, `bom_step_id`, `seconds_to_process`, `sub_bom_id`, `description`, `rev_enabled`, `rev_number`, `created_by`, `creation_date`, `last_update_by`, `last_update_date`) VALUES
+(41,16,1,'C',(SELECT product_id FROM item_master WHERE product_code='SEED4061'),4,NULL,NULL,NULL,'','N',1,1,NOW(),1,NOW())
+,(42,16,2,'P',NULL,NULL,11,60,NULL,'','N',1,1,NOW(),1,NOW())
+,(43,16,3,'P',NULL,NULL,5,3888000,NULL,'','N',1,1,NOW(),1,NOW())
+,(44,16,4,'P',NULL,NULL,12,60,NULL,'','N',1,1,NOW(),1,NOW())
+,(45,16,5,'P',NULL,NULL,5,3888000,NULL,'','N',1,1,NOW(),1,NOW())
+,(46,17,1,'C',(SELECT product_id FROM item_master WHERE product_code='SEED3097'),4,NULL,NULL,NULL,'','N',1,1,NOW(),1,NOW())
+,(47,17,2,'P',NULL,NULL,11,60,NULL,'','N',1,1,NOW(),1,NOW())
+,(48,17,3,'P',NULL,NULL,5,1944000,NULL,'','N',1,1,NOW(),1,NOW())
+,(49,17,4,'P',NULL,NULL,12,60,NULL,'','N',1,1,NOW(),1,NOW())
+,(50,17,5,'P',NULL,NULL,5,1944000,NULL,'','N',1,1,NOW(),1,NOW())
+,(51,18,1,'C',(SELECT product_id FROM item_master WHERE product_code='PLU4061'),1,NULL,NULL,NULL,'','N',1,1,NOW(),1,NOW())
+,(52,19,1,'C',(SELECT product_id FROM item_master WHERE product_code='PLU3097'),1,NULL,NULL,NULL,'','N',1,1,NOW(),1,NOW())
+
+;

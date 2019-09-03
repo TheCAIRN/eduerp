@@ -1,3 +1,12 @@
+INSERT INTO item_master (entity_id,division_id,department_id,item_type_code,item_category_id,product_code,product_description,gtin,standard_cost,suggested_retail,wholesale_price,currency,length,width,height,lwh_uom,weight,weight_uom,created_by,creation_date,last_update_by,last_update_date) VALUES
+(1,4,1,'PI',1,'SANDCOL01','Colored sand - multiple colors','',1.00,0,0,'USD',6,6,9,'IN',1,'LBS',1,NOW(),1,NOW())
+,(1,4,1,'PI',1,'MASON69','Mason jar 6inch diameter 9inch high','',3.00,0,0,'USD',6,6,9,'IN',.25,'LBS',1,NOW(),1,NOW())
+,(1,4,1,'PI',1,'MASONLID6','Mason jar lid 6in diameter','',0,0,0,'USD',6,6,0.1,'IN',.01,'LBS',1,NOW(),1,NOW())
+,(1,4,1,'SI',1,'TRINKET01','Jar of sand','',4.00,9.99,7.99,'USD',6,6,9,'IN',1.25,'LBS',1,NOW(),1,NOW())
+,(1,1,1,'PI',2,'WGWHEATGLENN','Whole Grain Spring Wheat (Glenn) Seed','',7.00,8.60,7.75,'USD',7,3,1,'MM',40,'MG',1,NOW(),1,NOW())
+,(1,1,1,'PI',7,'GRWHEATGLENN','Spring wheat (Glenn) grass stem','00400000149622',0,0,0,'USD',0,0,0,'IN',0,'MG',1,NOW(),1,NOW())
+;
+
 INSERT INTO `bom_steps` (`bom_step_id`, `bom_step_name`, `description`, `rev_enabled`, `rev_number`, `created_by`, `creation_date`, `last_update_by`, `last_update_date`) VALUES
 (1, 'Do nothing', 'Some steps require things to be just left alone, to allow nature to take its course.', 'N', 1, 1, '2019-03-28 14:25:51', 1, '2019-03-28 14:25:51'),
 (2, 'Apply heat', '', 'N', 1, 1, '2019-03-28 14:25:51', 1, '2019-03-28 14:25:51'),
