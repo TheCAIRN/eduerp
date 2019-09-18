@@ -30,8 +30,8 @@ $_SESSION['dbuserid'] = 1;
 $inv = new InventoryManager($link);
 $item = new ItemManager($link);
 function initialInventory() {
-	// Provide Tilapia eggs to all entities who will be farming fish.
-	$pid = $item->apiSearch('FISHTAL0');
+	// Provide Tilapia fry to all entities who will be farming fish.
+	$pid = $item->apiSearch('FISHTAL1');
 	$inv->physicalSet(1,$pid,560);
 	$inv->physicalSet(5,$pid,560);
 	$inv->physicalSet(8,$pid,1120);
@@ -109,13 +109,32 @@ function initialInventory() {
 	
 } // initialInventory()	
 function createProductionRecord($entity,$division,$department,$item,$bom,$qty,$start) {
-	
+	$_POST = array();
+	$_POST['entity_id'] = $entity;
+	$_POST['division_id'] = $division;
+	$_POST['department_id'] = $department;
+	$_POST['resulting_product_id'] = $item;
+	$_POST['maximum_quantity'] = $qty;
+	$_POST['prod_start_date'] = substring($start,0,10);
+	$_POST['prod_start_time'] = substring($start,11);
+	$_POST['bom_id'] = $bom;
+	$_POST['rev_enabled'] = 'N';
+	$_POST['rev_number'] = 1;
+	$prod = new Production($link);
+	$result =  $prod->insertHeader();
+	return $result;
 } // createProductionRecord()
 function updateProductionDetails() {
 	
 } // updateProductionDetails()
 function generateProductionHistory() {
+	// Begin fish cycle
+	$entities = array(1,5,8,11,12,13,23,34);
+	$start = new DateTime('2015-01-05 12:00:00');
+	$pid = $item->apiSearch('FISHTAL5');
+	$result = createProductionRecord(1,2,null,$pid,15,40,$start->format('Y-m-d H:i:s'));
 	
 } // generateProductionHistory()
 initialInventory();
+generateProductionHistory();
 ?>

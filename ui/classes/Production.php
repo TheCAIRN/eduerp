@@ -390,7 +390,7 @@ class Production extends ERPBase {
 			$("#item_generated_id-div").html("<DIV id=\"item_generated_id-product_id\">None selected</DIV>");
 		</SCRIPT>';
 	}
-	private function insertHeader() {
+	public function insertHeader() {
 		$this->resetHeader();
 		$this->resetDetail();
 		$this->entity_id = !empty($_POST['entity_id'])?$_POST['entity_id']:null;
@@ -496,10 +496,10 @@ class Production extends ERPBase {
 			$stmt->close();
 		}
 	} // insertHeader()
-	private function insertDetail($bomdid=null,$bomstep=null,$multiplier=1) {
+	public function insertDetail($bomdid=null,$bomstep=null,$multiplier=1) {
+		$output = "";
 		if (!($this->prod_id>=1) || is_null($bomstep) || !is_array($bomstep)) {
-			echo 'fail|Cannot create detail lines without a valid prod_id or bom.';
-			return;
+			return 'fail|Cannot create detail lines without a valid prod_id or bom.';
 		}
 		$this->resetDetail();
 		$this->prod_step_number = $this->step_counter;
@@ -526,8 +526,7 @@ class Production extends ERPBase {
 				rev_enabled,rev_number,created_by,creation_date,last_update_by,last_update_date) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,NOW(),?,NOW())';
 			$stmt = $this->dbconn->prepare($q);
 			if ($stmt===false) {
-				echo 'fail|'.$this->dbconn->error;
-				return;
+				return 'fail|'.$this->dbconn->error;
 			} 
 			$stmt->bind_param('iiiisssddssiii',$h1,$p1,$p2,$p3,$p4,$p5,$p6,$p7,$p8,$cc,$p9,$p10,$p11,$p12);
 			$h1 = $this->prod_id;
@@ -544,7 +543,7 @@ class Production extends ERPBase {
 			$p10 = $this->detail_rev_number;
 			$p11 = $this->detail_created_by;
 			$p12 = $this->detail_last_update_by;
-			if (!$stmt->execute()) echo 'fail|Detail - '.$this->dbconn->error.'|';
+			if (!$stmt->execute()) $output .= 'fail|Detail - '.$this->dbconn->error.'|';
 			$this->step_counter++;
 			$stmt->close();
 			return;
@@ -560,8 +559,7 @@ class Production extends ERPBase {
 				rev_enabled,rev_number,created_by,creation_date,last_update_by,last_update_date) VALUES (?,?,?,?,?,?,?,?,?,?,NOW(),?,NOW())';
 			$stmt = $this->dbconn->prepare($q);
 			if ($stmt===false) {
-				echo 'fail|'.$this->dbconn->error;
-				return;
+				return 'fail|'.$this->dbconn->error;
 			} 
 			$stmt->bind_param('iiisssssiii',$h1,$p1,$p2,$p4,$p5,$p6,$cc,$p9,$p10,$p11,$p12);
 			$h1 = $this->prod_id;
@@ -575,7 +573,7 @@ class Production extends ERPBase {
 			$p10 = $this->detail_rev_number;
 			$p11 = $this->detail_created_by;
 			$p12 = $this->detail_last_update_by;
-			if (!$stmt->execute()) echo 'fail|Detail - '.$this->dbconn->error.'|';
+			if (!$stmt->execute()) $output .= 'fail|Detail - '.$this->dbconn->error.'|';
 			$this->step_counter++;
 			$stmt->close();
 			return;
@@ -604,19 +602,18 @@ class Production extends ERPBase {
 			}
 		} // if step_type
 	} // insertDetail()
-	private function updateHeader() {
+	public function updateHeader() {
+		$output = "";
 		$this->resetHeader();
 		$this->resetDetail();
 		$now = new DateTime();
 		$id = $_POST['prod_id'];
 		if ((!is_integer($id) && !ctype_digit($id)) || $id<1) {
-			echo 'fail|Invalid Production id for updating';
-			return;
+			return 'fail|Invalid Production id for updating';
 		}
 		$this->display($id,'update'); // Display already has the logic for loading the record.  TODO: Refactor into separate function.
 		if (is_null($this->prod_id)) {
-			echo 'fail|Invalid Production id for updating';
-			return;
+			return 'fail|Invalid Production id for updating';
 		}
 		$update = array();
 		if (isset($_POST['maximum_quantity']) && $_POST['maximum_quantity']!=$this->maximum_quantity) $update['maximum_quantity'] = array('d',$_POST['maximum_quantity']);
@@ -642,8 +639,7 @@ class Production extends ERPBase {
 		// Create UPDATE String
 		
 		if (count($update)==2) { // last_update is always there
-			echo 'fail|Nothing to update';
-			return;
+			return 'fail|Nothing to update';
 		}
 		$q = 'UPDATE prod_header SET ';
 		$ctr = 0;
@@ -674,7 +670,7 @@ class Production extends ERPBase {
 		$bp_method->invokeArgs($stmt,$bp_values);
 		$stmt->execute();
 		if ($stmt->affected_rows > 0) {
-			echo 'updated';
+			$output .= 'updated';
 			// Update inventory WIP
 			$inv = new InventoryManager($this->dbconn);
 			if (isset($update['maximum_quantity'])) {
@@ -685,29 +681,28 @@ class Production extends ERPBase {
 			}
 		} else {
 			if ($this->dbconn->error) {
-				echo 'fail|'.$this->dbconn->error;
+				$output .= 'fail|'.$this->dbconn->error;
 				$this->mb->addError($this->dbconn->error);
-			} else echo 'fail|No rows updated';
+			} else $output .= 'fail|No rows updated';
 		}
 		$stmt->close();
+		return $output;
 	} // updateHeader()
-	private function updateDetail() {
+	public function updateDetail() {
+		$output = "";
 		$this->resetDetail();
 		$now = new DateTime();
 		$id = $_POST['prod_id'];
 		$dtlid = $_POST['prod_detail_id'];
 		if ((!is_integer($id) && !ctype_digit($id)) || $id<1) {
-			echo 'fail|Invalid Production id for updating';
-			return;
+			return 'fail|Invalid Production id for updating';
 		}
 		if ((!is_integer($dtlid) && !ctype_digit($dtlid)) || $dtlid<1) {
-			echo 'fail|Invalid Production detail id for updating';
-			return;
+			return 'fail|Invalid Production detail id for updating';
 		}
 		$this->display($id,'update'); // Display already has the logic for loading the header record.  TODO: Refactor into separate function.
 		if (is_null($this->prod_id)) {
-			echo 'fail|Invalid Production id for updating';
-			return;
+			return 'fail|Invalid Production id for updating';
 		}
 		$update = array();
 		// Set existing fields from detail_array.
@@ -761,8 +756,7 @@ class Production extends ERPBase {
 		// Create UPDATE String
 		
 		if (count($update)==2) { // last_update is always there
-			echo 'fail|Nothing to update';
-			return;
+			return 'fail|Nothing to update';
 		}
 		$q = 'UPDATE prod_detail SET ';
 		$ctr = 0;
@@ -793,7 +787,7 @@ class Production extends ERPBase {
 		$bp_method->invokeArgs($stmt,$bp_values);
 		$stmt->execute();
 		if ($stmt->affected_rows > 0) {
-			echo 'updated';
+			$output .= 'updated';
 			// Update Inventory
 			$inv = new InventoryManager($this->dbconn);
 			if (isset($update['quantity_consumed'])) {
@@ -804,20 +798,21 @@ class Production extends ERPBase {
 			}
 		} else {
 			if ($this->dbconn->error) {
-				echo 'fail|'.$this->dbconn->error;
+				$output .= 'fail|'.$this->dbconn->error;
 				$this->mb->addError($this->dbconn->error);
-			} else echo 'fail|No rows updated';
+			} else $output .= 'fail|No rows updated';
 		}
 		$stmt->close();		
+		return $output;
 	} // updateDetail()
 	public function insertRecord() {
-		$this->insertHeader();
+		echo $this->insertHeader();
 		// There can be no insertDetail called from the UI in this module.
 	} // insertRecord()
 	public function updateRecord() {
 		// Assumes values are stored in $_POST
-		if (isset($_POST['level']) && $_POST['level']=='header') $this->updateHeader();
-		if (isset($_POST['level']) && $_POST['level']=='detail') $this->updateDetail();
+		if (isset($_POST['level']) && $_POST['level']=='header') echo $this->updateHeader();
+		if (isset($_POST['level']) && $_POST['level']=='detail') echo $this->updateDetail();
 	} // updateRecord()
 	public function saveRecord() {
 	
