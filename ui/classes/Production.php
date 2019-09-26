@@ -390,7 +390,7 @@ class Production extends ERPBase {
 			$("#item_generated_id-div").html("<DIV id=\"item_generated_id-product_id\">None selected</DIV>");
 		</SCRIPT>';
 	}
-	public function insertHeader() {
+	public function insertHeader($headless=false) {
 		$this->resetHeader();
 		$this->resetDetail();
 		$this->entity_id = !empty($_POST['entity_id'])?$_POST['entity_id']:null;
@@ -452,8 +452,8 @@ class Production extends ERPBase {
 		$p10 = !empty($this->prod_finished)?$this->prod_finished->format('Y-m-d H:i:s'):null;
 		$p11 = $this->bom_id;
 		$p12 = ($this->rev_enabled=='true')?'Y':'N';
-		if ($this->rev_number<1) $rev_number = 1;
-		$p13 = $rev_number;
+		if ($this->rev_number<1) $this->rev_number = 1;
+		$p13 = $this->rev_number;
 		$this->created_by = $p14 = $_SESSION['dbuserid'];
 		$this->last_update_by = $p16 = $_SESSION['dbuserid'];
 		$result = $stmt->execute();
@@ -489,7 +489,7 @@ class Production extends ERPBase {
 			if (!isset($_SESSION['searchResults'])) $_SESSION['searchResults'] = array();
 			if (!isset($_SESSION['searchResults']['Production'])) $_SESSION['searchResults']['Production'] = array();
 			$_SESSION['searchResults']['Production'][] = $this->prod_id;		
-			$this->display($this->prod_id);
+			if (!$headless) $this->display($this->prod_id);
 		} else {
 			echo 'fail|'.$this->dbconn->errno.': '.$this->dbconn->error;
 			$this->mb->addError($this->dbconn->error);

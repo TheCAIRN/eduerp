@@ -21,15 +21,16 @@ include($basepath.'/globals.php');
 $link = new mysqli($dbhost,$dbuser,$dbpass,$dbname);
 if ($link->connect_error) {
 	$messagebar->addError($link->connect_error);
+	echo $link->connect_error;
 	unset($link);
 }
 Options::LoadSessionOptions($link);
 $_SESSION['dbuserid'] = 1;
 
 // Establish base inventory
-$inv = new InventoryManager($link);
-$item = new ItemManager($link);
-function initialInventory() {
+function initialInventory($link) {
+	$inv = new InventoryManager($link);
+	$item = new ItemManager($link);
 	// Provide Tilapia fry to all entities who will be farming fish.
 	$pid = $item->apiSearch('FISHTAL1');
 	$inv->physicalSet(1,$pid,560);
@@ -108,33 +109,35 @@ function initialInventory() {
 	$inv->physicalSet(34,$pid,1000);
 	
 } // initialInventory()	
-function createProductionRecord($entity,$division,$department,$item,$bom,$qty,$start) {
+function createProductionRecord($link,$entity,$division,$department,$item,$bom,$qty,$start) {
 	$_POST = array();
 	$_POST['entity_id'] = $entity;
 	$_POST['division_id'] = $division;
 	$_POST['department_id'] = $department;
 	$_POST['resulting_product_id'] = $item;
 	$_POST['maximum_quantity'] = $qty;
-	$_POST['prod_start_date'] = substring($start,0,10);
-	$_POST['prod_start_time'] = substring($start,11);
+	$_POST['prod_start_date'] = substr($start,0,10);
+	$_POST['prod_start_time'] = substr($start,11);
 	$_POST['bom_id'] = $bom;
 	$_POST['rev_enabled'] = 'N';
 	$_POST['rev_number'] = 1;
 	$prod = new Production($link);
-	$result =  $prod->insertHeader();
+	$result =  $prod->insertHeader(true);
 	return $result;
 } // createProductionRecord()
-function updateProductionDetails() {
+function updateProductionDetails($link,$prodid,$fixedmax=true) {
 	
 } // updateProductionDetails()
-function generateProductionHistory() {
+function generateProductionHistory($link) {
+	$inv = new InventoryManager($link);
+	$item = new ItemManager($link);
 	// Begin fish cycle
 	$entities = array(1,5,8,11,12,13,23,34);
 	$start = new DateTime('2015-01-05 12:00:00');
 	$pid = $item->apiSearch('FISHTAL5');
-	$result = createProductionRecord(1,2,null,$pid,15,40,$start->format('Y-m-d H:i:s'));
-	
+	$result = createProductionRecord($link,1,2,null,$pid,15,40,$start->format('Y-m-d H:i:s'));
+	if (strpos($result,'inserted|')!==false) updateProductionDetails($link,substr($result,9),true);
 } // generateProductionHistory()
-initialInventory();
-generateProductionHistory();
+//initialInventory($link);
+generateProductionHistory($link);
 ?>
