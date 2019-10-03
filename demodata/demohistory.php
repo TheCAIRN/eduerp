@@ -126,7 +126,31 @@ function createProductionRecord($link,$entity,$division,$department,$item,$bom,$
 	return $result;
 } // createProductionRecord()
 function updateProductionDetails($link,$prodid,$fixedmax=true) {
-	
+	$q = 'SELECT * FROM prod_details WHERE prod_id='.$prodid;
+	$result = $link->query($q);
+	if ($result!==false) {
+		$row = $result->fetch_assoc();
+		while ($row1 = $result->fetch_assoc()) {
+			$launch = (new DateTime($row['step_started']))->getTimeStamp();
+			$pct = 0.08;
+			if (rand(0,1000)<2) $pct = 0.50;
+			$_POST = array();
+			$_POST['prod_id'] = $prodid;
+			$_POST['prod_detail_id'] = $row['prod_detail_id'];
+			$launch1 = (new DateTime($row1['step_started']))->getTimeStamp();
+			$interval = $launch1 - $launch;
+			$delta = rand()/getrandmax();
+			$delta = 1.00 + $pct - ((2.00 * $pct) * $delta);
+			$n = $launch + floor($delta * $interval;
+			$finished = (new DateTime($row['step_started']))->setTimeStamp($n);
+			$_POST['step_finished_date'] = $finished->format('Y-m-d');
+			$_POST['step_finished_time'] = $finished->format('H:i:s');
+			
+			
+			$row = $row1;
+			$row['step_started'] = $_POST['step_finished_date'];
+		}
+	}
 } // updateProductionDetails()
 function generateProductionHistory($link) {
 	$inv = new InventoryManager($link);
