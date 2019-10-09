@@ -215,11 +215,15 @@ class Production extends ERPBase {
 			// The only key for Addresses is unified_search.
 			if (is_array($criteria[0]) && count($criteria[0])>=2 && $criteria[0][0]=='unified_search') $criteria = $criteria[0][1];
 			else $criteria='';
-			$q .= " WHERE h.prod_id=? OR entity_name LIKE ? OR d.item_id = ? OR product_code LIKE ? OR product_description LIKE ? OR product_catalog_title LIKE ? OR gtin=? 
+			$q .= " WHERE h.prod_id=? OR entity_name LIKE ? OR h.resulting_product_id = ? OR product_code LIKE ? OR product_description LIKE ? OR product_catalog_title LIKE ? OR gtin=? 
 				OR city LIKE ? OR spc_abbrev = ? OR postal_code LIKE ?";
 			// TODO: Add filter for finished production
 			$q .= ' ORDER BY h.prod_id';
 			$stmt = $this->dbconn->prepare($q);
+			if ($stmt===false) {
+				echo 'fail|'.$this->dbconn->error;
+				return;
+			}
 			$stmt->bind_param('isisssssss',$p1,$p2,$p3,$p4,$p5,$p6,$p7,$p8,$p9,$p10);
 			$p2 = $p4 = $p5 = $p6 = $p8 = $p10 = '%'.$criteria.'%';
 			$p7 = $p9 = $criteria;
@@ -232,10 +236,10 @@ class Production extends ERPBase {
 				$entityname='';
 				$divisionname = '';
 				$productname = '';
-				$stmt->bind_result($this->prod_id,$entityname,$divisionname,$productname,$this->prod_start,$this->prod_due,$this->prod_finished);
+				$stmt->bind_result($this->prod_id,$entityname,$divisionname,$productname,$maxqty,$this->prod_start,$this->prod_due,$this->prod_finished);
 				while ($stmt->fetch()) {
-					$this->recordSet[$this->prod_id] = array('Entity'=>$entityname,'Division'=>$divisionname,'Resulting Product'=>$productname,'Start date'=>$this->prod_start,
-						'Due date'=>$this->prod_due,'Finished date'=>$this->prod_finished);
+					$this->recordSet[$this->prod_id] = array('Entity'=>$entityname,'Division'=>$divisionname,'Resulting Product'=>$productname,'Maximum quantity'=>$maxqty,
+						'Start date'=>$this->prod_start,'Due date'=>$this->prod_due,'Finished date'=>$this->prod_finished);
 				}
 			}
 		// if criteria exists
@@ -246,7 +250,7 @@ class Production extends ERPBase {
 				$this->recordSet = array();
 				while ($row=$result->fetch_assoc()) {
 					$this->recordSet[$row['prod_id']] = array('Entity'=>$row['entity_name'],'Division'=>$row['division_name'],'Resulting Product'=>$row['product_description'],
-						'Start date'=>$row['prod_start'],'Due date'=>$row['prod_due'],'Finished date'=>$row['prod_finished']);
+						'Maximum quantity'=>$row['maximum_quantity'],'Start date'=>$row['prod_start'],'Due date'=>$row['prod_due'],'Finished date'=>$row['prod_finished']);
 				} // while rows
 			} // if query succeeded
 		} // if criteria does not exist
@@ -391,6 +395,7 @@ class Production extends ERPBase {
 		</SCRIPT>';
 	}
 	public function insertHeader($headless=false) {
+		$return_status = '';
 		$this->resetHeader();
 		$this->resetDetail();
 		$this->entity_id = !empty($_POST['entity_id'])?$_POST['entity_id']:null;
@@ -414,26 +419,22 @@ class Production extends ERPBase {
 		$this->last_update_date = new DateTime();
 		
 		if (!isset($_SESSION['Options']) || !isset($_SESSION['Options']['DEFAULT_CURRENCY_CODE'])) {
-			echo 'fail|Please set the default currency code in the Options module.';
-			return;
+			return 'fail|Please set the default currency code in the Options module.';
 		}
 		if (empty($this->entity_id)) {
-			echo 'fail|All production must be assigned to an entity';
-			return;
+			return 'fail|All production must be assigned to an entity';
 		}
 		if (empty($this->bom_id)) {
-			echo 'fail|Production is the application of a Bill of Materials to inventory.  Please select one before saving.';
-			return;
+			return 'fail|Production is the application of a Bill of Materials to inventory.  Please select one before saving.';
 		}
 		if (isset($_SESSION['searchResults']) && isset($_SESSION['searchResults']['BOM'])) unset($_SESSION['searchResults']['BOM']);
 		$bom = new BOM($this->dbconn);
 		$bom->display($this->bom_id,'update');
 		$bomh = $bom->arrayifyHeader();
 		if ($bomh['resulting_product_id']!=$this->resulting_product_id) {
-			echo 'fail|The resulting product of the selected BOM must match the resulting product of production.';
 			unset($bomh);
 			unset($bom);
-			return;
+			return 'fail|The resulting product of the selected BOM must match the resulting product of production.';
 		}
 		if ($this->maximum_quantity==0) $this->maximum_quantity = $bomh['resulting_quantity'];
 		
@@ -459,7 +460,7 @@ class Production extends ERPBase {
 		$result = $stmt->execute();
 		if ($result!==false) {
 			$this->prod_id = $this->dbconn->insert_id;
-			echo 'inserted|'.$this->prod_id."\r\n";
+			$return_status .= 'inserted|'.$this->prod_id."\r\n";
 			// Update inventory WIP
 			$inv = new InventoryManager($this->dbconn);
 			$inv->productionUpdateWIP($this->prod_id,$this->entity_id,$this->resulting_product_id,$this->maximum_quantity);
@@ -489,12 +490,17 @@ class Production extends ERPBase {
 			if (!isset($_SESSION['searchResults'])) $_SESSION['searchResults'] = array();
 			if (!isset($_SESSION['searchResults']['Production'])) $_SESSION['searchResults']['Production'] = array();
 			$_SESSION['searchResults']['Production'][] = $this->prod_id;		
-			if (!$headless) $this->display($this->prod_id);
+			if (!$headless) {
+				echo $return_status;
+				$return_status = '';
+				$this->display($this->prod_id);
+			}
 		} else {
-			echo 'fail|'.$this->dbconn->errno.': '.$this->dbconn->error;
+			$return_status .= 'fail|'.$this->dbconn->errno.': '.$this->dbconn->error;
 			$this->mb->addError($this->dbconn->error);
 			$stmt->close();
 		}
+		return $return_status;
 	} // insertHeader()
 	public function insertDetail($bomdid=null,$bomstep=null,$multiplier=1) {
 		$output = "";
@@ -729,17 +735,17 @@ class Production extends ERPBase {
 		// Compare updatable fields
 		if (!empty($_POST['step_started_date']) && !is_null($_POST['step_started_time'])) {
 			$startdate = new DateTime($_POST['step_started_date'].' '.$_POST['step_started_time']);
-			if (!empty($startdate) && $startdate->format('Y-m-d H:i:s')==$this->step_started->format('Y-m-d H:i:s')) 
+			if (!empty($startdate) && $startdate->format('Y-m-d H:i:s')!=$this->step_started->format('Y-m-d H:i:s')) 
 				$update['step_started'] = array('s',$startdate->format('Y-m-d H:i:s'));
 		}
 		if (!empty($_POST['step_due_date']) && !is_null($_POST['step_due_time'])) {
 			$duedate = new DateTime($_POST['step_due_date'].' '.$_POST['step_due_time']);
-			if (!empty($duedate) && $duedate->format('Y-m-d H:i:s')==$this->step_due->format('Y-m-d H:i:s')) 
+			if (!empty($duedate) && $duedate->format('Y-m-d H:i:s')!=$this->step_due->format('Y-m-d H:i:s')) 
 				$update['step_due'] = array('s',$duedate->format('Y-m-d H:i:s'));
 		}
 		if (!empty($_POST['step_finished_date']) && !is_null($_POST['step_finished_time'])) {
 			$finisheddate = new DateTime($_POST['step_finished_date'].' '.$_POST['step_finished_time']);
-			if (!empty($finisheddate) && $finisheddate->format('Y-m-d H:i:s')==$this->step_finished->format('Y-m-d H:i:s')) 
+			if (!empty($finisheddate) && $finisheddate->format('Y-m-d H:i:s')!=$this->step_finished->format('Y-m-d H:i:s')) 
 				$update['step_finished'] = array('s',$finisheddate->format('Y-m-d H:i:s'));
 		}
 		if (isset($_POST['step_cost']) && $_POST['step_cost']!=$this->step_cost) $update['step_cost'] = array('d',$_POST['step_cost']);
