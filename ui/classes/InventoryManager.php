@@ -798,7 +798,28 @@ class InventoryManager extends ERPBase {
 			return false;
 		}				
 	} // physicalSet
-	
+	public function getEntityInventory($entity,$item,$mode='ATS') {
+		$invid = $this->getInventoryId($entity,$item);
+		$q = 'SELECT inventory_id,inv.entity_id,entity_name,inv.product_id,product_description,total_on_hand,total_in_wip,total_on_order,total_reserved,total_unshipped_sold,total_shipped_sold
+			FROM inv_master inv 
+			JOIN ent_entities ent ON inv.entity_id=ent.entity_id
+			JOIN cx_addresses addr ON ent.primary_address=addr.address_id
+			JOIN item_master item ON inv.product_id=item.product_id
+			WHERE inv.inventory_id='.$invid;
+		$result = $this->dbconn->query($q);
+		if ($result!==false) {
+			$row = $result->fetch_assoc();
+			$ats = $row['total_on_hand'] + $row['total_in_wip'] + $row['total_on_order'] - $row['total_reserved'] - $row['total_unshipped_sold'];
+			if ($mode=='ATS') return $ats;
+			if ($mode=='QOH') return $row['total_on_hand'];
+			if ($mode=='WIP') return $row['total_in_wip'];
+			if ($mode=='PUR') return $row['total_on_order'];
+			if ($mode=='RES') return $row['total_reserved'];
+			if ($mode=='ORD') return $row['total_unshipped_sold'];
+			if ($mode=='INV') return $row['total_shipped_sold'];
+		}
+		return false;
+	} // getEntityInventory
 	/***************************************************************
 	 *** UI SUPPORT ************************************************
 	 ***************************************************************/

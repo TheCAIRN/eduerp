@@ -125,17 +125,23 @@ function createProductionRecord($link,$entity,$division,$department,$item,$bom,$
 	$result =  $prod->insertHeader(true);
 	return $result;
 } // createProductionRecord()
-function makePostProductionDetails($row) {
-	
-}
 function updateProductionDetails($link,$prodid,$fixedmax=true) {
 	echo "\r\nUpdating details for prod_id $prodid.\r\n";
-	$q = 'SELECT * FROM prod_detail WHERE prod_id='.$prodid;
+	$item = new ItemManager($link);
+	$fish1 = $item->apiSearch('FISHTAL1');
+	$fish2 = $item->apiSearch('FISHTAL2');
+	$fish3 = $item->apiSearch('FISHTAL3');
+	$fish4 = $item->apiSearch('FISHTAL4');
+	$fish5 = $item->apiSearch('FISHTAL5');
+	$fish_qty = 0;
+	$fish_array = array($fish1,$fish2,$fish3,$fish4,$fish5);
+	$q = 'SELECT * FROM prod_detail d JOIN bom_detail b ON d.bom_detail_id=b.bom_detail_id WHERE prod_id='.$prodid;
 	$result = $link->query($q);
 	$prod = new Production($link);
 	$row = null;
 	$finished_date = '';
 	$finished_time = '';
+	$genqty = array();
 	if ($result!==false) {
 		$row = $result->fetch_assoc();
 		$prevPost = array();
@@ -150,11 +156,14 @@ function updateProductionDetails($link,$prodid,$fixedmax=true) {
 			$_POST['step_started_date'] = substr($row['step_started'],0,10);
 			$_POST['step_started_time'] = substr($row['step_started'],11);
 			$launch1 = (new DateTime($row1['step_started']))->getTimeStamp();
-			$interval = $launch1 - $launch;
+			//$interval = $launch1 - $launch;
+			$interval = $row['seconds_to_process'];
+			if (is_null($interval)) $interval = 0;
 			$delta = rand()/getrandmax();
 			$delta = 1.00 + $pct - ((2.00 * $pct) * $delta);
 			$n = $launch + floor($delta * $interval);
-			$finished = (new DateTime($row['step_started']))->setTimeStamp($n);
+			//$finished = (new DateTime($row['step_started']))->setTimeStamp($n);
+			$finished = (new DateTime())->setTimeStamp($n);
 			echo 'Finished: '.$finished->format('Y-m-d H:i:s')."\r\n";
 			$_POST['step_finished_date'] = $finished->format('Y-m-d');
 			$_POST['step_finished_time'] = $finished->format('H:i:s');
@@ -168,12 +177,23 @@ function updateProductionDetails($link,$prodid,$fixedmax=true) {
 					$_POST['quantity_consumed'] = ($row['planned_consumed']*$qdelta);
 				if (isset($prevRow['item_generated_id']) && $prevRow['item_generated_id']==$row['item_consumed_id'] && $_POST['quantity_consumed']>$prevPost['quantity_generated'])
 					$_POST['quantity_consumed'] = $prevPost['quantity_generated'];
+				if (in_array($row['item_consumed_id'],$fish_array)) {
+					if ($fish_qty==0) $fish_qty = $_POST['quantity_consumed'];
+					elseif ($_POST['quantity_consumed'] > $fish_qty) $_POST['quantity_consumed'] = $fish_qty;
+					elseif ($fish_qty > $_POST['quantity_consumed']) $fish_qty = $_POST['quantity_consumed'];
+				}
 			}
 			if ($row['planned_generated']>0) {
 				if ($row['planned_generated']==floor($row['planned_generated']))
 					$_POST['quantity_generated'] = floor(($row['planned_generated']*$qdelta)+0.5);
 				else
 					$_POST['quantity_generated'] = ($row['planned_generated']*$qdelta);
+				$genqty[$row['item_generated_id']] = $_POST['quantity_generated'];
+				if (in_array($row['item_generated_id'],$fish_array)) {
+					if ($fish_qty==0) $fish_qty = $_POST['quantity_generated'];
+					elseif ($_POST['quantity_generated'] > $fish_qty) $_POST['quantity_generated'] = $fish_qty;
+					elseif ($fish_qty > $_POST['quantity_generated']) $fish_qty = $_POST['quantity_generated'];
+				}
 			}
 			$updateresult = $prod->updateDetail();
 			echo $updateresult."\r\n";
@@ -198,12 +218,22 @@ function updateProductionDetails($link,$prodid,$fixedmax=true) {
 				$_POST['quantity_consumed'] = floor(($row['planned_consumed']*$qdelta)+0.5);
 			else
 				$_POST['quantity_consumed'] = ($row['planned_consumed']*$qdelta);
+			if (in_array($row['item_consumed_id'],$fish_array)) {
+				if ($fish_qty==0) $fish_qty = $_POST['quantity_consumed'];
+				elseif ($_POST['quantity_consumed'] > $fish_qty) $_POST['quantity_consumed'] = $fish_qty;
+				elseif ($fish_qty > $_POST['quantity_consumed']) $fish_qty = $_POST['quantity_consumed'];
+			}
 		}
 		if ($row['planned_generated']>0) {
 			if ($row['planned_generated']==floor($row['planned_generated']))
 				$_POST['quantity_generated'] = floor(($row['planned_generated']*$qdelta)+0.5);
 			else
 				$_POST['quantity_generated'] = ($row['planned_generated']*$qdelta);
+			if (in_array($row['item_generated_id'],$fish_array)) {
+				if ($fish_qty==0) $fish_qty = $_POST['quantity_generated'];
+				elseif ($_POST['quantity_generated'] > $fish_qty) $_POST['quantity_generated'] = $fish_qty;
+				elseif ($fish_qty > $_POST['quantity_generated']) $fish_qty = $_POST['quantity_generated'];
+			}
 		}
 		$updateresult = $prod->updateDetail();
 		echo $updateresult."\r\n";
@@ -217,16 +247,71 @@ function updateProductionDetails($link,$prodid,$fixedmax=true) {
 	$result = $prod->updateHeader();
 	echo $result."\r\n";
 } // updateProductionDetails()
+function createSalesOrder($link,$ent, $div, $cust,$pid,$ats,$orderdate) {
+	$_POST = array();
+	$so = new SalesOrder($link);
+	$_POST['level'] = 'header';
+	$_POST['h1'] = 0; // sales order #
+	$_POST['h4'] = 'I'; // Order status: invoiced
+	$_POST['h5'] = $cust; // customer ID
+	$_POST['h7'] = 1; // Seller ID = admin/root
+	$_POST['h8'] = $ent; // entity
+	$_POST['h9'] = $div; // division
+	$_POST['h11'] = $ent; // inventory entity = entity
+	$_POST['h12'] = 'USD'; // currency = U.S. dollars
+	$_POST['h13'] = true; // visible = true
+	$_POST['o1'] = 'FMKT'.$orderdate->format('Ymd').'A'; // customer PO #
+	$_POST['o6'] = $orderdate->format('Y-m-d H:i:s'); // order date
+	$_POST['o7'] = $_POST['o6']; // credit release date
+	$_POST['o8'] = $orderdate->format('Y-m-d');	// start ship date
+	$endship = new DateTime()->setTimestamp($orderdate->getTimestamp() + (86400 * 2));
+	$_POST['o9'] = $endship->format('Y-m-d');
+	$mustarrive = new DateTime()->setTimestamp($orderdate->getTimestamp() + (86400 * 4));
+	$_POST['o11'] = $mustarrive->format('Y-m-d');
+	$_POST['p2'] = $_POST['o6']; // wave date
+	$_POST['s1'] = 4; // Shipper = local customer pickup
+	$_POST['s6d'] = $orderdate->format('Y-m-d'); // Pickup date appointment
+	$_POST['s6t'] = $orderdate->format('H:i:s');
+	$_POST['s7d'] = $_POST['s6d']; // Inventory loaded date
+	$_POST['s7t'] = $_POST['s6t'];
+	$_POST['s9'] = $_POST['o6']; // order shipped date
+	$_POST['i2'] = $_POST['i3'] = $_POST['o6']; // invoice and invoice paid date
+	$rtn = $so->insertRecord(true);
+	echo $rtn;
+	
+} // createSalesOrder
 function generateProductionHistory($link) {
 	$inv = new InventoryManager($link);
 	$item = new ItemManager($link);
 	// Begin fish cycle
 	$entities = array(1,5,8,11,12,13,23,34);
-	$start = new DateTime('2015-01-05 12:00:00');
+	$customers = array(7,11,14,17,18,19);
 	$pid = $item->apiSearch('FISHTAL5');
-	$result = createProductionRecord($link,1,2,null,$pid,15,40,$start->format('Y-m-d H:i:s'));
-	//if (strpos($result,'inserted|')!==false) 
-	updateProductionDetails($link,substr($result,9),true);
+	for ($ee=0;$ee<count($entities);$ee++) {
+		$start = new DateTime('2015-01-05 12:00:00');
+		$stop = new DateTime('2019-03-14 12:00:00');
+		while ($start->getTimestamp() <= $stop->getTimestamp()) {
+			$result = createProductionRecord($link,1,2,null,$pid,15,40,$start->format('Y-m-d H:i:s'));
+			//if (strpos($result,'inserted|')!==false) 
+			updateProductionDetails($link,substr($result,9),true);
+			// purchase more fish food
+			
+			// purchase more fry
+			
+			// sell fish
+			$ats = $inv->getEntityInventory($entities[$ee],$pid,'ATS');
+			if (isset($customers[$ee])) {
+				$orderdate = new DateTime()->setTimestamp($start->getTimestamp+(3600 * 24 * 7 * 35));
+				$order = createSalesOrder($link,$entities[$ee],2,$customers[$ee],$pid,$ats,$orderdate);
+			} // Only create sales for the appropriate customer
+			// Advance timestamp
+			$start_ts = $start->getTimestamp();
+			$start_ts += (3600 * 24 * 7); // Advance activity by one week
+			$start->setTimestamp($start_ts);
+			break;
+		} // while time keeps going
+		break;
+	} // for each entity
 } // generateProductionHistory()
 //initialInventory($link);
 generateProductionHistory($link);

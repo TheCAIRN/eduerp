@@ -1421,15 +1421,19 @@ class SalesOrders extends ERPBase {
 			$stmt->close();
 		}
 	}
-	public function insertRecord() {
+	public function insertRecord($headless=false) {
 		// Assumes values are stored in $_POST
-		if (isset($_POST['level']) && $_POST['level']=='header') $this->insertHeader();
-		if (isset($_POST['level']) && $_POST['level']=='detail') $this->insertDetail();
+		if (isset($_POST['level']) && $_POST['level']=='header') $rtn = $this->insertHeader();
+		if (isset($_POST['level']) && $_POST['level']=='detail') $rtn = $this->insertDetail();
+		if (!$headless) echo $rtn;
+		return $rtn;
 	}
-	public function updateRecord() {
+	public function updateRecord($headless=false) {
 		// Assumes values are stored in $_POST
-		if (isset($_POST['level']) && $_POST['level']=='header') $this->updateHeader();
-		if (isset($_POST['level']) && $_POST['level']=='detail') $this->updateDetail();
+		if (isset($_POST['level']) && $_POST['level']=='header') $rtn = $this->updateHeader();
+		if (isset($_POST['level']) && $_POST['level']=='detail') $rtn = $this->updateDetail();
+		if (!$headless) echo $rtn;
+		return $rtn;
 	}
 	public function saveRecord() {
 		

@@ -13,10 +13,12 @@ VALUES
 (851,54002,1,NULL,NULL,851,'54002.00851','United Parcel Service',0,'USD','N',1,1,NOW(),1,NOW())
 ,(852,54002,1,NULL,NULL,852,'54002.00852','Federal Express',0,'USD','N',1,1,NOW(),1,NOW())
 ,(853,54002,1,NULL,NULL,853,'54002.00853','United States Postal Service',0,'USD','N',1,1,NOW(),1,NOW())
+,(854,54002,1,NULL,NULL,854,'54002.00854','Local pickup',0,'USD','N',1,1,NOW(),1,NOW())
 ;
 
 INSERT INTO fv_freight_vendors (fv_vendor_id,fv_vendor_abbreviation,fv_vendor_name,fv_vendor_scac,fv_type_id,gl_account_id,primary_address,fv_vendor_status,rev_enabled,rev_number,created_by,creation_date,last_update_by,last_update_date) VALUES
 (1,'UPS','United Parcel Service','UPSN',14,851,851,'A','N',1,1,NOW(),1,NOW())
 ,(2,'FEDEX','Federal Express','FEDX',14,852,852,'A','N',1,1,NOW(),1,NOW())
 ,(3,'USPS','United States Postal Service','USPS',6,853,853,'A','N',1,1,NOW(),1,NOW())
+,(4,'PICKUP','Local pickup','',8,854,NULL,'A','N',1,1,NOW(),1,NOW())
 ;
