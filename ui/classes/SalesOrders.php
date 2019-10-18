@@ -699,7 +699,7 @@ class SalesOrders extends ERPBase {
 		}
 		//echo $html;
 		$_SESSION['currentScreen'] = 2044;
-		if (!isset($_SESSION['searchResults']) && !isset($_SESSION['searchResults']['SalesOrders']))
+		if (!isset($_SESSION['searchResults']) || !isset($_SESSION['searchResults']['SalesOrders']))
 			$_SESSION['idarray'] = array(0,0,$id,0,0);
 		else {
 			$idloc = array_search($id,$_SESSION['searchResults']['SalesOrders'],false);
@@ -733,6 +733,7 @@ class SalesOrders extends ERPBase {
 		$_SESSION['currentScreen'] = 4044;
 	}
 	private function insertHeader() {
+		$rtn = '';
 		$this->resetHeader();
 		$this->resetDetail();
 		$ordernum = isset($_POST['h1'])?$_POST['h1']:0;
@@ -850,8 +851,7 @@ class SalesOrders extends ERPBase {
 		if (is_integer($parent) || ctype_digit($parent)) $h2 = $parent; else $h2 = null;
 		if (is_integer($ordertype) || ctype_digit($ordertype)) $h3 = $ordertype; else $h3 = null;
 		if (strpos('QqOoHhPpBbSsIiCcRr',$orderstatus)===false) {
-			echo 'fail|The order status ('.$orderstatus.') provided is not a valid choice.';
-			return;
+			return 'fail|The order status ('.$orderstatus.') provided is not a valid choice.';
 		}
 		$h4 = $orderstatus;
 		if (is_integer($customerid) || ctype_digit($customerid)) $h5 = $customerid; else $h5 = null;
@@ -906,25 +906,25 @@ class SalesOrders extends ERPBase {
 		$h17 = $_SESSION['dbuserid'];
 		$result = $stmt->execute();
 		if ($result!==false) {
-			echo 'inserted|'.$this->dbconn->insert_id;
+			$rtn .= 'inserted|'.$this->dbconn->insert_id;
 		} else {
-			echo 'fail|'.$this->dbconn->error;
+			$rtn .= 'fail|'.$this->dbconn->error;
 			$this->mb->addError($this->dbconn->error);
 		}
 		$stmt->close();
+		return $rtn;
 	} // insertHeader()
 	private function insertDetail() {
+		$rtn = '';
 		$this->resetDetail();
 		if (!isset($_POST['sales_order_number']) /*|| $_POST['sales_order_number']!=$this->sales_order_number*/) {
 			$this->mb->addError("Details cannot be inserted when the sales order number is zero, or the header and detail don't match.");
-			echo 'fail|Header-detail mismatch {'.$_POST['sales_order_number'].'}';
-			return;
+			return 'fail|Header-detail mismatch {'.$_POST['sales_order_number'].'}';
 		}
 		$this->sales_order_number = $_POST['sales_order_number'];
 		$this->display($this->sales_order_number,'update'); // Display already has the logic for loading the record.  TODO: Refactor into separate function.
 		if (is_null($this->sales_order_number)) {
-			echo 'fail|Invalid sales order number for adding items.';
-			return;
+			return 'fail|Invalid sales order number for adding items.';
 		}
 		$this->sales_order_line = !empty($_POST['sales_order_line'])?$_POST['sales_order_line']:0;
 		if (empty($this->sales_order_line)) {
@@ -992,9 +992,8 @@ class SalesOrders extends ERPBase {
 			$p36,$p37,$p38,$p39,$p41);
 		if ($this->sales_order_number==0) {
 			$this->mb->addError("Details cannot be inserted when the sales order number is zero.");
-			echo 'fail|Sales Order Number is zero.';
 			$stmt->close();
-			return;
+			return 'fail|Sales Order Number is zero.';
 		}
 		$p1 = $this->sales_order_number;
 		$p2 = $this->sales_order_line;
@@ -1044,12 +1043,13 @@ class SalesOrders extends ERPBase {
 		$p41 = $_SESSION['dbuserid'];
 		$result = $stmt->execute();
 		if ($result!==false) {
-			echo 'inserted|'.$this->sales_order_line;
+			$rtn .= 'inserted|'.$this->sales_order_line;
 			$inv = new InventoryManager($this->dbconn);
 			if ($this->sales_order_status=='Q' || $this->sales_order_status=='H') {
 				$inv->salesReserve(($this->sales_order_number*100)+$this->sales_order_line,$this->dentity_id,$this->item_id,$this->quantity_requested);
 			} elseif ($this->sales_order_status=='S' || $this->sales_order_status=='I') {
-				$inv->salesShip(($this->sales_order_number*100)+$this->sales_order_line,$this->dentity_id,$this->item_id,$this->quantity_shipped - $this->quantity_returned);
+				// This inventory is being entered as shipped, without previously being entered as unshipped.
+				$inv->salesShip(($this->sales_order_number*100)+$this->sales_order_line,$this->dentity_id,$this->item_id,$this->quantity_shipped - $this->quantity_returned,'insert');
 			} else {
 				$inv->salesSold(($this->sales_order_number*100)+$this->sales_order_line,$this->dentity_id,$this->item_id,$this->quantity_requested - $this->quantity_shipped - 
 					$this->quantity_returned - $this->quantity_cancelled);
@@ -1057,25 +1057,24 @@ class SalesOrders extends ERPBase {
 			}
 			
 		} else {
-			echo 'fail|'.$this->dbconn->error;
+			$rtn .= 'fail|'.$this->dbconn->error;
 			$this->mb->addError($this->dbconn->error);
 		}
 		$stmt->close();
-
+		return $rtn;
 	}
 	private function updateHeader() {
+		$rtn = '';
 		$this->resetHeader();
 		$this->resetDetail();
 		$now = new DateTime();
 		$id = $_POST['h1'];
 		if ((!is_integer($id) && !ctype_digit($id)) || $id<1) {
-			echo 'fail|Invalid sales order number for updating';
-			return;
+			return 'fail|Invalid sales order number for updating';
 		}
 		$this->display($id,'update'); // Display already has the logic for loading the record.  TODO: Refactor into separate function.
 		if (is_null($this->sales_order_number)) {
-			echo 'fail|Invalid sales order number for updating';
-			return;
+			return 'fail|Invalid sales order number for updating';
 		}
 		$update = array();
 		if (isset($_POST['h2']) && $_POST['h2']!=$this->parent) $update['parent'] = array('i',$_POST['h2']);
@@ -1204,8 +1203,7 @@ class SalesOrders extends ERPBase {
 		// Create UPDATE String
 		
 		if (count($update)<=2) { // last update is always set
-			echo 'fail|Nothing to update';
-			return;
+			return 'fail|Nothing to update';
 		}
 		$q = 'UPDATE sales_header SET ';
 		$ctr = 0;
@@ -1236,7 +1234,7 @@ class SalesOrders extends ERPBase {
 		$bp_method->invokeArgs($stmt,$bp_values);
 		$stmt->execute();
 		if ($stmt->affected_rows > 0) {
-			echo 'updated';
+			$rtn .= 'updated';
 			$inv = new InventoryManager($this->dbconn);
 			if (isset($update['sales_order_status'])) {
 				foreach($this->detail_array as $line=>$record) {
@@ -1255,35 +1253,33 @@ class SalesOrders extends ERPBase {
 			}
 		} else {
 			if ($this->dbconn->error) {
-				echo 'fail|'.$this->dbconn->error;
+				$rtn .= 'fail|'.$this->dbconn->error;
 				$this->mb->addError($this->dbconn->error);
-			} else echo 'fail|No rows updated';
+			} else $rtn .= 'fail|No rows updated';
 		}
 		$stmt->close();
+		return $rtn;
 	} // updateHeader()
 	private function updateDetail() {
+		$rtn = '';
 		$this->resetHeader();
 		$this->resetDetail();
 		$now = new DateTime();
 		$id = $_POST['sales_order_number'];
 		if ((!is_integer($id) && !ctype_digit($id)) || $id<1) {
-			echo 'fail|Invalid sales order number for updating';
-			return;
+			return 'fail|Invalid sales order number for updating';
 		}
 		$this->display($id,'update'); // Display already has the logic for loading the record.  TODO: Refactor into separate function.
 		if (is_null($this->sales_order_number)) {
-			echo 'fail|Invalid sales order number for updating';
-			return;
+			return 'fail|Invalid sales order number for updating';
 		}
 		if ((!isset($_POST['sales_order_line']) || (!is_integer($_POST['sales_order_line']) && !ctype_digit($_POST['sales_order_line']))) || 
 			!isset($this->detail_array[$_POST['sales_order_line']])) {
-			echo 'fail|Invalid sales order line for updating';
-			return;
+			return 'fail|Invalid sales order line for updating';
 		}
 		$result = $this->unarrayifyDetail($_POST['sales_order_line']);
 		if (!$result) {
-			echo 'fail|Cannot update detail line '.$_POST['sales_order_line'].'. There is a problem getting the detail record.';
-			return;
+			return 'fail|Cannot update detail line '.$_POST['sales_order_line'].'. There is a problem getting the detail record.';
 		}
 		$update = array();
 		if (isset($_POST['parent_line']) && $_POST['parent_line']!=$this->parent_line) $update['parent_line'] = array('i',$_POST['parent_line']);
@@ -1350,8 +1346,7 @@ class SalesOrders extends ERPBase {
 		// Create UPDATE String
 		
 		if (count($update)<=2) { // last update is always set
-			echo 'fail|Nothing to update';
-			return;
+			return 'fail|Nothing to update';
 		}
 		$q = 'UPDATE sales_detail SET ';
 		$ctr = 0;
@@ -1383,7 +1378,7 @@ class SalesOrders extends ERPBase {
 		$bp_method->invokeArgs($stmt,$bp_values);
 		$stmt->execute();
 		if ($stmt->affected_rows > 0) {
-			echo 'updated';
+			$rtn .= 'updated';
 			$stmt->close();
 			// TODO: Adjust inventory
 			$inv = new InventoryManager($this->dbconn);
@@ -1415,11 +1410,12 @@ class SalesOrders extends ERPBase {
 			}
 		} else {
 			if ($this->dbconn->error) {
-				echo 'fail|'.$this->dbconn->error;
+				$rtn .= 'fail|'.$this->dbconn->error;
 				$this->mb->addError($this->dbconn->error);
-			} else echo 'fail|No rows updated';
+			} else $rtn .= 'fail|No rows updated';
 			$stmt->close();
 		}
+		return $rtn;
 	}
 	public function insertRecord($headless=false) {
 		// Assumes values are stored in $_POST

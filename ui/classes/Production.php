@@ -358,7 +358,7 @@ class Production extends ERPBase {
 			}
 		} // if result
 		$_SESSION['currentScreen'] = 2008;
-		if (!isset($_SESSION['searchResults']) && !isset($_SESSION['searchResults']['Production']))
+		if (!isset($_SESSION['searchResults']) || !isset($_SESSION['searchResults']['Production']))
 			$_SESSION['idarray'] = array(0,0,$id,0,0);
 		else {
 			$idloc = array_search($id,$_SESSION['searchResults']['Production'],false);

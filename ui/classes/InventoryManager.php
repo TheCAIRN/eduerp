@@ -678,7 +678,7 @@ class InventoryManager extends ERPBase {
 			return false;
 		}
 	} // SalesMoveSold
-	public function salesShip($salesdetailid,$entity,$item,$quantity) {
+	public function salesShip($salesdetailid,$entity,$item,$quantity,$insupd='update') {
 		// Record the shipment in inventory transactions, and update the inventory master accordingly.
 		$invid = $this->getInventoryId($entity,$item);
 		if (is_null($invid)) {
@@ -693,7 +693,7 @@ class InventoryManager extends ERPBase {
 		$o1 = $salesdetailid;
 		$o2 = $o2a = $invid;
 		$o3 = -1 * $quantity;
-		$o3b = -1 * $quantity;
+		$o3b = $insupd=='update'?(-1 * $quantity):0;	// If the ship request is a new record, don't deduct unshipped quantity because it was never added in the first place.
 		$o3c = $quantity;
 		$o4 = $o5 = $_SESSION['dbuserid'];
 		$result1 = $stmt1->execute();
@@ -701,7 +701,7 @@ class InventoryManager extends ERPBase {
 			$stmt1->close();
 			$this->display($invid,'update');
 			$this->total_on_hand -= $quantity;
-			$this->total_unshipped_sold -= $quantity;
+			$this->total_unshipped_sold -= $insupd=='update'?$quantity:0;
 			$this->total_shipped_sold += $quantity;
 			$q2 = "UPDATE inv_master SET total_on_hand=?,total_unshipped_sold=?,total_shipped_sold=?,last_update_by=?,last_update_date=NOW() WHERE inventory_id=?";
 			$stmt2 = $this->dbconn->prepare($q2);

@@ -247,9 +247,9 @@ function updateProductionDetails($link,$prodid,$fixedmax=true) {
 	$result = $prod->updateHeader();
 	echo $result."\r\n";
 } // updateProductionDetails()
-function createSalesOrder($link,$ent, $div, $cust,$pid,$ats,$orderdate) {
+function createSalesOrder($link,$ent, $div, $cust,$pid,$ats,$orderdate, $uom, $price) {
 	$_POST = array();
-	$so = new SalesOrder($link);
+	$so = new SalesOrders($link);
 	$_POST['level'] = 'header';
 	$_POST['h1'] = 0; // sales order #
 	$_POST['h4'] = 'I'; // Order status: invoiced
@@ -264,9 +264,11 @@ function createSalesOrder($link,$ent, $div, $cust,$pid,$ats,$orderdate) {
 	$_POST['o6'] = $orderdate->format('Y-m-d H:i:s'); // order date
 	$_POST['o7'] = $_POST['o6']; // credit release date
 	$_POST['o8'] = $orderdate->format('Y-m-d');	// start ship date
-	$endship = new DateTime()->setTimestamp($orderdate->getTimestamp() + (86400 * 2));
+	$endship = new DateTime();
+	$endship = $endship->setTimestamp($orderdate->getTimestamp() + (86400 * 2));
 	$_POST['o9'] = $endship->format('Y-m-d');
-	$mustarrive = new DateTime()->setTimestamp($orderdate->getTimestamp() + (86400 * 4));
+	$mustarrive = new DateTime();
+	$mustarrive = $mustarrive->setTimestamp($orderdate->getTimestamp() + (86400 * 4));
 	$_POST['o11'] = $mustarrive->format('Y-m-d');
 	$_POST['p2'] = $_POST['o6']; // wave date
 	$_POST['s1'] = 4; // Shipper = local customer pickup
@@ -278,7 +280,31 @@ function createSalesOrder($link,$ent, $div, $cust,$pid,$ats,$orderdate) {
 	$_POST['i2'] = $_POST['i3'] = $_POST['o6']; // invoice and invoice paid date
 	$rtn = $so->insertRecord(true);
 	echo $rtn;
-	
+	if (strpos($rtn,'inserted')===0) $sonum = substr($rtn,9);
+	else return;
+	$hpost = $_POST;
+	$_POST = array();
+	$_POST['level'] = 'detail';
+	$_POST['sales_order_number'] = $sonum;
+	$_POST['sales_order_line'] = 1;
+	$_POST['dentity_id'] = $ent;
+	$_POST['ddivision_id'] = $div;
+	$_POST['customer_line'] = 1;
+	$_POST['item_id'] = $pid;
+	$pct = rand()/getrandmax();
+	if ($pct < 0.5) $pct *= 2;
+	$qty = round($pct*$ats);
+	$_POST['quantity_requested'] = $qty;
+	$_POST['quantity_shipped'] = $qty;
+	$_POST['quantity_uom'] = $uom;
+	$_POST['price'] = $price;
+	$_POST['dcredit_release_date'] = $hpost['o7'];
+	$_POST['dwave_date'] = $hpost['p2'];
+	$_POST['line_shipped_date'] = $hpost['s9'];
+	$_POST['line_invoiced_date'] = $hpost['i2'];
+	$_POST['dvisible'] = true;
+	$rtn = $so->insertRecord(true);
+	echo $rtn;	
 } // createSalesOrder
 function generateProductionHistory($link) {
 	$inv = new InventoryManager($link);
@@ -301,8 +327,9 @@ function generateProductionHistory($link) {
 			// sell fish
 			$ats = $inv->getEntityInventory($entities[$ee],$pid,'ATS');
 			if (isset($customers[$ee])) {
-				$orderdate = new DateTime()->setTimestamp($start->getTimestamp+(3600 * 24 * 7 * 35));
-				$order = createSalesOrder($link,$entities[$ee],2,$customers[$ee],$pid,$ats,$orderdate);
+				$orderdate = new DateTime();
+				$orderdate = $orderdate->setTimestamp($start->getTimestamp()+(3600 * 24 * 7 * 35));
+				$order = createSalesOrder($link,$entities[$ee],2,$customers[$ee],$pid,$ats,$orderdate, 'LBS',9.99);
 			} // Only create sales for the appropriate customer
 			// Advance timestamp
 			$start_ts = $start->getTimestamp();
