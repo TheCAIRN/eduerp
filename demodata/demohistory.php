@@ -335,9 +335,9 @@ function generateProductionHistory($link) {
 			$start_ts = $start->getTimestamp();
 			$start_ts += (3600 * 24 * 7); // Advance activity by one week
 			$start->setTimestamp($start_ts);
-			break;
+			//break;
 		} // while time keeps going
-		break;
+		//break;
 	} // for each entity
 } // generateProductionHistory()
 //initialInventory($link);
