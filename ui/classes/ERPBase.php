@@ -16,7 +16,7 @@ class ERPBase {
 		$this->recordSet = array();
 		$this->searchFields = array();
 		$this->entryFields = array();
-		$this->mb = new MessageBar();
+		$this->mb = new Messagebar();
 		$this->supportsAttachments = false;
 		$this->supportsNotes = false;
 	} // constructor

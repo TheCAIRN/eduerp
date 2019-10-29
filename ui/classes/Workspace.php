@@ -75,6 +75,8 @@ class Workspace {
 			case 61: $this->notInstalled("Attachment Types"); break;
 			case 62: $this->notInstalled("Cancellation Reason Codes"); break;
 			case 63: $boms = new BOMSteps($this->dbconn); echo $boms->searchPage(); break;
+			case 64: $this->notInstalled("Divisions"); break;
+			case 65: $this->notInstalled("Departments"); break;
 			/* 1000-1999: List Records */
 			case 1002: $ent = new Entity($this->dbconn); $ent->listRecords(); break;
 			case 1005: $vend = new Vendor($this->dbconn); $vend->listRecords(); break;
@@ -186,7 +188,7 @@ class Workspace {
 	private function coreSubmenu() {
 		// TODO: Only display those modules the user has permissions to.
 		$module_list = ['Currency','Country','Language','State','UOM Types','UOM','UOM Conversions','Terms','Note Types','Attachment Types','Cancellation Reason Codes',
-			'BOM Steps'];
+			'BOM Steps','Divisions','Departments'];
 		$html = '';
 		foreach ($module_list as $module) {
 			$html .= '<DIV id="'.str_replace(' ','',$module).'ModuleIcon" class="DashboardIcon" onClick="selectModule(this);">'.$module."</DIV>\r\n";

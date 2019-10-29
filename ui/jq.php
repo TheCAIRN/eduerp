@@ -83,7 +83,7 @@ function jquery() {
 			'ReportSetup','Dashboards','Reports','Accounting','ChartofAccounts','GLPeriods','GLAccounts','GLBalances','GLJournal','FreightVendorTypes','FreightVendors',
 			'InboundFreight','OutboundFreight','SalesOrders','SalesPayments','SalesOrderTypes','Admin','SystemOptions','UserAccounts','SecurityGroups','Permissions',
 			'Currency','Country','Language','State','UOMTypes','UOM','UOMConversions','Terms','NoteTypes','AttachmentTypes','CancellationReasonCodes','BOMSteps'
-			);
+			'Divisions','Departments');
 		$setcs = array_search($module,$cs); // Set the current screen to the index # of the $cs array.
 		if (is_integer($setcs)) $ws->setCurrentScreen($setcs);
 		else {
