@@ -1,4 +1,5 @@
 var NewRecordAttachmentPane = '';
+var kvp = [];
 function logout() {
 	$.post('jq.php',{jquery:'logoff'},function(data) {
 		location.reload(true);
@@ -49,7 +50,7 @@ function clearMessages() {
 	});
 } // clearMessages()
 function executeSearch(whichModule) {
-	var kvp = [];
+	// var kvp must be defined as a global for the close function (option:selected) to find it
 	$(".searchPage").children().each(function (index) {
 		var obj = $(this);
 		if (obj.is("div")) obj = obj.children().eq(1);
@@ -60,18 +61,19 @@ function executeSearch(whichModule) {
 			console.log(obj.attr('id')+": "+obj.val());
 		}
 		if (obj.is("select")) {
-			var key = obj.id;
 			obj.find("option:selected").each(function (opt_index) {
+				var key = $(this).closest('select').attr('id');
 				if ($(this).val()=="") return false;
-				if (!(key in kvp)) kvp[key] = $(this).val();
-				else if (typeof kvp[key]=="string") kvp[key] = [kvp[key],$(this).val()];
-				else kvp[key].push($(this).val());
+				kvp.push([key,$(this).val()]);
+				//if (!(key in kvp)) kvp[key] = [kvp[key],$(this).val()];
+				//else if (typeof kvp[key]=="string") kvp[key] = [kvp[key],$(this).val()];
+				//else kvp[key].push($(this).val());
+				console.log(kvp);
 				return true;
 			});
 		}
 		return true;
-	});
-	//console.log(kvp);
+	})
 	$.post('jq.php',{jquery:'executeSearch',module:whichModule,searchParameters:kvp},function (data) {
 		if (data.length > 0) $("#core").html(data);
 		updateDiv('messagebar');

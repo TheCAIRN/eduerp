@@ -4,38 +4,78 @@ class Dashboards extends ERPBase {
 		parent::__construct($link);
 		$this->supportsNotes = false;
 		$this->supportsAttachments = false;
-		
+		$this->searchFields[] = array('dashboards','dashboard_list','Available Dashboards:','dropdown',array(
+			array('1','Inventory On Hand')
+			,array('2','Balance Sheet')
+			,array('3','Income Statement')
+		));
 		$this->resetHeader();
 	} // __construct
 	public function resetHeader() {
 	
 	} // resetHeader()
-	public function DashboardsSelect($id=0,$readonly=false) {
-		return parent::abstractSelect($id,$readonly,'zzzz_master','zzzz_id','zzzz_name','zzzz');
-	} // DashboardsSelect()
 	public function listRecords() {
 		parent::abstractListRecords('zzzz');
 	} // listRecords()
 	public function searchPage() {
-		parent::abstractSearchPage('zzzzSearch');
+		parent::abstractSearchPage('DashboardsSearch');
 	} // searchPage()
+	private function runInventoryOnHand() {
+		$html = '<FIELDSET class="searchPage" id="DashboardsSearch">';
+		$html .= '<INPUT type="number" id="dashboardQueryEntity" placeholder="For Entity" />
+			<BUTTON onClick="runDashboardQuery();">RUN</BUTTON>';
+		$html .= '</FIELDSET>';
+		echo $html;
+		
+	} // Inventory on Hand dashboard
+	private function runBalanceSheet() {
+		$html = '<FIELDSET class="searchPage" id="DashboardsSearch">';
+		$html .= '<INPUT type="number" id="dashboardQueryYear" placeholder="For Year" />
+			<BUTTON onClick="runDashboardQuery();">RUN</BUTTON>';
+		$html .= '</FIELDSET>';
+		echo $html;
+		
+	} // Balance Sheet dashboard
+	private function runIncomeStatement() {
+		$html = '<FIELDSET class="searchPage" id="DashboardsSearch">';
+		$html .= '<INPUT type="number" id="dashboardQueryYear" placeholder="For Year" />
+			<BUTTON onClick="runDashboardQuery();">RUN</BUTTON>';
+		$html .= '</FIELDSET>';
+		if (isset($_POST['searchParameters']) && is_array($_POST['searchParameters']) && count($_POST['searchParameters'])>=2 && $_POST['searchParameters'][0][0]=='dashboardQueryYear') {
+			$dbYear = $_POST['searchParamters'][0][1];
+			// TODO: This should all be coming from acgl_*, but the General Ledger is not yet fully supported.
+			$revq = 'SELECT * FROM sales_header h JOIN sales_detail d ON h.sales_order_number=d.sales_order_number WHERE YEAR(h.order_invoiced_date)=? OR YEAR(d.line_invoiced_date)=?';
+		}
+		echo $html;
+	} // Income Statment dashboard
+	public function runDashboard($which) {
+		switch($which) {
+			case 1: $this->runInventoryOnHand(); break;
+			case 2: $this->runBalanceSheet(); break;
+			case 3: $this->runIncomeStatement(); break;
+			default: $mb = new MessageBar($this->dbconn); $mb->addWarning("Please select a dashboard from the list."); break;
+		}
+	} // runDashboard()
 	public function executeSearch($criteria) {
-		$q = "SELECT * FROM zzzz_master ";
-		// TODO: Add $criteria
-		// TODO: Convert to prepared statements
-		$q .= " ORDER BY zzzz_id";
-		$result = $this->dbconn->query($q);
-		if ($result!==false) {
-			$this->recordSet = array();
-			while ($row=$result->fetch_assoc()) {
-				$this->recordSet[$row['zzzz_id']] = array();
-			} // while rows
-		} // if query succeeded
-		$this->listRecords();
+		if (!is_null($criteria) && is_array($criteria) && count($criteria)>0) {
+			// The only key for Dashboards is dashboard_list
+			if (is_array($criteria[0]) && count($criteria[0])>=2 && $criteria[0][0]=='dashboard_list') {
+				$criteria = $criteria[0][1];
+			} elseif (isset($_SESSION['lastCriteria']) && $_SESSION['lastCriteria']+1 > 0) {
+				$criteria = $_SESSION['lastCriteria'];
+			} else {
+				$mb = new MessageBar($this->dbconn);
+				$mb->addWarning("Please select a dashboard from the list.");
+				return;
+			}
+		} else {
+			$mb = new MessageBar($this->dbconn);
+			$mb->addWarning("Please select a dashboard from the list.");
+			return;
+		}
 		$_SESSION['currentScreen'] = 1032;
 		$_SESSION['lastCriteria'] = $criteria;
-		if (!isset($_SESSION['searchResults'])) $_SESSION['searchResults'] = array();
-		$_SESSION['searchResults']['zzzz'] = array_keys($this->recordSet);		
+		$this->runDashboard($criteria);
 	} // executeSearch()
 	public function isIDValid($id) {
 		// TODO: Validate that the ID is actually a record in the database

@@ -43,7 +43,7 @@ class Workspace {
 			case 29: echo $this->insightSubmenu(); break;
 			case 30: $this->notInstalled("Dashboard Setup"); break; //$dsu = new DashboardSetup($this->dbconn); echo $dsu->searchPage(); break;
 			case 31: $this->notInstalled("Report Setup"); break; //$rsu = new ReportSetup($this->dbconn); echo $rsu->searchPage(); break;
-			case 32: $this->notInstalled("Dashboards"); break; //$db = new Dashboards($this->dbconn); echo $db->searchPage(); break;
+			case 32: $db = new Dashboards($this->dbconn); echo $db->searchPage(); break;
 			case 33: $this->notInstalled("Reports"); break; //$rpt = new Reports($this->dbconn); echo $rpt->searchPage(); break;
 			case 34: echo $this->accountingSubmenu(); break;
 			case 35: $ac = new COA($this->dbconn); echo $ac->searchPage(); break; // Chart of Accounts
@@ -94,6 +94,7 @@ class Workspace {
 			case 1026: $st = new CustomerStoreTypes($this->dbconn); $st->listRecords(); break;
 			case 1027: $st = new CustomerStores($this->dbconn); $st->listRecords(); break;
 			case 1028: $cc = new Consumers($this->dbconn); $cc->listRecords(); break;
+			case 1032: $db = new Dashboards($this->dbconn); $db->runDashboard(); break;
 			case 1035: $ac = new COA($this->dbconn); $ac->listRecords(); break;
 			case 1044: $so = new SalesOrders($this->dbconn); $so->listRecords(); break;
 			case 1063: $boms = new BOMSteps($this->dbconn); $boms->listRecords(); break;

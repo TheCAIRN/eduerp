@@ -82,7 +82,7 @@ function jquery() {
 			'EntityResource','CustomerCatalog','CustomerTypes','Customer','CustomerDC','CustomerStoreTypes','CustomerStores','Consumers','Insights','DashboardSetup',
 			'ReportSetup','Dashboards','Reports','Accounting','ChartofAccounts','GLPeriods','GLAccounts','GLBalances','GLJournal','FreightVendorTypes','FreightVendors',
 			'InboundFreight','OutboundFreight','SalesOrders','SalesPayments','SalesOrderTypes','Admin','SystemOptions','UserAccounts','SecurityGroups','Permissions',
-			'Currency','Country','Language','State','UOMTypes','UOM','UOMConversions','Terms','NoteTypes','AttachmentTypes','CancellationReasonCodes','BOMSteps'
+			'Currency','Country','Language','State','UOMTypes','UOM','UOMConversions','Terms','NoteTypes','AttachmentTypes','CancellationReasonCodes','BOMSteps',
 			'Divisions','Departments');
 		$setcs = array_search($module,$cs); // Set the current screen to the index # of the $cs array.
 		if (is_integer($setcs)) $ws->setCurrentScreen($setcs);
@@ -225,6 +225,9 @@ function jquery() {
 				$modObject = new Consumers($link);
 				$_SESSION['activeModule'] = $modObject;
 			}
+		} elseif ($module=='DashboardsSearch') {
+			$modObject = new Dashboards($link);
+			$_SESSION['activeModule'] = $modObject;
 		} elseif ($module=='COASearch') {
 			if (isset($_SESSION['activeModule']) && $_SESSION['activeModule'] instanceof COA)
 				$modObject = $_SESSION['COA'];
