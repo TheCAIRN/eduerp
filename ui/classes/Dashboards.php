@@ -48,7 +48,8 @@ class Dashboards extends ERPBase {
 		}
 		echo $html;
 	} // Income Statment dashboard
-	public function runDashboard($which) {
+	public function runDashboard($which=0) {
+		if ($which==0) $which = $_SESSION['lastCriteria'];
 		switch($which) {
 			case 1: $this->runInventoryOnHand(); break;
 			case 2: $this->runBalanceSheet(); break;
