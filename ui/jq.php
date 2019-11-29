@@ -483,8 +483,16 @@ function jquery() {
 	 * LOGOFF
 	 **************************************************************************/
 	} elseif ($command=='logoff') {
-		$_SESSION['link']->close();
-		unset($_SESSION['link']);
+		if (isset($_SESSION['link'])) {
+			if ($_SESSION['link'] instanceof mysqli) $_SESSION['link']->close();
+			unset($_SESSION['link']);
+		}
+		if (isset($_SESSION['Options']) && isset($_SESSION['Options']['OPEN_LOGIN']) && $_SESSION['Options']['OPEN_LOGIN']=='FALSE') {
+			// TODO: Update sec_users and destroy token
+			unset($_SESSION['dbuserid']);
+			session_destroy();
+			header('Location: index.php');
+		}
 	/**************************************************************************
 	 * CLEAR MESSAGES
 	 **************************************************************************/

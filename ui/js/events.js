@@ -3,6 +3,7 @@ var kvp = [];
 function logout() {
 	$.post('jq.php',{jquery:'logoff'},function(data) {
 		location.reload(true);
+		//$('#core').html(data);
 	});
 } // logout()
 function updateDiv(whichDiv) {

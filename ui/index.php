@@ -13,11 +13,19 @@ if ($link->connect_error) {
 	unset($link);
 }
 Options::LoadSessionOptions($link);
+$openLogin = false;
+if (isset($_SESSION['Options']) && isset($_SESSION['Options']['OPEN_LOGIN'])) {
+	if ($_SESSION['Options']['OPEN_LOGIN']=='TRUE') $openLogin = true;
+}
+if (!$openLogin && !isset($_SESSION['dbuserid'])) {
+	$_SESSION['dbuserid'] = -1;
+}
 $logobar = new Logobar();
 $toolbar = new Toolbar();
 $workspace = new Workspace($link);
 /* TODO: Add security module */
-$_SESSION['dbuserid'] = 1;
+if ($openLogin || (isset($_SESSION['dbuserid']) && $_SESSION['dbuserid']>0)) {
+	if (!isset($_SESSION['dbuserid'])) $_SESSION['dbuserid'] = 1;
 ?>
 <!DOCTYPE HTML>
 <HTML>
@@ -75,5 +83,12 @@ var currentScreen = 0;
 </BODY>
 </HTML>
 <?php
+	// end openLogin
+} else {
+	if (isset($_POST['username']) && isset($_POST['auth']))
+		Security::processLoginScreen($link);
+	else
+		Security::displayLoginScreen();
+}
 $link->close();
 ?>
