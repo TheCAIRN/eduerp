@@ -173,7 +173,8 @@ INSERT INTO aa_options VALUES
 ;
 
 -- Cancellation reason codes
+/*
 CREATE TABLE IF NOT EXISTS aa_cancellation_reason_codes (
 
 ) ENGINE=InnoDB;
- 
+*/ 

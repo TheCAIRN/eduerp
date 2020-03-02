@@ -8,7 +8,7 @@ class Logobar {
 	private $sitename;
 	public function __construct() {
 		$this->logopath = 'images/logo.jpg';
-		$this->sitename = 'Eden from the Rock';
+		$this->sitename = isset($_SESSION['sitename'])?$_SESSION['sitename']:'eduERP';
 	}
 	public function render() {
 		$html = '';

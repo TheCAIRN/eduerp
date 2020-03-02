@@ -29,6 +29,7 @@ class Toolbar {
 				case 27: $mod="'CustomerStoresSearch'"; break;
 				case 28: $mod="'ConsumersSearch'"; break;
 				case 44: $mod="'SalesOrdersSearch'"; break;
+				case 59: $mod="'TermsSearch'"; break;
 				case 1002:
 				case 2002: 
 				case 3002: 
@@ -85,6 +86,10 @@ class Toolbar {
 				case 2044: 
 				case 3044: 
 				case 4044: $mod="'SalesOrders'"; break;
+				case 1059:
+				case 2059:
+				case 3059:
+				case 4059: $mod="'Terms'"; break;
 				case 1063: 
 				case 2063:
 				case 3063:

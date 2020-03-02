@@ -1,4 +1,4 @@
-CREATE TABLE sales_order_types (
+CREATE TABLE IF NOT EXISTS sales_order_types (
 	sales_order_type char(5) not null primary key
 	,description varchar(120) not null
 ) ENGINE=InnoDB;
@@ -40,7 +40,7 @@ CREATE TABLE sales_header (
 	,must_arrive_by datetime
 	,store_code char(12)
 	,shipping_from int
-	,shipping_to char(12)
+	,shipping_to int
 	,remit_to int
 	,fv_vendor_id int
 	,buyer int

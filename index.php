@@ -27,6 +27,7 @@ if (isset($_SESSION['Options']) && isset($_SESSION['Options']['OPEN_LOGIN'])) {
 if (!$openLogin && !isset($_SESSION['dbuserid'])) {
 	$_SESSION['dbuserid'] = -1;
 }
+$_SESSION['sitename'] = $sitename;
 $logobar = new Logobar();
 $toolbar = new Toolbar();
 $workspace = new Workspace($link);
@@ -51,6 +52,7 @@ if ($needInstaller) {
 <SCRIPT type="text/javascript" src="js/jquery-3.3.1.min.js"></SCRIPT>
 <SCRIPT type="text/javascript" src="js/jquery-ui.min.js"></SCRIPT>
 <SCRIPT type="text/javascript" src="js/events.js"></SCRIPT>
+<SCRIPT type="text/javascript" src="js/coreLookups.js"></SCRIPT>
 <SCRIPT type="text/javascript" src="js/addresses.js"></SCRIPT>
 <SCRIPT type="text/javascript" src="js/item.js"></SCRIPT>
 <SCRIPT type="text/javascript" src="js/purchasing.js"></SCRIPT>

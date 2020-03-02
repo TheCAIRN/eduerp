@@ -113,44 +113,53 @@ function saveRecord(whichModule) {
 	if (whichModule=="Purchasing") {
 		savePurchasingHeader();
 	}
-	if (whichModule=="Production") {
+	else if (whichModule=="Production") {
 		saveProductionHeader();
 	}
-	if (whichModule=="Addresses") {
+	else if (whichModule=="Addresses") {
 		saveAddressesHeader('');
 	}
-	if (whichModule=="ItemManager") {
+	else if (whichModule=="ItemManager") {
 		saveItemHeader('');
 	}
-	if (whichModule=="BOM") {
+	else if (whichModule=="BOM") {
 		saveBOMHeader();
 	}
-	if (whichModule=="BOMSteps") {
+	else if (whichModule=="BOMSteps") {
 		saveBOMSteps();
 	}
-	if (whichModule=="EntityResource") {
+	else if (whichModule=="EntityResource") {
 		saveEntityResourceHeader();
 	}
-	if (whichModule=="CustomerTypes") {
+	else if (whichModule=="CustomerTypes") {
 		saveCustomerTypesHeader();
 	}
-	if (whichModule=="Customer") {
+	else if (whichModule=="Customer") {
 		saveCustomerHeader();
 	}
-	if (whichModule=="CustomerDC") {
+	else if (whichModule=="CustomerDC") {
 		saveCustomerDCHeader();
 	}
-	if (whichModule=="CustomerStoreTypes") {
+	else if (whichModule=="CustomerStoreTypes") {
 		saveCustomerStoreTypesHeader();
 	}
-	if (whichModule=="CustomerStores") {
+	else if (whichModule=="CustomerStores") {
 		saveCustomerStoresHeader();
 	}
-	if (whichModule=="Consumers") {
+	else if (whichModule=="Consumers") {
 		saveConsumersHeader();
 	}
-	if (whichModule=="SalesOrders") {
+	else if (whichModule=="SalesOrders") {
 		saveSalesOrdersHeader();
+	}
+	else if (whichModule=="Terms") {
+		saveTerms();
+	}
+	else if (whichModule=="") {
+		$("#messagebar").html('<DIV class="errorMessage">The module to save has not been specified in the code.</DIV>');
+	}
+	else {
+		$("#messagebar").html('<DIV class="errorMessage">Module '+whichModule+' does not support saving at this time.</DIV>');
 	}
 } // saveRecord()
 function addDetailRow(whichModule) {

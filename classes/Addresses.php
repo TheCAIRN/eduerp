@@ -287,24 +287,6 @@ class Addresses extends ERPBase {
 			$stmt->store_result();
 			$this->last_validated = new DateTime($this->last_validated);
 /*
-			if ($readonly) $cls = 'RecordView'; else $cls = 'RecordEdit';
-			if ($readonly) $inputtextro = ' readonly="readonly"'; else $inputtextro = '';
-			$html .= '<FIELDSET id="AddressRecord" class="'.$cls.'">';
-			$html .= '<LABEL for="addressid">Address ID:</LABEL><B id="addressid">'.$id.'</B>';
-			$html .= '<LABEL for="addr_attn">Attn:</LABEL><INPUT type="text" id="addr_attn" value="'.$this->attention.'"'.$inputtextro.' /><BR />';
-			$html .= '<LABEL for="addr_pobox">PO Box:</LABEL><INPUT type="text" id="addr_pobox" value="'.$this->postal_box.'"'.$inputtextro.' /><BR />';
-			$html .= '<INPUT id="addr_number" value="'.$this->building_number.'"'.$inputtextro.' /><INPUT id="addr_street" value="'.$this->street.'"'.$inputtextro.' /><BR />';
-			$html .= '<LABEL for="addr_apt">Apartment/Suite:</LABEL><INPUT type="text" id="addr_apt" value="'.$this->apartment.'"'.$inputtextro.' /><BR />';
-			$html .= '<INPUT id="addr_line2" value="'.$this->line2.'"'.$inputtextro.' /><BR />';
-			$html .= '<INPUT id="addr_line3" value="'.$this->line3.'"'.$inputtextro.' /><BR />';
-			$html .= '<INPUT id="addr_city" value="'.$this->city.'"'.$inputtextro.' /><INPUT id="addr_spc" value="'.$this->spc_abbrev.'"'.$inputtextro.' /><INPUT id="addr_zip" value="'.$this->postal_code.'"'.$inputtextro.
-				' /><INPUT id="addr_country" value="'.$this->country.'"'.$inputtextro.' /><BR />';
-			$html .= '<LABEL for="addr_county">County:</LABEL><INPUT type="text" id="addr_county" value="'.$this->county.'"'.$inputtextro.' /><BR />';
-			$html .= '<LABEL for="addr_latitude">Lat/Long/Grid:</LABEL><INPUT id="addr_latitude" value="'.$this->latitude.'"'.$inputtextro.' /><INPUT id="addr_longitude" value="'.$this->longitude.
-				'"'.$inputtextro.' /><INPUT	id="addr_maidenhead" value="'.$this->maidenhead.'"'.$inputtextro.' /><BR />';
-			$html .= '<LABEL for="addr_osm">Open Street Map ID:</LABEL><INPUT id="addr_osm" value="'.$this->osm_id.'"'.$inputtextro.' /><LABEL for="addr_lastval">Last validated:</LABEL>'.
-				'<INPUT type="date" id="addr_lastval" value="'.$this->last_validated->format("Y-m-d").'" /><BR />';
-			$html .= '</FIELDSET>';			
 			// TODO: Display map object
 			// TODO: List all table records where address is applied.
 */		}

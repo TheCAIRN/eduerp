@@ -350,11 +350,15 @@ class ERPBase {
 				if ($field[3]=='function' && count($field)>=6 && is_object($field[4]) && method_exists($field[4],$field[5])) {
 					if (!$intable) {
 						if (is_array($hdata) && strpos($field[0],'_detail')===false && isset($hdata[$field[1]]))
-							$html .= $field[4]->{$field[5]}($hdata[$field[1]]);
-						else $html .= $field[4]->{$field[5]}();
+							if (count($field)>=7) $html .= $field[4]->{$field[5]}($hdata[$field[1]],$view=='view',false,$field[6]);
+							else $html .= $field[4]->{$field[5]}($hdata[$field[1]]);
+						else 
+							if (count($field)>=7) $html .= $field[4]->{$field[5]}(null,$view=='view',false,$field[6]);
+							else $html .= $field[4]->{$field[5]}();
 					} else {
 						$tableentry .= '<TD id="row'.$tablerow.'-'.$prefix.$field[1].'">';
-						$tableentry .= $field[4]->{$field[5]}();
+						if (count($field)>=7) $tableentry .= $field[4]->{$field[5]}(null,$view=='view',false,$field[6]);
+						else $tableentry .= $field[4]->{$field[5]}();
 						$tableentry .= '</TD>';
 					}
 				}

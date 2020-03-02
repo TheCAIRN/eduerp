@@ -103,7 +103,7 @@ function jquery() {
 	 **************************************************************************/
 	} elseif ($command=='executeSearch') {
 		if (!isset($_POST['module'])) {
-			$messagebar->addWarning("The selected module has not been installed in this system.");
+			$messagebar->addWarning("No module has been selected for search.");
 			$link->close();
 			return;
 		}
@@ -225,6 +225,13 @@ function jquery() {
 				$modObject = new Consumers($link);
 				$_SESSION['activeModule'] = $modObject;
 			}
+		} elseif ($module=='TermsSearch') {
+				if (isset($_SESSION['activeModule']) && $_SESSION['activeModule'] instanceof Terms)
+					$modObject = $_SESSION['activeModule'];
+				else {
+					$modObject = new Terms($link);
+					$_SESSION['activeModule'] = $modObject;
+				}
 		} elseif ($module=='DashboardsSearch') {
 			$modObject = new Dashboards($link);
 			$_SESSION['activeModule'] = $modObject;
@@ -250,7 +257,7 @@ function jquery() {
 				$_SESSION['activeModule'] = $modObject;
 			}
 		} else {
-			$messagebar->addWarning("The selected module has not been installed in this system.");
+			$messagebar->addWarning("The selected module ($module) has not been installed in this system.");
 			$link->close();
 			return;			
 		}
@@ -313,6 +320,8 @@ function jquery() {
 			$modObject = new COA($link);
 		} elseif ($module=='SalesOrders') {
 			$modObject = new SalesOrders($link);
+		} elseif ($module=='Terms') {
+			$modObject = new Terms($link);
 		} elseif ($module=='BOMSteps') {
 			$modObject = new BOMSteps($link);
 		} else {
@@ -356,6 +365,7 @@ function jquery() {
 			case 27: $modObject = new CustomerStores($link); break;
 			case 28: $modObject = new Consumers($link); break;
 			case 44: $modObject = new SalesOrders($link); break;
+			case 59: $modObject = new Terms($link); break;
 			case 63: $modObject = new BOMSteps($link); break;
 		}
 		if (is_null($modObject)) {
@@ -409,6 +419,8 @@ function jquery() {
 			$modObject = new Consumers($link);
 		} elseif ($module=='SalesOrders') {
 			$modObject = new SalesOrders($link);
+		} elseif ($module=='Terms') {
+			$modObject = new Terms($link);
 		} elseif ($module=='BOMSteps') {
 			$modObject = new BOMSteps($link);
 		} else {
@@ -449,6 +461,8 @@ function jquery() {
 			$modObject = new Customer($link);
 		} elseif ($_POST['module']=='salesorders') {
 			$modObject = new SalesOrders($link);
+		} elseif ($_POST['module']=='terms') {
+			$modObject = new Terms($link);
 		} elseif ($_POST['module']=='bomsteps') {
 			$modObject = new BOMSteps($link);
 		}
