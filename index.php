@@ -6,11 +6,18 @@ spl_autoload_register(function ($class) {
     include 'classes/' . $class . '.php';
 });
 $messagebar = new Messagebar();
+$needInstaller = false;
 include('globals.php');
-$link = new mysqli($dbhost,$dbuser,$dbpass,$dbname);
-if ($link->connect_error) {
-	$messagebar->addError($link->connect_error);
-	unset($link);
+$link = null;
+if (!isset($dbname)) {
+	$needInstaller = true;
+} else {
+	$link = new mysqli($dbhost,$dbuser,$dbpass,$dbname);
+	if ($link->connect_error) {
+		$messagebar->addError($link->connect_error);
+		unset($link);
+		$needInstaller = true;
+	}
 }
 Options::LoadSessionOptions($link);
 $openLogin = false;
@@ -24,8 +31,11 @@ $logobar = new Logobar();
 $toolbar = new Toolbar();
 $workspace = new Workspace($link);
 /* TODO: Add security module */
-if ($openLogin || (isset($_SESSION['dbuserid']) && $_SESSION['dbuserid']>0)) {
-	if (!isset($_SESSION['dbuserid'])) $_SESSION['dbuserid'] = 1;
+if ($needInstaller) {
+	$installer = new Installer();
+	$installer->page(1);
+} elseif ($openLogin || (isset($_SESSION['dbuserid']) && $_SESSION['dbuserid']>0)) {
+	if (!isset($_SESSION['dbuserid'])) $_SESSION['dbuserid'] = 1; // Needed in the event $openLogin is true and the dbuserid hasn't been set.
 ?>
 <!DOCTYPE HTML>
 <HTML>
@@ -79,7 +89,7 @@ var currentScreen = 0;
 </DIV>
 <DIV id="core"><?php $workspace->render(); ?></DIV>
 </DIV>
-<DIV id="footerbar">&copy; 2019. Cairn University School of Business.  Apache License 2.0<?php /*$fotterbar->render();*/ ?></DIV>
+<DIV id="footerbar">&copy; 2020. Cairn University School of Business.  Apache License 2.0<?php /*$footerbar->render();*/ ?>. Modules not provided in the open source project are separately licensed.</DIV>
 </BODY>
 </HTML>
 <?php
