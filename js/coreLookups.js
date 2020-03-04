@@ -36,3 +36,28 @@ function saveTerms(prefix) {
 		$("#messagebar").html('<DIV class="errorMessage">I could not contact the database. Your data has <B>NOT</B> been saved.</DIV>');
 	});	
 } // saveTerms
+function saveSystemOptions(prefix) {
+	var inputs = {
+		option_id:$("#option_id").val()
+		,option_value:$("#option_value").val()	
+	};
+	var mode;
+	if (inputs.option_id==0 || inputs.option_id=='') mode='insertRecord';
+	else mode='updateRecord';
+	$.post("jq.php",{jquery:mode,module:'terms',level:'header',data:inputs},function(data) {
+		var fields = data.split("|");
+		if (fields[0]=="inserted") {
+			$("#"+prefix+"terms_id").val(fields[1]);
+			$("#messagebar").html('<DIV class="successMessage">Data saved.</DIV>');
+		}
+		if (fields[0]=="updated") {
+			$("#messagebar").html('<DIV class="successMessage">Data saved.</DIV>');
+		}
+		if (fields[0]=="fail") {
+			$("#messagebar").html('<DIV class="errorMessage">'+fields[1]+'</DIV>');
+		}		
+	})
+	.fail(function() {
+		$("#messagebar").html('<DIV class="errorMessage">I could not contact the database. Your data has <B>NOT</B> been saved.</DIV>');
+	});	
+} // saveTerms

@@ -55,11 +55,11 @@ class Workspace {
 			case 41: $this->notInstalled("Freight Vendors"); break; // Freight Vendors
 			case 42: $this->notInstalled("Inbound Freight"); break;
 			case 43: $this->notInstalled("Outbound Freight"); break;
-			case 44: $so = new SalesOrders($this->dbconn); echo $so->searchPage(); break;
+			case 44: $so = new SalesOrders($this->dbconn); echo $so->searchPage(); break; // Sales Orders
 			case 45: $this->notInstalled("Sales Payments"); break;
 			case 46: $this->notInstalled("Sales Order Types"); break;
 			case 47: echo $this->adminSubmenu(); break;
-			case 48: $this->notInstalled("System Options"); break;
+			case 48: $opt = new SystemOptions($this->dbconn); echo $opt->searchPage(); break; // System Options
 			case 49: $this->notInstalled("User Accounts"); break;
 			case 50: $this->notInstalled("Security Groups"); break;
 			case 51: $this->notInstalled("Permissions"); break;
@@ -70,7 +70,7 @@ class Workspace {
 			case 56: $this->notInstalled("UOM Types"); break;
 			case 57: $this->notInstalled("UOM"); break;
 			case 58: $this->notInstalled("UOM Conversions"); break;
-			case 59: $terms = new Terms($this->dbconn); echo $terms->searchPage(); break;
+			case 59: $terms = new Terms($this->dbconn); echo $terms->searchPage(); break; // Terms
 			case 60: $this->notInstalled("Note Types"); break;
 			case 61: $this->notInstalled("Attachment Types"); break;
 			case 62: $this->notInstalled("Cancellation Reason Codes"); break;
@@ -97,6 +97,7 @@ class Workspace {
 			case 1032: $db = new Dashboards($this->dbconn); $db->runDashboard(); break;
 			case 1035: $ac = new COA($this->dbconn); $ac->listRecords(); break;
 			case 1044: $so = new SalesOrders($this->dbconn); $so->listRecords(); break;
+			case 1048: $opt = new SystemOptions($this->dbconn); $opt->listRecords(); break;
 			case 1059: $terms = new Terms($this->dbconn); $terms->listRecords(); break;
 			case 1063: $boms = new BOMSteps($this->dbconn); $boms->listRecords(); break;
 			/* 2000-2999: Display record */
@@ -118,6 +119,7 @@ class Workspace {
 			case 2028: $cc = new Consumers($this->dbconn); $cc->display($_SESSION['idarray'][2]); break;
 			case 2035: $ac = new COA($this->$dbconn); $ac->display($_SESSION['idarray'][2]); break;
 			case 2044: $so = new SalesOrders($this->dbconn); $so->display($_SESSION['idarray'][2]); break;
+			case 2048: $opt = new SystemOptions($this->dbconn); $opt->display($_SESSION['idarray'][2]); break;
 			case 2059: $terms = new Terms($this->dbconn); $terms->display($_SESSION['idarray'][2]); break;
 			case 2063: $boms = new BOMSteps($this->dbconn); $boms->display($_SESSION['idarray'][2]); break;
 			/* 3000-3999: New Record */
@@ -137,6 +139,7 @@ class Workspace {
 			case 3027: $st = new CustomerStores($this->dbconn); $st->newRecord(); break;
 			case 3028: $cc = new Consumers($this->dbconn); $cc->newRecord(); break;
 			case 3044: $so = new SalesOrders($this->dbconn); $so->newRecord(); break;
+			// case 3048: break; System Options cannot be created, only value modified.
 			case 3059: $terms = new Terms($this->dbconn); $terms->newRecord(); break;
 			case 3063: $boms = new BOMSteps($this->dbconn); $boms->newRecord(); break;
 			/* 4000-4999: Edit Record */
@@ -156,6 +159,7 @@ class Workspace {
 			case 4027: $st = new CustomerStores($this->dbconn); $st->editRecord($_SESSION['idarray'][2]); break;
 			case 4028: $cc = new Consumers($this->dbconn); $cc->editRecord($_SESSION['idarray'][2]); break;	
 			case 4044: $so = new SalesOrders($this->dbconn); $so->editRecord($_SESSION['idarray'][2]); break;
+			case 4048: $opt = new SystemOptions($this->dbconn); $opt->editRecord($_SESSION['idarray'][2]); break;
 			case 4059: $terms = new Terms($this->dbconn); $terms->editRecord($_SESSION['idarray'][2]); break;
 			case 4063: $boms = new BOMSteps($this->dbconn); $boms->editRecord($_SESSION['idarray'][2]); break;
 		}

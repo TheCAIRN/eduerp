@@ -29,6 +29,7 @@ class Toolbar {
 				case 27: $mod="'CustomerStoresSearch'"; break;
 				case 28: $mod="'ConsumersSearch'"; break;
 				case 44: $mod="'SalesOrdersSearch'"; break;
+				case 48: $mod="'SystemOptionsSearch'"; break;
 				case 59: $mod="'TermsSearch'"; break;
 				case 1002:
 				case 2002: 
@@ -86,6 +87,10 @@ class Toolbar {
 				case 2044: 
 				case 3044: 
 				case 4044: $mod="'SalesOrders'"; break;
+				case 1048:
+				case 2048:
+				// case 3048: System Options cannot be created.
+				case 4048: $mod = "'SystemOptions'"; break;
 				case 1059:
 				case 2059:
 				case 3059:

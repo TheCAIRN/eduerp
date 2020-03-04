@@ -11,3 +11,11 @@ WHERE cx_phone_associations.human_id=u.human_id ORDER BY priority LIMIT 1)
 FROM sec_users u
 INNER JOIN cx_humans h ON u.human_id=h.human_id
 LEFT OUTER JOIN sec_groups gg ON u.group_id=gg.group_id;
+
+INSERT INTO aa_options VALUES
+(4,'AUTOCREATE_GENERAL_LEDGER','SESSION','When set to true, all modules containing a general ledger field will automatically create a G/L record when a related record is created.','TRUE',NOW(),1,NOW())
+,(5,'GL_ACCOUNT_FORMAT','SESSION','Defines the format of GL subaccounts.','#####.#####',NOW(),1,NOW())
+,(6,'GL_CUSTOMER_PREFIX',NULL,'Defines the main account customers will be autocreated under.',41001,NOW(),1,NOW())
+,(7,'GL_VENDOR_PREFIX',NULL,'Defines the main account vendors will be autocreated under.',54001,NOW(),1,NOW())
+,(8,'EDI_SYSTEM',NULL,'eduERP does not contain its own EDI functionality; but it will provide support for a number of 3rd party systems.','HickoryEDI',NOW(),1,NOW())
+;

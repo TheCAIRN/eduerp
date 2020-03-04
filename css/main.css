@@ -28,6 +28,7 @@
 	float: left;
 	padding: 15px;
 	max-width: 80%;
+	min-width: 80%;
 }
 #footerbar {
 	background-color: #006600;

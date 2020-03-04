@@ -225,13 +225,6 @@ function jquery() {
 				$modObject = new Consumers($link);
 				$_SESSION['activeModule'] = $modObject;
 			}
-		} elseif ($module=='TermsSearch') {
-				if (isset($_SESSION['activeModule']) && $_SESSION['activeModule'] instanceof Terms)
-					$modObject = $_SESSION['activeModule'];
-				else {
-					$modObject = new Terms($link);
-					$_SESSION['activeModule'] = $modObject;
-				}
 		} elseif ($module=='DashboardsSearch') {
 			$modObject = new Dashboards($link);
 			$_SESSION['activeModule'] = $modObject;
@@ -249,6 +242,20 @@ function jquery() {
 				$modObject = new SalesOrders($link);
 				$_SESSION['activeModule'] = $modObject;
 			}
+		} elseif ($module=='TermsSearch') {
+				if (isset($_SESSION['activeModule']) && $_SESSION['activeModule'] instanceof Terms)
+					$modObject = $_SESSION['activeModule'];
+				else {
+					$modObject = new Terms($link);
+					$_SESSION['activeModule'] = $modObject;
+				}
+		} elseif ($module=='SystemOptionsSearch') {
+				if (isset($_SESSION['activeModule']) && $_SESSION['activeModule'] instanceof SystemOptions)
+					$modObject = $_SESSION['activeModule'];
+				else {
+					$modObject = new SystemOptions($link);
+					$_SESSION['activeModule'] = $modObject;
+				}
 		} elseif ($module=='BOMStepsSearch') {
 			if (isset($_SESSION['activeModule']) && $_SESSION['activeModule'] instanceof BOMSteps)
 				$modObject = $_SESSION['activeModule'];
@@ -322,6 +329,8 @@ function jquery() {
 			$modObject = new SalesOrders($link);
 		} elseif ($module=='Terms') {
 			$modObject = new Terms($link);
+		} elseif ($module=='SystemOptions') {
+			$modObject = new SystemOptions($link);
 		} elseif ($module=='BOMSteps') {
 			$modObject = new BOMSteps($link);
 		} else {
@@ -421,6 +430,8 @@ function jquery() {
 			$modObject = new SalesOrders($link);
 		} elseif ($module=='Terms') {
 			$modObject = new Terms($link);
+		} elseif ($module=='SystemOptions') {
+			$modObject = new SystemOptions($link);
 		} elseif ($module=='BOMSteps') {
 			$modObject = new BOMSteps($link);
 		} else {
@@ -463,6 +474,8 @@ function jquery() {
 			$modObject = new SalesOrders($link);
 		} elseif ($_POST['module']=='terms') {
 			$modObject = new Terms($link);
+		} elseif ($_POST['module']=='systemoptions') {
+			$modObject = new SystemOptions($link);
 		} elseif ($_POST['module']=='bomsteps') {
 			$modObject = new BOMSteps($link);
 		}
