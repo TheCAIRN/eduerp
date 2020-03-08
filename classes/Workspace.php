@@ -48,7 +48,7 @@ class Workspace {
 			case 34: echo $this->accountingSubmenu(); break;
 			case 35: $ac = new COA($this->dbconn); echo $ac->searchPage(); break; // Chart of Accounts
 			case 36: $this->notInstalled("GL Periods"); break; // GL Periods
-			case 37: $this->notInstalled("GL Accounts"); break; // GL Accounts
+			case 37: $gl = new GLAccounts($this->dbconn); echo $gl->searchPage(); break;
 			case 38: $this->notInstalled("GL Balances"); break; // GL Balances
 			case 39: $this->notInstalled("GL Journal"); break; // GL Journal
 			case 40: $this->notInstalled("Freight Vendor Types"); break; // Freight Vendor Types
@@ -96,6 +96,7 @@ class Workspace {
 			case 1028: $cc = new Consumers($this->dbconn); $cc->listRecords(); break;
 			case 1032: $db = new Dashboards($this->dbconn); $db->runDashboard(); break;
 			case 1035: $ac = new COA($this->dbconn); $ac->listRecords(); break;
+			case 1037: $gl = new GLAccounts($this->dbconn); echo $gl->listRecords(); break;
 			case 1044: $so = new SalesOrders($this->dbconn); $so->listRecords(); break;
 			case 1048: $opt = new SystemOptions($this->dbconn); $opt->listRecords(); break;
 			case 1059: $terms = new Terms($this->dbconn); $terms->listRecords(); break;
@@ -118,6 +119,7 @@ class Workspace {
 			case 2027: $st = new CustomerStores($this->dbconn); $st->display($_SESSION['idarray'][2]); break;
 			case 2028: $cc = new Consumers($this->dbconn); $cc->display($_SESSION['idarray'][2]); break;
 			case 2035: $ac = new COA($this->$dbconn); $ac->display($_SESSION['idarray'][2]); break;
+			case 2037: $gl = new GLAccounts($this->dbconn); $gl->display($_SESSION['idarray'][2]); break;
 			case 2044: $so = new SalesOrders($this->dbconn); $so->display($_SESSION['idarray'][2]); break;
 			case 2048: $opt = new SystemOptions($this->dbconn); $opt->display($_SESSION['idarray'][2]); break;
 			case 2059: $terms = new Terms($this->dbconn); $terms->display($_SESSION['idarray'][2]); break;
@@ -138,6 +140,7 @@ class Workspace {
 			case 3026: $st = new CustomerStoreTypes($this->dbconn); $st->newRecord(); break;
 			case 3027: $st = new CustomerStores($this->dbconn); $st->newRecord(); break;
 			case 3028: $cc = new Consumers($this->dbconn); $cc->newRecord(); break;
+			case 3037: $gl = new GLAccounts($this->dbconn); $gl->newRecord(); break;
 			case 3044: $so = new SalesOrders($this->dbconn); $so->newRecord(); break;
 			// case 3048: break; System Options cannot be created, only value modified.
 			case 3059: $terms = new Terms($this->dbconn); $terms->newRecord(); break;
@@ -158,6 +161,7 @@ class Workspace {
 			case 4026: $st = new CustomerStoreTypes($this->dbconn); $st->editRecord($_SESSION['idarray'][2]); break;
 			case 4027: $st = new CustomerStores($this->dbconn); $st->editRecord($_SESSION['idarray'][2]); break;
 			case 4028: $cc = new Consumers($this->dbconn); $cc->editRecord($_SESSION['idarray'][2]); break;	
+			case 4037: $gl = new GLAccounts($this->dbconn); $gl->editRecord($_SESSION['idarray'][2]); break;
 			case 4044: $so = new SalesOrders($this->dbconn); $so->editRecord($_SESSION['idarray'][2]); break;
 			case 4048: $opt = new SystemOptions($this->dbconn); $opt->editRecord($_SESSION['idarray'][2]); break;
 			case 4059: $terms = new Terms($this->dbconn); $terms->editRecord($_SESSION['idarray'][2]); break;

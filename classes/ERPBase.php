@@ -112,8 +112,10 @@ class ERPBase {
 		$tableheader = "";
 		$tableentry = "";
 		$fieldsetlevel = 0;
+		$auditFields = array('rev_enabled'=>false,'rev_number'=>false,'created_by'=>false,'creation_date'=>false,'last_update_by'=>false,'last_update_date'=>false);
 		if ($view=='view') $cls = 'RecordView'; else $cls = 'RecordEdit';
 		foreach ($this->entryFields as $field) {
+			if (isset($auditFields[$field[1]])) $auditFields[$field[1]]=true;
 			if (count($field)>=4) {
 				if ($field[3]=='fieldset') {
 					$html .= '<FIELDSET class="'.$cls.'" id="'.$field[0].$field[1].'_edit">';
@@ -399,6 +401,33 @@ class ERPBase {
 				}
 			} // else, if there are fewer than 4 entries for the field, it is malformed.
 		} // foreach entryfields
+		if ($view=='view' && !$intable && !$embedded) {
+			$readonly = ' readonly="readonly"';
+			foreach($auditFields as $field=>$set) {
+				if (!$set && isset($hdata[$field])) {
+					$html .= '<DIV class="labeldiv">';
+					$html .= '<LABEL for="'.$prefix.$field.'">'.$field.'</LABEL>';
+					if ($field=='rev_enabled') {
+						if ($hdata[$field]=='Y') $checked = ' checked="checked"'; else $checked='';
+						$html .= '<INPUT type="checkbox" id="'.$prefix.$field.'" indeterminate="true"'.$readonly.$checked.' />';
+					} // rev_enabled
+					if ($field=='rev_number') {
+						$checked = ' value="'.$hdata[$field].'"';
+						$html .= '<INPUT type="number" id="'.$prefix.$field.'" '.$readonly.$checked.' />';
+					}
+					if ($field=='created_by' || $field=='last_update_by') {
+						// TODO: Change these from id fields to name fields
+						$checked = ' value="'.$hdata[$field].'"';
+						$html .= '<INPUT type="number" id="'.$prefix.$field.'" '.$readonly.$checked.' />';
+					}
+					if ($field=='creation_date' || $field=='last_update_date') {
+						$checked = ' value="'.$hdata[$field].'"';
+						$html .= '<INPUT type="datetime-local" id="'.$prefix.$field.'" '.$readonly.$checked.' />';
+					}
+					$html .= '</DIV>';
+				}
+			} // foreach audit field
+		} // Only display audit fields in view mode
 		if (is_string($this->supportsNotes) && !$embedded) {
 			$q = 'SELECT note_id,'.$this->primaryKey.',n.note_type_id,seq,note_text,rev_enabled,rev_number,created_by,creation_date,'.
 				'last_update_by,last_update_date,note_type_code FROM '.

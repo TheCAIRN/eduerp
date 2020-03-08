@@ -49,7 +49,7 @@ if ($needInstaller) {
 <LINK rel="stylesheet" type="text/css" href="css/logobar.css" />
 <LINK rel="stylesheet" type="text/css" href="css/messagebar.css" />
 <LINK rel="stylesheet" type="text/css" href="css/core.css" />
-<SCRIPT type="text/javascript" src="js/jquery-3.3.1.min.js"></SCRIPT>
+<SCRIPT type="text/javascript" src="js/jquery-3.4.1.min.js"></SCRIPT>
 <SCRIPT type="text/javascript" src="js/jquery-ui.min.js"></SCRIPT>
 <SCRIPT type="text/javascript" src="js/events.js"></SCRIPT>
 <SCRIPT type="text/javascript" src="js/coreLookups.js"></SCRIPT>

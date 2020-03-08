@@ -230,9 +230,16 @@ function jquery() {
 			$_SESSION['activeModule'] = $modObject;
 		} elseif ($module=='COASearch') {
 			if (isset($_SESSION['activeModule']) && $_SESSION['activeModule'] instanceof COA)
-				$modObject = $_SESSION['COA'];
+				$modObject = $_SESSION['activeModule'];
 			else {
 				$modObject = new COA($link);
+				$_SESSION['activeModule'] = $modObject;
+			}
+		} elseif ($module=='GLAccountsSearch') {
+			if (isset($_SESSION['activeModule']) && $_SESSION['activeModule'] instanceof GLAccounts)
+				$modObject = $_SESSION['activeModule'];
+			else {
+				$modObject = new GLAccounts($link);
 				$_SESSION['activeModule'] = $modObject;
 			}
 		} elseif ($module=='SalesOrdersSearch') {
@@ -325,6 +332,8 @@ function jquery() {
 			$modObject = new Consumers($link);
 		} elseif ($module=='COA') {
 			$modObject = new COA($link);
+		} elseif ($module=='GLAccounts') {
+			$modObject = new GLAccounts($link);
 		} elseif ($module=='SalesOrders') {
 			$modObject = new SalesOrders($link);
 		} elseif ($module=='Terms') {
@@ -373,6 +382,7 @@ function jquery() {
 			case 26: $modObject = new CustomerStoreTypes($link); break;
 			case 27: $modObject = new CustomerStores($link); break;
 			case 28: $modObject = new Consumers($link); break;
+			case 37: $modObject = new GLAccounts($link); break;
 			case 44: $modObject = new SalesOrders($link); break;
 			case 59: $modObject = new Terms($link); break;
 			case 63: $modObject = new BOMSteps($link); break;
@@ -426,6 +436,8 @@ function jquery() {
 			$modObject = new CustomerStores($link);
 		} elseif ($module=='Consumers') {
 			$modObject = new Consumers($link);
+		} elseif ($module=='GLAccounts') {
+			$modObject = new GLAccounts($link);
 		} elseif ($module=='SalesOrders') {
 			$modObject = new SalesOrders($link);
 		} elseif ($module=='Terms') {
@@ -470,6 +482,8 @@ function jquery() {
 			$modObject = new Addresses($link);
 		} elseif ($_POST['module']=='customer') {
 			$modObject = new Customer($link);
+		} elseif ($_POST['module']=='glaccounts') {
+			$modObject = new GLAccounts($link);
 		} elseif ($_POST['module']=='salesorders') {
 			$modObject = new SalesOrders($link);
 		} elseif ($_POST['module']=='terms') {
@@ -539,6 +553,8 @@ function jquery() {
 				$modObject = new Addresses($link);
 			} elseif ($module=='ItemManager') {
 				$modObject = new ItemManager($link);
+			// } elseif ($module=='GLAccounts') {
+			//		$modObject = new GLAccounts($link);
 			} else {
 				$messagebar->addWarning("The requested JQ Embedded module is not installed in this system.");
 			}

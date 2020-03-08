@@ -28,6 +28,7 @@ class Toolbar {
 				case 26: $mod="'CustomerStoreTypesSearch'"; break;
 				case 27: $mod="'CustomerStoresSearch'"; break;
 				case 28: $mod="'ConsumersSearch'"; break;
+				case 37: $mod="'GLAccountsSearch'"; break;
 				case 44: $mod="'SalesOrdersSearch'"; break;
 				case 48: $mod="'SystemOptionsSearch'"; break;
 				case 59: $mod="'TermsSearch'"; break;
@@ -83,6 +84,10 @@ class Toolbar {
 				case 1028:
 				case 2028:
 				case 3028: $mod="'Consumers'"; break;
+				case 1037:
+				case 2037:
+				case 3037:
+				case 4037: $mod="'GLAccounts'"; break;
 				case 1044:
 				case 2044: 
 				case 3044: 
