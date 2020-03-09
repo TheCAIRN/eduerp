@@ -172,7 +172,9 @@ class GLAccounts extends ERPBase {
 		}		
 	} // display()
 	public function newRecord() {
+		echo '<FIELDSET id="GLAccountRecord" class="RecordEdit">';
 		echo parent::abstractNewRecord('GLAccounts');
+		echo '</FIELDSET>';
 		$_SESSION['currentScreen'] = 3037;
 	} // newRecord()
 	public function editRecord($id=null ){
@@ -180,23 +182,30 @@ class GLAccounts extends ERPBase {
 		$_SESSION['currentScreen'] = 4037;
 	} // editRecord()
 	private function insertHeader() {
-		$this->resetHeader();
-		$q = "INSERT INTO acgl_accounts (
-			rev_enabled,rev_number,created_by,creation_date,last_update_by,last_update_date) VALUES 
-			(?,?,?,?,?,?,?,?,?,?,?,?,?,?,NOW(),?,NOW());";
+		$q = "INSERT INTO acgl_accounts (account_number,entity_id,division_id,department_id,sub_account_number,gl_account_string,gl_account_name,
+			gl_account_balance,currency_code,	rev_enabled,rev_number,created_by,creation_date,last_update_by,last_update_date) VALUES 
+			(?,?,?,?,?,?,?,?,?,?,?,?,NOW(),?,NOW());";
 		$stmt = $this->dbconn->prepare($q);
-		$stmt->bind_param('sssissiisiisiii',$p1,$p2,$p3,$p4,$p5,$p6,$p7,$p8,$p9,$p10,$p11,$p12,$p13,$p14,$p16);
-
-		$p12 = ($rev_enabled=='true')?'Y':'N';
-		if ($rev_number<1) $rev_number = 1;
-		$p13 = $rev_number;
+		$stmt->bind_param('iiiiissdssiii',$p1,$p2,$p3,$p4,$p5,$p6,$p7,$p8,$p9,$p10,$p11,$p12,$p14);
+		$p1 = $this->account_number;
+		$p2 = $this->entity_id;
+		$p3 = $this->division_id;
+		$p4 = $this->department_id;
+		$p5 = $this->sub_account_number;
+		$p6 = $this->gl_account_string;
+		$p7 = $this->gl_account_name;
+		$p8 = $this->gl_account_balance;
+		$p9 = $this->currency_code;
+		$p10 = ($this->rev_enabled=='true')?'Y':'N';
+		if ($this->rev_number<1) $this->rev_number = 1;
+		$p11 = $this->rev_number;
+		$p12 = $_SESSION['dbuserid'];
 		$p14 = $_SESSION['dbuserid'];
-		$p16 = $_SESSION['dbuserid'];
 		$result = $stmt->execute();
 		if ($result!==false) {
-			echo 'inserted|'.$this->dbconn->insert_id;
+			return 'inserted|'.$this->dbconn->insert_id;
 		} else {
-			echo 'fail|'.$this->dbconn->error;
+			return 'fail|'.$this->dbconn->error;
 			$this->mb->addError($this->dbconn->error);
 		}
 		$stmt->close();
@@ -205,13 +214,71 @@ class GLAccounts extends ERPBase {
 	
 	} // updateHeader()
 	public function insertRecord() {
-		$this->insertHeader();
+		// The insert and update functions look a little different in this class, because we need to account for autocreation, which most other classes don't.
+		$this->resetHeader();
+		if (isset($_POST['account_number'])) $this->account_number = $_POST['account_number'];
+		if (isset($_POST['entity_id'])) $this->entity_id = $_POST['entity_id'];
+		if (isset($_POST['division_id'])) $this->division_id = $_POST['division_id'];
+		if (isset($_POST['department_id'])) $this->department_id = $_POST['department_id'];
+		if (isset($_POST['sub_account_number'])) $this->sub_account_number = $_POST['sub_account_number'];
+		if (isset($_POST['gl_account_string'])) $this->gl_account_string = $_POST['gl_account_string'];
+		else $this->gl_account_string = sprintf('%d.%d',$this->account_number,$this->sub_account_number); // TODO: Change format to Options setting.
+		if (isset($_POST['gl_account_name'])) $this->gl_account_name = $_POST['gl_account_name'];
+		if (isset($_POST['gl_account_balance'])) $this->gl_account_balance = $_POST['gl_account_balance'];
+		if (isset($_POST['currency_code'])) $this->currency_code = $_POST['currency_code'];
+		$this->rev_enabled = isset($_POST['h14'])?$_POST['h14']:false;
+		$this->rev_number = isset($_POST['h15'])?$_POST['h15']:1;
+		echo $this->insertHeader();
 	} // insertRecord()
 	public function updateRecord() {
+		$this->resetHeader();
 		$this->updateHeader();
 	} // updateRecord()
 	public function saveRecord() {
 	
 	} // saveRecord()
+	public function autoCustomer($prefix,$name) {
+		$this->resetHeader();
+		$this->account_number = $prefix;
+		$ent = $this->dbconn->query("select entity_id from ent_entities where entity_type='HQ' limit 1;");
+		if ($ent!==false) {
+			$row = $ent->fetch_row();
+			$this->entity_id = $row[0];
+			$ent->close();
+		} else return 'No entity';
+		//$this->division_id = $division; // default to null
+		//$this->department_id = $department; // default to null
+		$this->gl_account_name = $name;
+		if (isset($_SESSION['Options']) && isset($_SESSION['Options']['DEFAULT_CURRENCY_CODE']))
+			$this->currency_code = $_SESSION['Options']['DEFAULT_CURRENCY_CODE'];
+		else return 'Invalid currency code';
+		// Get next sub_account_number
+		$q1 = 'SELECT MAX(sub_account_number) as max_sub FROM acgl_accounts WHERE account_number=?';
+		$s1 = $this->dbconn->prepare($q1);
+		if ($s1!==false) {
+			$s1->bind_param('i',$an);
+			$an = $prefix;
+			$result = $s1->execute();
+			if ($result!==false) {
+				$s1->bind_result($max_sub);
+				$s1->fetch();
+				$this->sub_account_number = $max_sub + 1;
+				$glfmt = explode('.',Options::GetOptionValue($this->dbconn,'GL_ACCOUNT_FORMAT'));
+				if (count($glfmt)<2) $glfmt = array('#####','#####'); // TODO: Once parsing and validation are fixed, this line must be removed.
+				$glstra = '%0'.strlen($glfmt[0]).'d';
+				// TODO: Improve parsing and validation
+				$glstrb = '%0'.strlen($glfmt[1]).'d';
+				$this->gl_account_string = sprintf("$glstra.$glstrb",$this->account_number,$this->sub_account_number);
+				$s1->close();
+				$r2 = explode('|',$this->insertHeader(0));
+				if ($r2[0]=='inserted') return $r2[1];
+				else {echo $r2[1]; return $r2[1];}
+			} else {
+				$s1->close();
+				return 'Result is false';
+			}
+			$s1->close();
+		} else return 'Could not get max_sub';
+	} // autoCustomer
 } // class _template
 ?>

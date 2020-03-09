@@ -1,7 +1,35 @@
 <?php
 class Customer extends ERPBase {
+	private $customer_id;
+	private $customer_code;
+	private $customer_name;
+	private $cust_type_code;
+	private $parent;
+	private $customer_group;
+	private $supplier_code;
+	private $gl_account_id;
+	private $default_terms;
+	private $status;
+	private $rev_enabled;
+	private $rev_number;
+	private $created_by;
+	private $creation_date;
+	private $last_update_by;
+	private $last_update_date;
+	private $primary_address;
+	private $billing_address;
+	private $auto_gl;
+	private $auto_gl_prefix;
+	private $column_list = 'customer_id,customer_code,customer_name,cust_type_code,parent,customer_group,supplier_code,primary_address,billing_address,gl_account_id,default_terms,
+		status,rev_enabled,rev_number';
 	public function __construct ($link=null) {
 		parent::__construct($link);
+		$this->auto_gl = false;
+		$this->auto_gl_prefix = 0;
+		if (isset($_SESSION['Options']) && isset($_SESSION['Options']['AUTOCREATE_GENERAL_LEDGER']) && strtoupper($_SESSION['Options']['AUTOCREATE_GENERAL_LEDGER'])=='TRUE') {
+			$this->auto_gl = true;
+			$this->auto_gl_prefix = Options::GetOptionValue($link,'GL_CUSTOMER_PREFIX');
+		} // auto_gl
 		$this->supportsNotes = true;
 		$this->supportsAttachments = true;
 		$this->searchFields[] = array('cust_master','customer_id','ID','integer');
@@ -19,7 +47,7 @@ class Customer extends ERPBase {
 		$this->entryFields[] = array('cust_master','parent','Parent','dropdown','cust_master',array('customer_id','customer_name'));
 		$this->entryFields[] = array('cust_master','customer_group','Group','textbox');
 		$this->entryFields[] = array('cust_master','supplier_code','Supplier #','textbox');
-		$this->entryFields[] = array('cust_master','gl_account_id','G/L Account','dropdown','acgl_accounts',array('gl_account_id','gl_account_name'));
+		if (!$this->auto_gl) $this->entryFields[] = array('cust_master','gl_account_id','G/L Account','dropdown','acgl_accounts',array('gl_account_id','gl_account_name'));
  // TODO: Change gl_account_id from simple dropdown to GLAccount, and treat as an embedded field, so new G/L accounts can be created in place.
 		$this->entryFields[] = array('cust_master','default_terms','Default Terms','dropdown','aa_terms',array('terms_id','terms_code'));
 		$this->entryFields[] = array('cust_master','status','Status','function',$this,'statusSelect');
@@ -36,8 +64,31 @@ class Customer extends ERPBase {
 		$this->resetHeader();
 	} // __construct
 	public function resetHeader() {
-	
+		$this->customer_id= null;
+		$this->customer_code= null;
+		$this->customer_name= null;
+		$this->cust_type_code= null;
+		$this->parent= null;
+		$this->customer_group= null;
+		$this->supplier_code= null;
+		$this->gl_account_id= null;
+		$this->default_terms= null;
+		$this->status= null;
+		$this->rev_enabled= null;
+		$this->rev_number= null;
+		$this->created_by= null;
+		$this->creation_date= null;
+		$this->last_update_by= null;
+		$this->last_update_date= null;
+		$this->primary_address= null;
+		$this->billing_address= null;
 	} // resetHeader()
+	private function arrayifyHeader() {
+		return array('customer_id'=>$this->customer_id,'customer_code'=>$this->customer_code,'customer_name'=>$this->customer_name,'cust_type_code'=>$this->cust_type_code,
+			'parent'=>$this->parent,'customer_group'=>$this->customer_group,'supplier_code'=>$this->supplier_code,'primary_address'=>$this->primary_address,'billing_address'=>$this->billing_address,
+			'gl_account_id'=>$this->gl_account_id,'default_terms'=>$this->default_terms,'status'=>$this->status,'rev_enabled'=>$this->rev_enabled,'rev_number'=>$this->rev_number,
+			'created_by'=>$this->created_by,'creation_date'=>$this->creation_date,'last_update_by'=>$this->last_update_by,'last_update_date'=>$this->last_update_date);
+	} // arrayifyHeader()
 	public function customerSelect($id=0,$readonly=false) {
 		return parent::abstractSelect($id,$readonly,'cust_master','customer_id','customer_name','customer');
 	} // customerSelect()
@@ -91,13 +142,8 @@ class Customer extends ERPBase {
 		if (!$this->isIDValid($id)) return;
 		$readonly = true;
 		$html = '';
-		$q = "SELECT customer_code,customer_name,cust_type_code,parent,customer_group,supplier_code,gl_account_id,default_terms,status, 
-			c.rev_enabled,c.rev_number,c.created_by,c.creation_date,c.last_update_by,c.last_update_date,
-			a.building_number,a.street,a.attention,a.apartment,a.postal_box,a.line2,a.line3,a.city,a.spc_abbrev,a.postal_code,a.country,a.county,a.maidenhead,a.latitude,a.longitude,a.osm_id,a.last_validated, 
-			b.building_number,b.street,b.attention,b.apartment,b.postal_box,b.line2,b.line3,b.city,b.spc_abbrev,b.postal_code,b.country,b.county,b.maidenhead,b.latitude,b.longitude,b.osm_id,b.last_validated
+		$q = "SELECT {$this->column_list},c.created_by,c.creation_date,c.last_update_by,c.last_update_date,
 			FROM cust_master c 
-			LEFT OUTER JOIN cx_addresses a ON a.address_id=c.primary_address 
-			LEFT OUTER JOIN cx_addresses b ON b.address_id=c.billing_address 
 			WHERE customer_id=?";
 		$stmt = $this->dbconn->prepare($q);
 		if ($stmt===false) {
@@ -109,63 +155,19 @@ class Customer extends ERPBase {
 		$result = $stmt->execute();
 		// TODO: What if another user deletes the record while it's still in my search results?
 		if ($result!==false) {
-			$stmt->bind_result($ccode,$cname,$ctype,$parent,$cgroup,$supplier,$gl,$terms,$status,
-				$crevyn,$crevnumber,$cuser_creation,$cdate_creation,$cuser_modify,$cdate_modify,
-				$anumber,$astreet,$aattn,$aapt,$apobox,$aline2,$aline3,$acity,$aspc,$azip,$acountry,$acounty,$amaidenhead,$alatitude,$alongitude,$aosm,$alastvalidated,
-				$bnumber,$bstreet,$battn,$bapt,$bpobox,$bline2,$bline3,$bcity,$bspc,$bzip,$bcountry,$bcounty,$bmaidenhead,$blatitude,$blongitude,$bosm,$blastvalidated
+			$stmt->bind_result($this->customer_id,$this->customer_code,$this->customer_name,$this->cust_type_code,$this->parent,$this->customer_group,
+				$this->supplier_code,$this->primary_address,$this->billing_address,$this->gl_account_id,$this->default_terms,$this->status,$this->rev_enabled,$this->rev_number
 			);
 			$stmt->fetch();
-			if ($readonly) $cls = 'RecordView'; else $cls = 'RecordEdit';
-			if ($readonly) $inputtextro = ' readonly="readonly"'; else $inputtextro = '';
-			$html .= '<FIELDSET id="CustomerRecord" class="'.$cls.'">';
-			$html .= '<LABEL for="customerid">Customer ID:</LABEL><B id="customerid">'.$id.'</B>';
-			$html .= '<LABEL for="customercode">Code:</Label><INPUT type="text" id="customercode" value="'.$ccode.'"'.$inputtextro.' />';
-			$html .= '<LABEL for="customername">Name:</LABEL><INPUT type="text" id="customername" value="'.$cname.'"'.$inputtextro.' />';
-			$html .= '<LABEL for="customertype">Type:</LABEL><INPUT type="text" id="customertype" value="'.$ctype.'"'.$inputtextro.' />';
-			$html .= '<LABEL for="customerparent">Parent:</LABEL><INPUT type="text" id="customerparent" value="'.$parent.'"'.$inputtextro.' />';
-			$html .= '<LABEL for="customergroup">Group:</LABEL><INPUT type="text" id="customergroup" value="'.$cgroup.'"'.$inputtextro.' />';
-			$html .= '<LABEL for="customersupplier">Supplier #:</LABEL><INPUT type="text" id="customersupplier" value="'.$supplier.'"'.$inputtextro.' />';
-			$html .= '<LABEL for="customerglacct">GL Account:</LABEL><INPUT type="text" id="customerglacct" value="'.$gl.'"'.$inputtextro.' />';
-			$html .= '<LABEL for="customerterms">Terms:</LABEL><INPUT type="text" id="customerterms" value="'.$terms.'"'.$inputtextro.' />';
-			$html .= $this->statusSelect($status,$readonly);
-			$html .= parent::displayRecordAudit($inputtextro,$crevyn,$crevnumber,$cuser_creation,$cdate_creation,$cuser_modify,$cdate_modify);
-			$html .= '</FIELDSET>';
-			$html .= '<FIELDSET id="PrimaryAddressRecord" class="'.$cls.'">';
-			$html .= '<LEGEND onClick="$(this).siblings().toggle();">Primary Address</LEGEND>';
-			$html .= '<LABEL for="addr_attn">Attn:</LABEL><INPUT type="text" id="addr_attn" value="'.$aattn.'"'.$inputtextro.' /><BR />';
-			$html .= '<LABEL for="addr_pobox">PO Box:</LABEL><INPUT type="text" id="addr_pobox" value="'.$apobox.'"'.$inputtextro.' /><BR />';
-			$html .= '<INPUT id="addr_number" value="'.$anumber.'"'.$inputtextro.' /><INPUT id="addr_street" value="'.$astreet.'"'.$inputtextro.' /><BR />';
-			$html .= '<LABEL for="addr_apt">Apartment/Suite:</LABEL><INPUT type="text" id="addr_apt" value="'.$aapt.'"'.$inputtextro.' /><BR />';
-			$html .= '<INPUT id="addr_line2" value="'.$aline2.'"'.$inputtextro.' /><BR />';
-			$html .= '<INPUT id="addr_line3" value="'.$aline3.'"'.$inputtextro.' /><BR />';
-			$html .= '<INPUT id="addr_city" value="'.$acity.'"'.$inputtextro.' /><INPUT id="addr_spc" value="'.$aspc.'"'.$inputtextro.' /><INPUT id="addr_zip" value="'.$azip.'"'.$inputtextro.
-				' /><INPUT id="addr_country" value="'.$acountry.'"'.$inputtextro.' /><BR />';
-			$html .= '<LABEL for="addr_county">County:</LABEL><INPUT type="text" id="addr_county" value="'.$acounty.'"'.$inputtextro.' /><BR />';
-			$html .= '<LABEL for="addr_latitude">Lat/Long/Grid:</LABEL><INPUT id="addr_latitude" value="'.$alatitude.'"'.$inputtextro.' /><INPUT id="addr_longitude" value="'.$alongitude.
-				'"'.$inputtextro.' /><INPUT	id="addr_maidenhead" value="'.$amaidenhead.'"'.$inputtextro.' /><BR />';
-			$html .= '<LABEL for="addr_osm">Open Street Map ID:</LABEL><INPUT id="addr_osm" value="'.$aosm.'"'.$inputtextro.' /><LABEL for="addr_lastval">Last validated:</LABEL>'.
-				'<INPUT type="date" id="addr_lastval" value="'.$alastvalidated.'" /><BR />';
-			$html .= '</FIELDSET>';
-			$html .= '<FIELDSET id="BillingAddressRecord" class="'.$cls.'">';
-			$html .= '<LEGEND onClick="$(this).siblings().toggle();">Billing Address</LEGEND>';
-			$html .= '<LABEL for="addr_attn">Attn:</LABEL><INPUT type="text" id="addr_attn" value="'.$battn.'"'.$inputtextro.' /><BR />';
-			$html .= '<LABEL for="addr_pobox">PO Box:</LABEL><INPUT type="text" id="addr_pobox" value="'.$bpobox.'"'.$inputtextro.' /><BR />';
-			$html .= '<INPUT id="addr_number" value="'.$bnumber.'"'.$inputtextro.' /><INPUT id="addr_street" value="'.$bstreet.'"'.$inputtextro.' /><BR />';
-			$html .= '<LABEL for="addr_apt">Apartment/Suite:</LABEL><INPUT type="text" id="addr_apt" value="'.$bapt.'"'.$inputtextro.' /><BR />';
-			$html .= '<INPUT id="addr_line2" value="'.$bline2.'"'.$inputtextro.' /><BR />';
-			$html .= '<INPUT id="addr_line3" value="'.$bline3.'"'.$inputtextro.' /><BR />';
-			$html .= '<INPUT id="addr_city" value="'.$bcity.'"'.$inputtextro.' /><INPUT id="addr_spc" value="'.$bspc.'"'.$inputtextro.' /><INPUT id="addr_zip" value="'.$bzip.'"'.$inputtextro.
-				' /><INPUT id="addr_country" value="'.$bcountry.'"'.$inputtextro.' /><BR />';
-			$html .= '<LABEL for="addr_county">County:</LABEL><INPUT type="text" id="addr_county" value="'.$bcounty.'"'.$inputtextro.' /><BR />';
-			$html .= '<LABEL for="addr_latitude">Lat/Long/Grid:</LABEL><INPUT id="addr_latitude" value="'.$blatitude.'"'.$inputtextro.' /><INPUT id="addr_longitude" value="'.$blongitude.
-				'"'.$inputtextro.' /><INPUT	id="addr_maidenhead" value="'.$bmaidenhead.'"'.$inputtextro.' /><BR />';
-			$html .= '<LABEL for="addr_osm">Open Street Map ID:</LABEL><INPUT id="addr_osm" value="'.$bosm.'"'.$inputtextro.' /><LABEL for="addr_lastval">Last validated:</LABEL>'.
-				'<INPUT type="date" id="addr_lastval" value="'.$blastvalidated.'" /><BR />';
-			$html .= '</FIELDSET>';
-			$html .= '<SCRIPT>$("#PrimaryAddressRecord legend").siblings().hide(); $("#BillingAddressRecord legend").siblings().hide(); </SCRIPT>';
+			$this->currentRecord = $id;
+			$stmt->close();		
+			if ($mode!='update') {
+				$hdata = $this->arrayifyHeader();
+				echo parent::abstractRecord($mode,'Customer','',$hdata,null);
+			}
 		} // if result
-		$stmt->close();			
-		echo $html;
+		else echo 'There was a problem accessing the requested record.';
+
 		$_SESSION['currentScreen'] = 2024;
 		if (!isset($_SESSION['searchResults']) && !isset($_SESSION['searchResults']['Customer']))
 			$_SESSION['idarray'] = array(0,0,$id,0,0);
@@ -195,13 +197,19 @@ class Customer extends ERPBase {
 		$parent = isset($_POST['parent'])?$_POST['parent']:null;
 		$custgroup = isset($_POST['customer_group'])?$_POST['customer_group']:'';
 		$supplier = isset($_POST['supplier_code'])?$_POST['supplier_code']:'';
-		$glacct = isset($_POST['gl_account_id'])?$_POST['gl_account_id']:null;
 		$terms = isset($_POST['default_terms'])?$_POST['default_terms']:null;
 		$status = isset($_POST['status'])?$_POST['status']:'A';
 		$rev_enabled = isset($_POST['rev_enabled'])?$_POST['rev_enabled']:false;
 		$rev_number = isset($_POST['rev_number'])?$_POST['rev_number']:1;
 		$primary_addr = isset($_POST['primary_address'])?$_POST['primary_address']:null;
 		$billing_addr = isset($_POST['billing_address'])?$_POST['billing_address']:null;
+		if ($this->auto_gl) {
+			$gl = new GLAccounts($this->dbconn);
+			$glacct = $gl->autoCustomer($this->auto_gl_prefix,$custname);
+			if (!$glacct) $glacct = null; // TODO: Report the error
+		} else {
+			$glacct = isset($_POST['gl_account_id'])?$_POST['gl_account_id']:null;
+		}
 		$q = "INSERT INTO cust_master (customer_code,customer_name,cust_type_code,parent,customer_group,supplier_code,
 			gl_account_id,default_terms,status,primary_address,billing_address,
 			rev_enabled,rev_number,created_by,creation_date,last_update_by,last_update_date) VALUES 

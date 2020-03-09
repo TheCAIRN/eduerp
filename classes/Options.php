@@ -41,8 +41,8 @@ class Options extends ERPBase {
 	public function resetHeader() {
 	
 	} // resetHeader()
-	public function _templateSelect($id=0,$readonly=false) {
-		return parent::abstractSelect($id,$readonly,'zzzz_master','zzzz_id','zzzz_name','zzzz');
+	public function OptionsSelect($id=0,$readonly=false) {
+		return parent::abstractSelect($id,$readonly,'aa_options','option_id','option_name','zzzz');
 	} // _templateSelect()
 	public function statusSelect($status='',$readonly=false,$include_label=false) {
 		$html = '';
