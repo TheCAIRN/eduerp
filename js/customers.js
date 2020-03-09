@@ -1,6 +1,30 @@
 var cust_key;
 function saveCustomerTypesHeader() {
-	
+	var custtypecode = $("#cust_type_code").val();
+	var description = $("#description").val();
+	if (custtypecode=='' || description=='') {
+			$("#messagebar").html('<DIV class="errorMessage">Both code and description are required</DIV>');
+			return;
+	}
+	$.post("jq.php",{jquery:"insertRecord",module:"customertypes",level:"header",cust_type_code:custtypecode,description:description},
+		   function(data) {
+		var fields = data.split("|");
+		if (fields[0]=="inserted") {
+			$("#messagebar").html('<DIV class="successMessage">Record Inserted.</DIV>');
+		}
+		if (fields[0]=="updated") {
+			$("#messagebar").html('<DIV class="successMessage">Record updated.</DIV>');
+		}	
+		if (fields[0]=="success") {
+			$("#messagebar").html('<DIV class="successMessage">Data saved.</DIV>');
+		}
+		if (fields[0]=="fail") {
+			updateDiv('messagebar');
+		}
+		})
+		.fail(function() {
+			$("#messagebar").html('<DIV class="errorMessage">I could not contact the database. Your data has <B>NOT</B> been saved.</DIV>');
+		});
 }
 function saveCustomerHeader() {
 	var custid = document.getElementById("customer_id").value;

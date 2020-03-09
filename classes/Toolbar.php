@@ -67,7 +67,8 @@ class Toolbar {
 				case 3020: $mod="'VendorCatalog'"; break;
 				case 1023:
 				case 2023:
-				case 3023: $mod="'CustomerTypes'"; break;
+				case 3023:
+				case 4023: $mod="'CustomerTypes'"; break;
 				case 1024:
 				case 2024:
 				case 3024: 

@@ -175,6 +175,10 @@ class GLAccounts extends ERPBase {
 		echo parent::abstractNewRecord('GLAccounts');
 		$_SESSION['currentScreen'] = 3037;
 	} // newRecord()
+	public function editRecord($id=null ){
+		$this->display($id,'edit');
+		$_SESSION['currentScreen'] = 4037;
+	} // editRecord()
 	private function insertHeader() {
 		$this->resetHeader();
 		$q = "INSERT INTO acgl_accounts (

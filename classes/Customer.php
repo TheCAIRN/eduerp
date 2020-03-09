@@ -182,6 +182,10 @@ class Customer extends ERPBase {
 		echo parent::abstractNewRecord('Customer');
 		$_SESSION['currentScreen'] = 3024;
 	} // newRecord()
+	public function editRecord($id=null) {
+		$this->display($id,'edit');
+		$_SESSION['currentScreen'] = 4024;
+	}
 	private function insertHeader() {
 		$this->resetHeader();
 		$custid = isset($_POST['customer_id'])?$_POST['customer_id']:-1;

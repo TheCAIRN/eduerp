@@ -1,5 +1,6 @@
 <?php
 class _template extends ERPBase {
+	private $menucode = 0;
 	public function __construct ($link=null) {
 		parent::__construct($link);
 		$this->supportsNotes = false;
@@ -10,6 +11,9 @@ class _template extends ERPBase {
 	public function resetHeader() {
 	
 	} // resetHeader()
+	private function arrayifyHeader() {
+	
+	} // arrayifyHeader()
 	public function _templateSelect($id=0,$readonly=false) {
 		return parent::abstractSelect($id,$readonly,'zzzz_master','zzzz_id','zzzz_name','zzzz');
 	} // _templateSelect()
@@ -32,6 +36,10 @@ class _template extends ERPBase {
 		parent::abstractSearchPage('zzzzSearch');
 	} // searchPage()
 	public function executeSearch($criteria) {
+		if (!is_null($criteria) && is_array($criteria) && count($criteria)>0)
+			if (is_array($criteria[0]) && count($criteria[0])>=2 && $criteria[0][0]=='unified_search') $criteria = $criteria[0][1];
+			else $criteria='';
+		else $criteria='';
 		$q = "SELECT * FROM zzzz_master ";
 		// TODO: Add $criteria
 		// TODO: Convert to prepared statements
@@ -44,7 +52,7 @@ class _template extends ERPBase {
 			} // while rows
 		} // if query succeeded
 		$this->listRecords();
-		$_SESSION['currentScreen'] = 1000;
+		$_SESSION['currentScreen'] = 1000+$this->menucode;
 		$_SESSION['lastCriteria'] = $criteria;
 		if (!isset($_SESSION['searchResults'])) $_SESSION['searchResults'] = array();
 		$_SESSION['searchResults']['zzzz'] = array_keys($this->recordSet);		
@@ -56,7 +64,7 @@ class _template extends ERPBase {
 		if (ctype_digit($id)) return true;
 		return false;
 	} // isIDValid()
-	public function display($id) {
+	public function display($id,$mode='view') {
 		if (!$this->isIDValid($id)) return;
 		$readonly = true;
 		$html = '';
@@ -77,17 +85,16 @@ class _template extends ERPBase {
 			
 			);
 			$stmt->fetch();
-			if ($readonly) $cls = 'RecordView'; else $cls = 'RecordEdit';
-			if ($readonly) $inputtextro = ' readonly="readonly"'; else $inputtextro = '';
-			$html .= '<FIELDSET id="zzzzRecord" class="'.$cls.'">';
-			$html .= '<LABEL for="zzzzid">zzzz ID:</LABEL><B id="zzzzid">'.$id.'</B>';
-			$html .= $this->statusSelect($status,$readonly);
-			$html .= parent::displayRecordAudit($inputtextro,$crevyn,$crevnumber,$cuser_creation,$cdate_creation,$cuser_modify,$cdate_modify);
-			$html .= '</FIELDSET>';
+			$this->currentRecord = $id;
+			$stmt->close();		
+			if ($mode!='update') {
+				$hdata = $this->arrayifyHeader();
+				echo parent::abstractRecord($mode,'_template','',$hdata,null);
+			}
 		} // if result
-		$stmt->close();			
-		echo $html;
-		$_SESSION['currentScreen'] = 2000;
+		else echo 'There was a problem accessing the requested record.';
+
+		$_SESSION['currentScreen'] = 2000+$this->menucode;
 		if (!isset($_SESSION['searchResults']) && !isset($_SESSION['searchResults']['zzzz']))
 			$_SESSION['idarray'] = array(0,0,$id,0,0);
 		else {
@@ -101,8 +108,12 @@ class _template extends ERPBase {
 	} // display()
 	public function newRecord() {
 		echo parent::abstractNewRecord('zzzz');
-		$_SESSION['currentScreen'] = 3000;
+		$_SESSION['currentScreen'] = 3000+$this->menucode;
 	} // newRecord()
+	public function editRecord($id=null) {
+		$this->display($id,'edit');	
+		$_SESSION['currentScreen'] = 4000+$this->menucode;
+	} // editRecord()
 	private function insertHeader() {
 		$this->resetHeader();
 		$q = "INSERT INTO zzzz_master (

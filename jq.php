@@ -319,7 +319,7 @@ function jquery() {
 		} elseif ($module=='BOM') {
 			$modObject = new BOM($link);
 		} elseif ($module=='CustomerTypes') {
-			$modObject = new CustomerTYpes($link);
+			$modObject = new CustomerTypes($link);
 		} elseif ($module=='Customer') {
 			$modObject = new Customer($link);
 		} elseif ($module=='CustomerDC') {
@@ -425,7 +425,7 @@ function jquery() {
 		} elseif ($module=='BOM') {
 			$modObject = new BOM($link);
 		} elseif ($module=='CustomerTypes') {
-			$modObject = new CustomerTYpes($link);
+			$modObject = new CustomerTypes($link);
 		} elseif ($module=='Customer') {
 			$modObject = new Customer($link);
 		} elseif ($module=='CustomerDC') {
@@ -480,8 +480,18 @@ function jquery() {
 			$modObject = new EntityResource($link);
 		} elseif ($_POST['module']=='addresses') {
 			$modObject = new Addresses($link);
+		} elseif ($_POST['module']=='customertypes') {
+			$modObject = new CustomerTypes($link);
 		} elseif ($_POST['module']=='customer') {
 			$modObject = new Customer($link);
+		} elseif ($_POST['module']=='customerdc') {
+			$modObject = new CustomerDC($link);
+		} elseif ($_POST['module']=='customerstoretypes') {
+			$modObject = new CustomerStoreTypes($link);
+		} elseif ($_POST['module']=='customer2tores') {
+			$modObject = new CustomerStores($link);
+		} elseif ($_POST['module']=='consumers') {
+			$modObject = new Consumers($link);
 		} elseif ($_POST['module']=='glaccounts') {
 			$modObject = new GLAccounts($link);
 		} elseif ($_POST['module']=='salesorders') {

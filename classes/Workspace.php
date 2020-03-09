@@ -34,7 +34,7 @@ class Workspace {
 			case 20: $vc = new VendorCatalog($this->dbconn); echo $vc->searchPage(); break;
 			case 21: $entres = new EntityResource($this->dbconn); echo $entres->searchPage(); break;
 			case 22: $this->notInstalled("Customer Catalog"); break; //$cc = new CustomerCatalog($this->dbconn); echo $cc->searchPage(); break;
-			case 23: $this->notInstalled("Customer Types"); break; //$ct = new CustomerTypes($this->dbconn); echo $ct->searchPage(); break;
+			case 23: $ct = new CustomerTypes($this->dbconn); echo $ct->searchPage(); break;
 			case 24: $cust = new Customer($this->dbconn); echo $cust->searchPage(); break;
 			case 25: $this->notInstalled("Customer DC"); break; //$dc = new CustomerDC($this->dbconn); echo $dc->searchPage(); break;
 			case 26: $this->notInstalled("Customer Store Types"); break; //$st = new CustomerStoreTypes($this->dbconn); echo $st->searchPage(); break;
