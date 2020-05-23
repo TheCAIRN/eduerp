@@ -7,7 +7,9 @@ spl_autoload_register(function ($class) {
 });
 $messagebar = new Messagebar();
 $needInstaller = false;
-include('globals.php');
+if (isset($_POST['installerpage'])) $needInstaller = true;
+if (file_exists('globals.php')) include('globals.php');
+else $needInstaller = true;
 $link = null;
 if (!isset($dbname)) {
 	$needInstaller = true;
@@ -27,15 +29,16 @@ if (isset($_SESSION['Options']) && isset($_SESSION['Options']['OPEN_LOGIN'])) {
 if (!$openLogin && !isset($_SESSION['dbuserid'])) {
 	$_SESSION['dbuserid'] = -1;
 }
-$_SESSION['sitename'] = $sitename;
-$logobar = new Logobar();
-$toolbar = new Toolbar();
-$workspace = new Workspace($link);
 /* TODO: Add security module */
 if ($needInstaller) {
 	$installer = new Installer();
-	$installer->page(1);
+	if (isset($_POST['installerpage'])) $installer->page($_POST['installerpage']);
+	else $installer->page(1);
 } elseif ($openLogin || (isset($_SESSION['dbuserid']) && $_SESSION['dbuserid']>0)) {
+	$_SESSION['sitename'] = $sitename;
+	$logobar = new Logobar();
+	$toolbar = new Toolbar();
+	$workspace = new Workspace($link);
 	if (!isset($_SESSION['dbuserid'])) $_SESSION['dbuserid'] = 1; // Needed in the event $openLogin is true and the dbuserid hasn't been set.
 ?>
 <!DOCTYPE HTML>
@@ -102,5 +105,5 @@ var currentScreen = 0;
 	else
 		Security::displayLoginScreen();
 }
-$link->close();
+if (!is_null($link)) $link->close();
 ?>

@@ -77,6 +77,7 @@ class Workspace {
 			case 63: $boms = new BOMSteps($this->dbconn); echo $boms->searchPage(); break;
 			case 64: $this->notInstalled("Divisions"); break;
 			case 65: $this->notInstalled("Departments"); break;
+			case 66: $this->notInstalled("SalesImportErrors"); break;
 			/* 1000-1999: List Records */
 			case 1002: $ent = new Entity($this->dbconn); $ent->listRecords(); break;
 			case 1005: $vend = new Vendor($this->dbconn); $vend->listRecords(); break;
@@ -166,15 +167,32 @@ class Workspace {
 			case 4048: $opt = new SystemOptions($this->dbconn); $opt->editRecord($_SESSION['idarray'][2]); break;
 			case 4059: $terms = new Terms($this->dbconn); $terms->editRecord($_SESSION['idarray'][2]); break;
 			case 4063: $boms = new BOMSteps($this->dbconn); $boms->editRecord($_SESSION['idarray'][2]); break;
+			case 9999: echo $this->pluginsSubmenu();
 		}
 		
 	} // render()
 	private function notInstalled($module) {
 		$this->mb->addWarning("The $module module has not been installed on this system.");
 	} // notInstalled()
+	private function handlePlugins($screen) {
+		if ($screen==9999) {
+			echo $this->pluginsSubmenu();
+			return;
+		}
+		if ($screen >= 9000 && $screen < 9999) {
+			$plugin = $screen-9000;
+			if (isset($_SESSION['plugins']) && isset($_SESSION['plugins'][$plugin])) {
+				$pluginFile = './plugins/'.$_SESSION['plugins'][$plugin].'/jq.php';
+				// TODO: Validate plugin security
+				if (file_exists($pluginFile)) include_once($pluginFile);
+			}
+			return;
+		}
+	} // handlePlugins()
 	public function setCurrentScreen($screen) {
 		if (!is_numeric($screen) && !ctype_digit($screen)) return;
-		if ($screen < 0 || $screen > 3999) return;
+		if ($screen >= 9000 && $screen <= 9999) {$this->handlePlugins($screen); return;}
+		if (($screen < 0 || $screen > 4999)) return;
 		$this->currentScreen = $screen;
 		$_SESSION['currentScreen'] = $screen;
 		$this->render();
@@ -182,13 +200,34 @@ class Workspace {
 	private function dashboard() {
 		// TODO: Only display those modules the user has permissions to.
 		$module_list = ['Admin','Entities','Core Lookups','Contacts','Items','Vendors','Freight',
-			'Purchasing','Production','Customers','Sales','Insights','Accounting'];
+			'Purchasing','Production','Customers','Sales','Insights','Accounting','Plugins'];
 		$html = '';
 		foreach ($module_list as $module) {
 			$html .= '<DIV id="'.str_replace(' ','',$module).'ModuleIcon" class="DashboardIcon" onClick="selectModule(this);">'.$module."</DIV>\r\n";
 		}
 		return $html;
 	} // dashboard()
+	private function pluginsSubmenu() {
+		$plugdirname = './plugins';
+		if (!file_exists($plugdirname)) return 'You have no plugins installed.';
+		// TODO: Provide functionality for conditionally installing / using plugins.
+		// TODO: Provide mechanism for evaluating the security of plugins.
+		$plugdir = dir($plugdirname);
+		$pluginlist = array();
+		while (false!==($entry = $plugdir->read())) {
+			if ($entry=='.' || $entry=='..') continue;
+			if (is_dir($plugdirname.'/'.$entry)) {
+				$pluginlist[] = $entry;
+			}
+		} // for each entry in the directory
+		sort($pluginlist);
+		$html = '';
+		foreach ($pluginlist as $p) {
+			$html .= '<DIV id="'.str_replace(' ','',$p).'ModuleIcon" class="DashboardIcon" onClick="selectModule(this);">'.$p."</DIV>\r\n";
+		}
+		$_SESSION['plugins'] = $pluginlist;
+		return $html;
+	} // pluginsSubmenu
 	private function adminSubmenu() {
 		// TODO: Only display those modules the user has permissions to.
 		$module_list = ['System Options','User Accounts','Security Groups','Permissions'];
@@ -259,7 +298,7 @@ class Workspace {
 		return $html;
 	}
 	private function salesSubmenu() {
-		$module_list = ['Sales Order Types','Sales Orders','Sales Payments'];
+		$module_list = ['Sales Order Types','Sales Orders','Sales Payments','Sales Import Errors'];
 		$html = '';
 		foreach ($module_list as $module) {
 			$html .= '<DIV id="'.str_replace(' ','',$module).'ModuleIcon" class="DashboardIcon" onClick="selectModule(this);">'.$module."</DIV>\r\n";

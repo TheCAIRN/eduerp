@@ -58,6 +58,8 @@ function jquery() {
 			$ws->setCurrentScreen(29);
 		} elseif ($module=='Accounting') {
 			$ws->setCurrentScreen(34);
+		} elseif ($module=='Plugins') {
+			$ws->setCurrentScreen(9999);
 		}
 		// Workspace::setCurrentScreen renders immediately.
 	/**************************************************************************
@@ -83,9 +85,11 @@ function jquery() {
 			'ReportSetup','Dashboards','Reports','Accounting','ChartofAccounts','GLPeriods','GLAccounts','GLBalances','GLJournal','FreightVendorTypes','FreightVendors',
 			'InboundFreight','OutboundFreight','SalesOrders','SalesPayments','SalesOrderTypes','Admin','SystemOptions','UserAccounts','SecurityGroups','Permissions',
 			'Currency','Country','Language','State','UOMTypes','UOM','UOMConversions','Terms','NoteTypes','AttachmentTypes','CancellationReasonCodes','BOMSteps',
-			'Divisions','Departments');
+			'Divisions','Departments','SalesImportErrors');
 		$setcs = array_search($module,$cs); // Set the current screen to the index # of the $cs array.
 		if (is_integer($setcs)) $ws->setCurrentScreen($setcs);
+		elseif ($module=='Plugins') $ws->setCurrentScreen(9999);
+		elseif (isset($_SESSION['plugins']) && in_array($module,$_SESSION['plugins'])) $ws->setCurrentScreen(9000+array_search($module,$_SESSION['plugins']));
 		else {
 			$messagebar->addWarning("The selected module has not been installed in this system.");
 			$link->close();

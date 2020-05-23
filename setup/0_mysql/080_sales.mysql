@@ -184,3 +184,17 @@ CREATE TABLE sales_production_link (
 	
 ) ENGINE=InnoDB;
 */
+
+CREATE TABLE sales_edi_link (
+	sales_order_number int not null
+	,edi_database varchar(256)
+	,edi_table varchar(256)
+	,edi_batch_key int
+	,edi_batch_line_key int
+	,edi_transaction_code varchar(20)
+	,success char(1)
+) ENGINE=InnoDB;
+
+CREATE TABLE sales_import_errors (
+
+) ENGINE=InnoDB;

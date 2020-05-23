@@ -129,12 +129,15 @@ class Toolbar {
 					// Inventory Management can't edit records.
 					$html .= '&nbsp;';
 					$html .= '<BUTTON class="toolbarButton" id="editRecordButton" title="Edit Record" onClick="editRecord('.$mod.','.$_SESSION['idarray'][2].');">E</BUTTON>'; 
+					$html .= '<BUTTON class="toolbarButton" id="copyRecordButton" title="Copy Record" onClick="copyRecord('.$mod.','.$_SESSION['idarray'][2].');">C</BUTTON>';
 				}
 				$html .= '&nbsp;';
 			}
-			if (!in_array($cs,$subscreens) && $cs%1000!=18)
+			if (!in_array($cs,$subscreens) && $cs%1000!=18) {
 				// Inventory Management and subscreens can't create new records.
 				$html .= '<BUTTON class="toolbarButton" id="newRecordButton" title="New Record" onClick="newRecord();">N</BUTTON>';
+				$html .= '<BUTTON class="toolbarButton" id="importRecordsButton" title="Import Records" onClick="importRecords();">I</BUTTON>';
+			}
 			if ($cs >= 3000 && $cs < 4000) {
 				// Create record
 				$html .= '<BUTTON class="toolbarButton" id="newSearchButton" title="New Search" onClick="newSearch('.$mod.');">8</BUTTON>';
