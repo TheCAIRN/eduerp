@@ -229,6 +229,13 @@ function jquery() {
 				$modObject = new Consumers($link);
 				$_SESSION['activeModule'] = $modObject;
 			}
+		} elseif ($module=='COASearch') {
+			if (isset($_SESSION['activeModule']) && $_SESSION['activeModule'] instanceof COA) 
+				$modObject = $_SESSION['activeModule'];
+			else {
+				$modObject = new COA($link);
+				$_SESSION['activeModule'] = $modObject;
+			}
 		} elseif ($module=='DashboardsSearch') {
 			$modObject = new Dashboards($link);
 			$_SESSION['activeModule'] = $modObject;

@@ -1,0 +1,6 @@
+ALTER TABLE pur_detail
+	ADD COLUMN fv_vendor_id int AFTER gl_account_id
+	,ADD COLUMN quantity_shipped decimal(11,5) AFTER fv_vendor_id
+	,ADD COLUMN date_shipped datetime AFTER quantity_shipped
+	,ADD COLUMN tracking_number varchar(40) AFTER date_shipped
+	,ADD FOREIGN KEY (fv_vendor_id) REFERENCES fv_freight_vendors(fv_vendor_id);

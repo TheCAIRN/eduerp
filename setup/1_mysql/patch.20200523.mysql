@@ -1,0 +1,5 @@
+ALTER TABLE sales_header
+ADD consumer_billing_id int
+,ADD consumer_shipping_id int
+,ADD FOREIGN KEY (customer_id,consumer_billing_id) REFERENCES cust_consumers(customer_id,consumer_id)
+,ADD FOREIGN KEY (customer_id,consumer_shipping_id) REFERENCES cust_consumers(customer_id,consumer_id);

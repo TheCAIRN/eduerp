@@ -1,5 +1,15 @@
 <?php
 class COA extends ERPBase {
+	private $account_number;
+	private $account_type;
+	private $account_title;
+	private $rev_enabled;
+	private $rev_number;
+	private $created_by;
+	private $creation_date;
+	private $last_update_by;
+	private $last_update_date;
+	private $columnList = 'account_number,account_type,account_title,rev_enabled,rev_number,created_by,creation_date,last_update_by,last_update_date';
 	public function __construct ($link=null) {
 		parent::__construct($link);
 		$this->supportsNotes = false;
@@ -8,7 +18,15 @@ class COA extends ERPBase {
 		$this->resetHeader();
 	} // __construct
 	public function resetHeader() {
-	
+		$this->account_number = '';
+		$this->account_type = '';
+		$this->account_title = '';
+		$this->rev_enabled = 'N';
+		$this->rev_number = 1;
+		$this->created_by = 1;
+		$this->creation_date = new DateTime();
+		$this->last_update_by = 1;
+		$this->last_update_date = new DateTime();
 	} // resetHeader()
 	public function COASelect($id=0,$readonly=false) {
 		return parent::abstractSelect($id,$readonly,'ac_coa','account_number','account_title','COA');
@@ -66,7 +84,7 @@ class COA extends ERPBase {
 		if (!$this->isIDValid($id)) return;
 		$readonly = true;
 		$html = '';
-		$q = "SELECT *
+		$q = "SELECT {$this->columnList}
 			FROM ac_coa c 
 			WHERE account_number=?";
 		$stmt = $this->dbconn->prepare($q);
@@ -80,15 +98,17 @@ class COA extends ERPBase {
 		// TODO: What if another user deletes the record while it's still in my search results?
 		if ($result!==false) {
 			$stmt->bind_result(
-			
+				$this->accountNumber,$this->accountType,$this->accountTitle,$this->rev_enabled,$this->rev_number,$this->created_by,$this->creation_date,
+				$this->last_update_by,$this->last_update_date
 			);
 			$stmt->fetch();
 			if ($readonly) $cls = 'RecordView'; else $cls = 'RecordEdit';
 			if ($readonly) $inputtextro = ' readonly="readonly"'; else $inputtextro = '';
 			$html .= '<FIELDSET id="COARecord" class="'.$cls.'">';
 			$html .= '<LABEL for="AcctNumber">Acct #:</LABEL><B id="AcctNumber">'.$id.'</B>';
-			$html .= $this->statusSelect($status,$readonly);
-			$html .= parent::displayRecordAudit($inputtextro,$crevyn,$crevnumber,$cuser_creation,$cdate_creation,$cuser_modify,$cdate_modify);
+			$html .= $this->accountTypeSelect($this->accountType,$readonly);
+			$html .= '<LABEL for="AcctTitle">Title:</LABEL><SPAN id="AcctTitle">'.$this->accountTitle.'</SPAN>';
+			$html .= parent::displayRecordAudit($inputtextro,$this->rev_enabled,$this->rev_number,$this->created_by,$this->creation_date,$this->last_update_by,$this->last_update_date);
 			$html .= '</FIELDSET>';
 		} // if result
 		$stmt->close();			

@@ -39,6 +39,7 @@ function newSearch(whichModule) {
 	if (whichModule=='ItemManager') moduleName='ItemSetup';
 	if (whichModule=='BOM') moduleName='BillofMaterials';
 	if (whichModule=='InventoryManager') moduleName='InventoryLookup';
+	if (whichModule=='COA') moduleName='ChartofAccounts';
 	$.post('jq.php',{jquery:'moduleSearchSpace',module:moduleName},function (data) {
 		if (data.length > 0) $("#core").html(data);
 		updateDiv('messagebar');
