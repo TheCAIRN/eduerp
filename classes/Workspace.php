@@ -22,7 +22,7 @@ class Workspace {
 			case 8: $prod = new Production($this->dbconn); echo $prod->searchPage(); break;
 			case 9: echo $this->customerSubMenu(); break; 
 			case 10: echo $this->salesSubmenu(); break;
-			case 11: $this->notInstalled("People"); /* TO DO People */ break;
+			case 11: $hum = new Humans($this->dbconn); echo $hum->searchPage(); break;
 			case 12: $addr = new Addresses($this->dbconn); echo $addr->searchPage(); break;
 			case 13: $item = new ItemManager($this->dbconn); echo $item->searchPage(); break;
 			case 14: $this->notInstalled("Item Attributes"); break; // $item = new ItemAttributes($this->dbconn); echo $item->searchPage(); break;
@@ -83,6 +83,7 @@ class Workspace {
 			case 1005: $vend = new Vendor($this->dbconn); $vend->listRecords(); break;
 			case 1007: $pur = new Purchasing($this->dbconn); $pur->listRecords(); break;
 			case 1008: $prod = new Production($this->dbconn); $prod->listRecords(); break;
+			case 1011: $hum = new Humans($this->dbconn); $hum->listRecords(); break;
 			case 1012: $addr = new Addresses($this->dbconn); $addr->listRecords(); break;
 			case 1013: $item = new ItemManager($this->dbconn); $item->listRecords(); break;
 			case 1018: $im = new InventoryManager($this->dbconn); $im->listRecords(); break;
@@ -107,6 +108,7 @@ class Workspace {
 			case 2005: $vend = new Vendor($this->dbconn); $vend->display($_SESSION['idarray'][2]); break;
 			case 2007: $pur = new Purchasing($this->dbconn); $pur->display($_SESSION['idarray'][2]); break;
 			case 2008: $prod = new Production($this->dbconn); $prod->display($_SESSION['idarray'][2]); break;
+			case 2011: $hum = new Humans($this->dbconn); $hum->display($_SESSION['idarray'][2]); break;
 			case 2012: $addr = new Addresses($this->dbconn); $addr->display($_SESSION['idarray'][2]); break;
 			case 2013: $item = new ItemManager($this->dbconn); $item->display($_SESSION['idarray'][2]); break;
 			case 2018: $im = new InventoryManager($this->dbconn); $im->display($_SESSION['idarray'][2]); break;
@@ -130,6 +132,7 @@ class Workspace {
 			case 3005: $vend = new Vendor($this->dbconn); $vend->newRecord(); break;
 			case 3007: $purch = new Purchasing($this->dbconn); $purch->newRecord(); break;
 			case 3008: $prod = new Production($this->dbconn); $prod->newRecord(); break;
+			case 3011: $hum = new Humans($this->dbconn); $hum->newRecord(); break;
 			case 3012: $addr = new Addresses($this->dbconn); $addr->newRecord(); break;
 			case 3013: $item = new ItemManager($this->dbconn); $item->newRecord(); break;
 			case 3019: $bom = new BOM($this->dbconn); $bom->newRecord(); break;
@@ -151,6 +154,7 @@ class Workspace {
 			case 4005: $vend = new Vendor($this->dbconn); $vend->editRecord($_SESSION['idarray'][2]); break;
 			case 4007: $purch = new Purchasing($this->dbconn); $purch->editRecord($_SESSION['idarray'][2]); break;
 			case 4008: $prod = new Production($this->dbconn); $prod->editRecord($_SESSION['idarray'][2]); break;
+			case 4011: $hum = new Humans($this->dbconn); $hum->editRecord($_SESSION['idarray'][2]); break;
 			case 4012: $addr = new Addresses($this->dbconn); $addr->editRecord($_SESSION['idarray'][2]); break;
 			case 4013: $item = new ItemManager($this->dbconn); $item->editRecord($_SESSION['idarray'][2]); break;
 			case 4019: $bom = new BOM($this->dbconn); $bom->editRecord($_SESSION['idarray'][2]); break;

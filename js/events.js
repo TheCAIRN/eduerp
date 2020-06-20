@@ -39,7 +39,7 @@ function newSearch(whichModule) {
 	if (whichModule=='ItemManager') moduleName='ItemSetup';
 	if (whichModule=='BOM') moduleName='BillofMaterials';
 	if (whichModule=='InventoryManager') moduleName='InventoryLookup';
-	if (whichModule=='COA') moduleName='ChartofAccounts';
+	if (whichModule=='Humans') moduleName='Person';
 	$.post('jq.php',{jquery:'moduleSearchSpace',module:moduleName},function (data) {
 		if (data.length > 0) $("#core").html(data);
 		updateDiv('messagebar');
@@ -116,6 +116,9 @@ function saveRecord(whichModule) {
 	}
 	else if (whichModule=="Production") {
 		saveProductionHeader();
+	}
+	else if (whichModule=="Humans") {
+		saveHumansHeader('');
 	}
 	else if (whichModule=="Addresses") {
 		saveAddressesHeader('');

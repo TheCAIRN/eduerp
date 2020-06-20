@@ -56,6 +56,7 @@ if ($needInstaller) {
 <SCRIPT type="text/javascript" src="js/jquery-ui.min.js"></SCRIPT>
 <SCRIPT type="text/javascript" src="js/events.js"></SCRIPT>
 <SCRIPT type="text/javascript" src="js/coreLookups.js"></SCRIPT>
+<SCRIPT type="text/javascript" src="js/humans.js"></SCRIPT>
 <SCRIPT type="text/javascript" src="js/addresses.js"></SCRIPT>
 <SCRIPT type="text/javascript" src="js/item.js"></SCRIPT>
 <SCRIPT type="text/javascript" src="js/purchasing.js"></SCRIPT>

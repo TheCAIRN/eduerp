@@ -80,7 +80,7 @@ function jquery() {
 		}
 		$module = $_POST['module'];
 		$cs = array('Dashboard','Entities','CoreLookups','Contacts','Items','Vendors','Freight','Purchasing','Production','Customers','Sales',
-			'People','Addresses','ItemSetup','ItemAttributes','ItemCategories','ItemTypes','GTINMaster','InventoryLookup','BillofMaterials','VendorCatalog',
+			'Person','Addresses','ItemSetup','ItemAttributes','ItemCategories','ItemTypes','GTINMaster','InventoryLookup','BillofMaterials','VendorCatalog',
 			'EntityResource','CustomerCatalog','CustomerTypes','Customer','CustomerDC','CustomerStoreTypes','CustomerStores','Consumers','Insights','DashboardSetup',
 			'ReportSetup','Dashboards','Reports','Accounting','ChartofAccounts','GLPeriods','GLAccounts','GLBalances','GLJournal','FreightVendorTypes','FreightVendors',
 			'InboundFreight','OutboundFreight','SalesOrders','SalesPayments','SalesOrderTypes','Admin','SystemOptions','UserAccounts','SecurityGroups','Permissions',
@@ -150,6 +150,13 @@ function jquery() {
 				$modObject = $_SESSION['activeModule'];
 			else {
 				$modObject = new Addresses($link);
+				$_SESSION['activeModule'] = $modObject;
+			}
+		} elseif ($module=='HumansSearch') {
+			if (isset($_SESSION['activeModule']) && $_SESSION['activeModule'] instanceof Humans) 
+				$modObject = $_SESSION['activeModule'];
+			else {
+				$modObject = new Humans($link);
 				$_SESSION['activeModule'] = $modObject;
 			}
 		} elseif ($module=='VendorSearch') {
@@ -229,13 +236,6 @@ function jquery() {
 				$modObject = new Consumers($link);
 				$_SESSION['activeModule'] = $modObject;
 			}
-		} elseif ($module=='COASearch') {
-			if (isset($_SESSION['activeModule']) && $_SESSION['activeModule'] instanceof COA) 
-				$modObject = $_SESSION['activeModule'];
-			else {
-				$modObject = new COA($link);
-				$_SESSION['activeModule'] = $modObject;
-			}
 		} elseif ($module=='DashboardsSearch') {
 			$modObject = new Dashboards($link);
 			$_SESSION['activeModule'] = $modObject;
@@ -309,6 +309,14 @@ function jquery() {
 		$module = $_POST['module'];
 		$id = $_POST['id'];
 		$modObject = null;
+		try {
+			$modObject = new $module($link);
+		} catch (Exception $e) {
+			$messagebar->addWarning("The selected module has not been installed in this system.");
+			$link->close();
+			return;			
+		}
+		/*
 		if ($module=='Entity') {
 			$modObject = new Entity($link);
 		} elseif ($module=='Purchasing') {
@@ -317,6 +325,8 @@ function jquery() {
 			$modObject = new Production($link);
 		} elseif ($module=='ItemManager') {
 			$modObject = new ItemManager($link);
+		} elseif ($module=='Humans') {
+			$modObject = new Humans($link);
 		} elseif ($module=='Addresses') {
 			$modObject = new Addresses($link);
 		} elseif ($module=='Vendor') {
@@ -357,8 +367,8 @@ function jquery() {
 			$messagebar->addWarning("The selected module has not been installed in this system.");
 			$link->close();
 			return;			
-		}
-		if (is_null($modObject)) {
+		}*/
+		if (is_null($modObject) || !method_exists($modObject,'display')) {
 			$messagebar->addWarning("The selected module does not have record display enabled.");
 			$link->close();
 			return;
@@ -383,6 +393,7 @@ function jquery() {
 			case 5: $modObject = new Vendor($link); break;
 			case 7: $modObject = new Purchasing($link); break;
 			case 8: $modObject = new Production($link); break;
+			case 11: $modObject = new Humans($link); break;
 			case 12: $modObject = new Addresses($link); break;
 			case 13: $modObject = new ItemManager($link); break;
 			case 19: $modObject = new BOM($link); break;
@@ -416,8 +427,14 @@ function jquery() {
 		}
 		$module = $_POST['module'];
 		$id = $_POST['id'];
-		$modObject = null;
-		if ($module=='Entity') {
+		try {
+			$modObject = new $module($link);
+		} catch (Exception $e) {
+			$messagebar->addWarning("The selected module has not been installed in this system.");
+			$link->close();
+			return;			
+		}
+		/*if ($module=='Entity') {
 			$modObject = new Entity($link);
 		} elseif ($module=='Purchasing') {
 			$modObject = new Purchasing($link);
@@ -461,8 +478,8 @@ function jquery() {
 			$messagebar->addWarning("The selected module has not been installed in this system.");
 			$link->close();
 			return;			
-		}
-		if (is_null($modObject)) {
+		}*/
+		if (is_null($modObject) || !method_exists($modObject,'editRecord')) {
 			$messagebar->addWarning("The selected module does not have edit record functionality enabled.");
 			$link->close();
 			return;

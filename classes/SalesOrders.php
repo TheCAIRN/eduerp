@@ -51,6 +51,8 @@ class SalesOrders extends ERPBase {
 	private $shipping_from;
 	private $shipping_to;
 	private $remit_to;
+	private $consumer_billing_id;
+	private $consumer_shipping_id;
 	private	$huser_creation;
 	private $hdate_creation;
 	private $huser_modify;
@@ -104,7 +106,7 @@ class SalesOrders extends ERPBase {
 		customer_purchase_order_number,customer_department,customer_product_group,store_code,terms,order_date,credit_release_date,ship_window_start,ship_window_end,
 		must_route_by,must_arrive_by,order_cancelled_date,wave_number,wave_date,inventory_needed_by,inventory_pulled_complete,inventory_packed_complete,
 		fv_vendor_id,bill_of_lading,rrc,load_id,routing_requested,pickup_scheduled_for,inventory_loaded_complete,bol_date,order_shipped_date,
-		invoice_number,order_invoiced_date,invoice_paid_complete,shipping_from,shipping_to,remit_to';
+		invoice_number,order_invoiced_date,invoice_paid_complete,shipping_from,shipping_to,remit_to,consumer_billing_id,consumer_shipping_id';
 	private $column_list_detail = 'sales_order_number,sales_order_line,parent_line,entity_id,division_id,department_id,customer_line,edi_raw1,edi_raw2,item_id,
 		quantity_requested,quantity_shipped,quantity_returned,quantity_backordered,quantity_cancelled,quantity_uom,price,discount_percent,discount_amount,
 		retail_high,retail_low,credit_release_date,wave_date,assigned_to,inventory_needed_by,inventory_location,inventory_pulled,inventory_pulled_by,inventory_packed,
@@ -290,6 +292,8 @@ class SalesOrders extends ERPBase {
 		$this->shipping_from = null;
 		$this->shipping_to = null;
 		$this->remit_to = null;
+		$this->consumer_billing_id = null;
+		$this->consumer_shipping_id = null;
 		$this->detail_array = array();
 	} // resetHeader()
 	public function resetDetail() {
@@ -388,6 +392,8 @@ class SalesOrders extends ERPBase {
 			'shipping_from'=>$this->shipping_from,
 			'shipping_to'=>$this->shipping_to,
 			'remit_to'=>$this->remit_to,
+			'consumer_billing_id'=>$this->consumer_billing_id,
+			'consumer_shipping_id'=>$this->consumer_shipping_id,
 			'huser_creation'=>$this->huser_creation,
 			'hdate_creation'=>$this->hdate_creation,
 			'huser_modify'=>$this->huser_modify,
@@ -612,6 +618,8 @@ class SalesOrders extends ERPBase {
 				$this->shipping_from,
 				$this->shipping_to,
 				$this->remit_to,
+				$this->consumer_billing_id,
+				$this->consumer_shipping_id,
 				$this->huser_creation,$this->hdate_creation,$this->huser_modify,$this->hdate_modify
 			);
 			$stmt->store_result();
@@ -807,6 +815,8 @@ class SalesOrders extends ERPBase {
 		$shipfrom = isset($_POST['o13'])?$_POST['o13']:null;
 		$shipto = isset($_POST['o14'])?$_POST['o14']:null;
 		$remitto = isset($_POST['i4'])?$_POST['i4']:null;
+		$consumerbillid = isset($_POST['o15'])?$_POST['o15']:null;
+		$consumershipid = isset($_POST['o16'])?$_POST['o16']:null;
 		$return_date = false;
 		if ($orderstatus=='O' && strlen(trim($orderdate))==0) $return_date = true;
 		$invneeded = new DateTime($invneeded_d.' '.$invneeded_t);
@@ -828,23 +838,23 @@ class SalesOrders extends ERPBase {
 			wave_number,wave_date,inventory_needed_by,inventory_pulled_complete,inventory_packed_complete,
 			fv_vendor_id,bill_of_lading,rrc,load_id,routing_requested,pickup_scheduled_for,inventory_loaded_complete,bol_date,order_shipped_date,
 			invoice_number,order_invoiced_date,invoice_paid_complete,
-			shipping_from,shipping_to,remit_to,
+			shipping_from,shipping_to,remit_to,consumer_billing_id,consumer_shipping_id,
 			rev_enabled,rev_number,created_by,creation_date,last_update_by,last_update_date) VALUES 
 			(?,?,?,?,?,?,?,?,?,?,?,?,
 			?,?,?,?,
 			?,?,?,?,?,?,?,?,?,?,?,?,
 			?,?,?,?,?,
 			?,?,?,?,?,?,?,?,?,
-			?,?,?,?,?,?,
+			?,?,?,?,?,?,?,?
 			?,?,?,NOW(),?,NOW());";
 		$stmt = $this->dbconn->prepare($q);
-		$stmt->bind_param('iisiiiiiiiss'.'siss'.'sssiisssssss'.'issss'.'issssssss'.'issiii'.'siii',
+		$stmt->bind_param('iisiiiiiiiss'.'siss'.'sssiisssssss'.'issss'.'issssssss'.'issiiiii'.'siii',
 			$h2,$h3,$h4,$h5,$h6,$h7,$h8,$h9,$h10,$h11,$h12,$h13,
 			$q1,$q2,$q3,$q4,
 			$o1,$o2,$o3,$o4,$o5,$o6,$o7,$o8,$o9,$o10,$o11,$o12,
 			$p1,$p2,$p3,$p4,$p5,
 			$s1,$s2,$s3,$s4,$s5,$s6,$s7,$s8,$s9,
-			$i1,$i2,$i3,$o13,$o14,$i4,
+			$i1,$i2,$i3,$o13,$o14,$i4,$o15,$o16,
 			$h14,$h15,$h16,$h17
 		);
 		// TODO: Validate all fields & send appropriate error messages
@@ -899,6 +909,8 @@ class SalesOrders extends ERPBase {
 		if (is_integer($shipfrom) || ctype_digit($shipfrom)) $o13 = $shipfrom; else $o13 = null;
 		if (is_integer($shipto) || ctype_digit($shipto)) $o14 = $shipto; else $o14 = null;
 		if (is_integer($remitto) || ctype_digit($remitto)) $i4 = $remitto; else $i4 = null;
+		if (is_integer($consumerbillid) || ctype_digit($consumerbillid)) $o15 = $consumerbillid; else $o15 = null;
+		if (is_integer($consumershipid) || ctype_digit($consumershipid)) $o16 = $consumershipid; else $o16 = null;
 		$h14 = ($rev_enabled=='true')?'Y':'N';
 		if ($rev_number<1) $rev_number = 1;
 		$h15 = $rev_number;
@@ -1197,6 +1209,8 @@ class SalesOrders extends ERPBase {
 		if (isset($_POST['o13']) && $_POST['o13']!=$this->shipping_from) $update['shipping_from'] = array('i',$_POST['o13']);
 		if (isset($_POST['o14']) && $_POST['o14']!=$this->shipping_to) $update['shipping_to'] = array('i',$_POST['o14']);
 		if (isset($_POST['i4']) && $_POST['i4']!=$this->remit_to) $update['remit_to'] = array('i',$_POST['i4']);
+		if (isset($_POST['o15']) && $_POST['o15']!=$this->consumer_billing_id) $update['consumer_billing_id'] = array('i',$_POST['o15']);
+		if (isset($_POST['o16']) && $_POST['o16']!=$this->consumer_shipping_id) $update['consumer_shipping_id'] = array('i',$_POST['o16']);
 		$update['last_update_date'] = array('s',$now->format('Y-m-d H:i:s'));
 		$update['last_update_by'] = array('i',$_SESSION['dbuserid']);
 		

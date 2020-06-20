@@ -354,6 +354,33 @@ class ItemManager extends ERPBase {
 		if (ctype_digit($id)) return true;
 		return false;
 	}
+	/*
+	 * @function gtinLoad()
+	 * An alternative to display or apiSearch, primarily intended for Sales Order imports (EDI, CSV, etc.) where the detail is being loaded by GTIN.
+	 * This function does NOT set currentScreen or currentRecord.
+	 */
+	public function gtinLoad($gtin) {
+		$q = "SELECT {$this->column_list} FROM item_master WHERE gtin=?;";
+		$stmt = $this->dbconn->prepare($q);
+		if ($stmt===false) {
+			echo $this->dbconn->error;
+			return;
+		}
+		$stmt->bind_param('s',$productid);
+		$productid = $gtin;
+		$result = $stmt->execute();
+		if ($result!==false) {
+			$stmt->bind_result($this->entity_id, $this->division_id, $this->department_id, $this->item_type_code, $this->item_category_id, $this->product_id, $this->product_code, 
+				$this->product_description, $this->product_catalog_title, $this->product_uom, $this->gtin, $this->standard_cost, $this->suggested_retail, $this->wholesale_price, 
+				$this->currency_code, $this->length, $this->width, $this->height, $this->lwh_uom, $this->weight, $this->weight_uom, $this->harmonized_tariff_code, $this->tariff_revision, 
+				$this->promotion_start_date, $this->promotion_end_date, $this->product_launch_date, $this->product_sunset_date, $this->product_end_of_support_date, 
+				$this->product_end_extended_support_date, 
+				$this->visible, $this->rev_enabled, $this->rev_number, $this->created_by, $this->creation_date, $this->last_update_by, $this->last_update_date);
+			$stmt->store_result();
+			$stmt->fetch();
+		}
+		$stmt->close();
+	}
 	public function display($id,$mode='view') {
 		if (!($this->isIDValid($id))) return;
 		$readonly = true;
@@ -388,56 +415,6 @@ class ItemManager extends ERPBase {
 			$stmt->store_result();
 			$stmt->fetch();
 			$this->currentRecord = $id;
-/*
-			if ($readonly) $cls = 'RecordView'; else $cls = 'RecordEdit';
-			if ($readonly) $inputtextro = ' readonly="readonly"'; else $inputtextro = '';
-			$ent = new Entity($this->dbconn);
-			$html .= '<FIELDSET id="ItemRecord" class="'.$cls.'">';
-			$html .= '<DIV class="labeldiv"><LABEL for="productID">Product ID:</LABEL><B id="productID">'.$id.'</B></DIV>';
-			$html .= $ent->entitySelect($entid,$readonly);
-			$html .= $ent->divisionSelect($divid,$readonly);
-			$html .= $ent->departmentSelect($deptid,$readonly);
-			// TODO: Convert type and category to dropdowns.
-			$html .= '<DIV class="labeldiv"><LABEL for="itemType">Type:</LABEL><INPUT type="text" id="itemType" value="'.$typecode.'"'.$inputtextro.' /></DIV>';
-			$html .= '<DIV class="labeldiv"><LABEL for="itemCategory">Category:</LABEL><INPUT type="text" id="itemCategory" value="'.$categoryid.'"'.$inputtextro.' /></DIV>';
-			$html .= '<DIV class="labeldiv"><LABEL for="productCode">Product Code:</LABEL><INPUT type="text" id="productCode" value="'.$productcode.'"'.$inputtextro.' /></DIV>';
-			$html .= '<DIV class="labeldiv"><LABEL for="itemCatalog">Catalog:</LABEL><INPUT type="text" id="itemCatalog" value="'.$catalog.'"'.$inputtextro.' /></DIV>';
-			$html .= '<BR /><DIV style="display:block;"><LABEL for="itemDescription">Description:</LABEL><TEXTAREA id="itemDescription"'.$inputtextro.'>'.$description.'</TEXTAREA></DIV>';
-			// TODO: Convert all UOM boxes to dropdowns.
-			$html .= '<DIV class="labeldiv"><LABEL for="productUOM">Product UOM:</LABEL><INPUT type="text" id="productUOM" value="'.$productuom.'"'.$inputtextro.' /></DIV>';
-			$html .= '<DIV class="labeldiv"><LABEL for="itemGTIN">GTIN:</LABEL><INPUT type="text" id="itemGTIN" value="'.$gtin.'"'.$inputtextro.' />';
-			if (!$readonly) $html .= "<BUTTON onClick=\"gtinCheck()\">CHECK</BUTTON><BUTTON onClick=\"gtinAssign()\">ASSIGN</BUTTON>"; // in "item.js"
-			$html .= '</DIV>';
-			// TODO: Convert currency to dropdown.
-			$html .= '<DIV class="labeldiv"><LABEL for="currency">Currency:</LABEL><INPUT type="text" id="currency" value="'.$currency.'"'.$inputtextro.' /></DIV>';
-			$html .= '<DIV class="labeldiv"><LABEL for="standardCost">Standard Cost:</LABEL><INPUT type="number" step="any" id="standardCost" value="'.$stdcost.'"'.$inputtextro.' /></DIV>';
-			$html .= '<DIV class="labeldiv"><LABEL for="retailPrice">MSRP:</LABEL><INPUT type="number" step="any" id="retailPrice" value="'.$msrp.'"'.$inputtextro.' /></DIV>';
-			$html .= '<DIV class="labeldiv"><LABEL for="wholesalePrice">Wholesale Price:</LABEL><INPUT type="number" step="any" id="wholesalePrice" value="'.$wholesale.'"'.$inputtextro.' /></DIV>';
-			$html .= '<DIV class="labeldiv"><LABEL for="length">Length:</LABEL><INPUT type="number" step="any" id="length" value="'.$length.'"'.$inputtextro.' /></DIV>';
-			$html .= '<DIV class="labeldiv"><LABEL for="width">Width:</LABEL><INPUT type="number" step="any" id="width" value="'.$width.'"'.$inputtextro.' /></DIV>';
-			$html .= '<DIV class="labeldiv"><LABEL for="height">Height:</LABEL><INPUT type="number" step="any" id="height" value="'.$height.'"'.$inputtextro.' /></DIV>';
-			$html .= '<DIV class="labeldiv"><LABEL for="lwhUOM">L/W/H UOM:</LABEL><INPUT type="text" id="lwhUOM" value="'.$lwhuom.'"'.$inputtextro.' /></DIV>';
-			$html .= '<DIV class="labeldiv"><LABEL for="weight">Weight:</LABEL><INPUT type="number" step="any" id="weight" value="'.$weight.'"'.$inputtextro.' /></DIV>';
-			$html .= '<DIV class="labeldiv"><LABEL for="weightUOM">Weight UOM:</LABEL><INPUT type="text" id="weightUOM" value="'.$weightuom.'"'.$inputtextro.' /></DIV>';
-			$html .= '<DIV class="labeldiv"><LABEL for="htc">HTC:</LABEL><INPUT type="text" id="htc" placeholder="####.##.####" value="'.$htc.'"'.$inputtextro.' /></DIV>';
-			$html .= '<DIV class="labeldiv"><LABEL for="tariffRevision">HTC Revision:</LABEL><INPUT type="number" step="1" min="1" id="tariffRevision" value="'.$tariffrevision.'"'.$inputtextro.' /></DIV>';
-			$html .= '<DIV class="labeldiv"><LABEL for="promoStart">Promotion Start Date:</LABEL><INPUT type="date" id="promoStart" value="'.$promotion_start_date.'"'.$inputtextro.' /></DIV>';
-			$html .= '<DIV class="labeldiv"><LABEL for="promoEnd">Promotion End Date:</LABEL><INPUT type="date" id="promoEnd" value="'.$promotion_end_date.'"'.$inputtextro.' /></DIV>';
-			$html .= '<DIV class="labeldiv"><LABEL for="prodLaunch">Product Launch Date:</LABEL><INPUT type="date" id="prodLaunch" value="'.$product_launch_date.'"'.$inputtextro.' /></DIV>';
-			$html .= '<DIV class="labeldiv"><LABEL for="prodSunset">Product Sunset Date:</LABEL><INPUT type="date" id="prodSunset" value="'.$product_sunset_date.'"'.$inputtextro.' /></DIV>';
-			$html .= '<DIV class="labeldiv"><LABEL for="prodEOS">Product End of Support Date:</LABEL><INPUT type="date" id="prodEOS" value="'.$product_end_of_support_date.'"'.$inputtextro.' /></DIV>';
-			$html .= '<DIV class="labeldiv"><LABEL for="promEOES">Product End of Extended Support Date:</LABEL><INPUT type="date" id="prodEOES" value="'.$product_end_extended_support_date.'"'.$inputtextro.' /></DIV>';
-			$html .= '<DIV id="RecordAudit">';
-			$html .= '<DIV class="labeldiv"><LABEL for="visible">Is product visible?<INPUT type="checkbox" id="visible"'.$inputtextro.' '.($visible==1?'checked="checked" />':'/>').'</DIV>';
-			$html .= '<DIV class="labeldiv"><LABEL for="revenabled">Revision Enabled:</LABEL><INPUT type="checkbox" id="revenabled" '.$inputtextro.' '.($revyn=='Y'?'checked="checked" />':'/>').'</DIV>';
-			$html .= '<DIV class="labeldiv"><LABEL for="revnumber">Revision Number:</LABEL><INPUT type="number" id="revnumber" value="'.$revnum.'"'.$inputtextro.' /></DIV>';
-			$html .= '<DIV class="labeldiv"><LABEL for="createdby">Created By:</LABEL><INPUT type="text" id="createdby" value="'.$createdby.'" readonly="readonly" /></DIV>';	// These 4 fields can only ever be modified by the system
-			$html .= '<DIV class="labeldiv"><LABEL for="createdon">Created On:</LABEL><INPUT type="date" id="createdon" value="'.$createddate.'" readonly="readonly" /></DIV>';
-			$html .= '<DIV class="labeldiv"><LABEL for="modifiedby">Modified By:</LABEL><INPUT type="text" id="modifiedby" value="'.$updateby.'" readonly="readonly" /></DIV>';
-			$html .= '<DIV class="labeldiv"><LABEL for="modifiedon">Modified On:</LABEL><INPUT type="date" id="modifiedon" value="'.$updatedate.'" readonly="readonly" /></DIV>';			
-			$html .= '</DIV>';
-			$html .= '</FIELDSET>';
-*/
 		}
 		$stmt->close();
 		if ($mode!='update') {
