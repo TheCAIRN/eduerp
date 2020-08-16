@@ -246,11 +246,32 @@ class Humans extends ERPBase {
 	} // editRecord()
 	private function insertHeader() {
 		$this->resetHeader();
+		$data = $_POST['data'];
 		$q = "INSERT INTO cx_humans ({$this->column_list_human}) VALUES 
 			(null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
 		$stmt = $this->dbconn->prepare($q);
+		if ($stmt===false) {
+			echo 'fail|'.$this->dbconn->error;
+			return;
+		}
 		$stmt->bind_param('ssssssssssiiiis',$p2,$p3,$p4,$p5,$p6,$p7,$p8,$p9,$p10,$p11,$p12,$p13,$p14,$p15,$p16);
-
+		$p2 = isset($data['title'])?$data['title']:'';
+		$p3 = isset($data['given_name'])?$data['given_name']:'';
+		$p4 = isset($data['middle'])?$data['middle']:'';
+		$p5 = isset($data['middle_2'])?$data['middle_2']:'';
+		$p6 = isset($data['family_name'])?$data['family_name']:'';
+		$p7 = isset($data['suffix'])?$data['suffix']:'';
+		$p8 = isset($data['alias'])?$data['alias']:'';
+		$p9 = isset($data['degrees'])?$data['degrees']:'';
+		$p10 = isset($data['sex'])?$data['sex']:'';
+		$bd = null;
+		if (isset($data['birthdate'])) $bd = new DateTime($data['birthdate']);
+		$p11 = (!is_null($bd))?$bd->format('Y-m-d'):null;
+		$p12 = (isset($data['home_address'])&&!empty($data['home_address']))?$data['home_address']:null;
+		$p13 = (isset($data['mother'])&&!empty($data['mother']))?$data['mother']:null;
+		$p14 = (isset($data['father'])&&!empty($data['father']))?$data['father']:null;
+		$p15 = (isset($data['spouse'])&&!empty($data['spouse']))?$data['spouse']:null;
+		$p16 = isset($data['unique_id'])?$data['unique_id']:null;
 		$result = $stmt->execute();
 		if ($result!==false) {
 			echo 'inserted|'.$this->dbconn->insert_id;

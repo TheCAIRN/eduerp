@@ -43,6 +43,7 @@ INNER JOIN cx_humans h ON sec.human_id=h.human_id;
 ALTER TABLE aa_options
 ADD FOREIGN KEY (last_update_by) REFERENCES sec_users (user_id);
 
+/*
 CREATE VIEW v_sec_users AS
 SELECT u.user_id,u.human_id,gg.group_name,h.title,h.given_name,h.middle,h.middle_2,h.family_name,h.suffix,h.alias
 ,h.degrees,h.sex
@@ -56,4 +57,4 @@ WHERE cx_phone_associations.human_id=u.human_id ORDER BY priority LIMIT 1)
 FROM sec_users u
 INNER JOIN cx_humans h ON u.human_id=h.human_id
 LEFT OUTER JOIN sec_groups gg ON u.group_id=gg.group_id;
-
+*/

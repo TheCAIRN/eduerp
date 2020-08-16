@@ -17,6 +17,7 @@ class Toolbar {
 				case 5: $mod="'VendorSearch'"; break;
 				case 7: $mod="'PurchasingSearch'"; break;
 				case 8: $mod="'ProductionSearch'"; break;
+				case 11: $mod="'PersonSearch'"; break;
 				case 12: $mod="'AddressesSearch'"; break;
 				case 13: $mod="'ItemSearch'"; break;
 				case 18: $mod="'InventoryManagerSearch'"; break;
@@ -49,6 +50,10 @@ class Toolbar {
 				case 2008:
 				case 3008:
 				case 4008: $mod="'Production'"; break;
+				case 1011:
+				case 2011:
+				case 3011:
+				case 4011: $mod="'Humans'"; break;
 				case 1012:
 				case 2012:
 				case 3012: 
@@ -87,7 +92,9 @@ class Toolbar {
 				case 2028:
 				case 3028: $mod="'Consumers'"; break;
 				case 1035:
-				case 2035: $mod="'COA'"; break;
+				case 2035:
+				case 3035:
+				case 4035: $mod="'COA'"; break;
 				case 1037:
 				case 2037:
 				case 3037:

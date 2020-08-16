@@ -396,6 +396,28 @@ class ERPBase {
 						}
 					}
 				}
+				if ($field[3]=='GLAccount') {
+					$glacct = new GLAccounts($this->dbconn);
+					if ($view=='view') {
+						if (!$intable) {
+							if (is_array($hdata) && strpos($field[0],'_detail')===false && !empty($hdata[$field[1]])) $html .= '<DIV id="'.$field[1].'-div" class="embedded">'.$glacct->embed($field[1],'display readonly',$hdata[$field[1]]).'</DIV>';
+						} else {
+							$tableentry .= '<TD id="row'.$tablerow.'-'.$field[1].'">';
+							if (is_array($hdata) && strpos($field[0],'_detail')===false && isset($hdata[$field[1]])) $tableentry .= '<DIV id="'.$field[1].'-div" class="embedded">'.$hdata[$field[1]].'</DIV>';
+							$tableentry .= '</TD>';
+						}
+					} else {
+						if (!$intable) {
+							if ($view=='edit' && is_array($hdata) && strpos($field[0],'_detail')===false && isset($hdata[$field[1]])) 
+								$html .= '<DIV id="'.$field[1].'-div" class="embedded">'.$glacct->embed($field[1],'display',$hdata[$field[1]]).'</DIV>';
+							else $html .= '<DIV id="'.$field[1].'-div" class="embedded">'.$glacct->embed($field[1],'search').'</DIV>';
+						} else {
+							$tableentry .= '<TD id="row'.$tablerow.'-'.$field[1].'">';
+							$tableentry .= '<DIV id="'.$field[1].'-div" class="embedded">'.$glacct->embed($field[1],'search').'</DIV>';
+							$tableentry .= '</TD>';
+						}
+					}
+				}
 				if (!$intable && !$embedded) {
 					$html .= '</DIV>';
 				}
@@ -403,30 +425,36 @@ class ERPBase {
 		} // foreach entryfields
 		if ($view=='view' && !$intable && !$embedded) {
 			$readonly = ' readonly="readonly"';
+			$auhtml = '';
+			$auset = 0;
 			foreach($auditFields as $field=>$set) {
 				if (!$set && isset($hdata[$field])) {
-					$html .= '<DIV class="labeldiv">';
-					$html .= '<LABEL for="'.$prefix.$field.'">'.$field.'</LABEL>';
+					$auset++;
+					$auhtml .= '<DIV class="labeldiv">';
+					$auhtml .= '<LABEL for="'.$prefix.$field.'">'.ucwords(str_replace('_',' ',$field)).'</LABEL>';
 					if ($field=='rev_enabled') {
 						if ($hdata[$field]=='Y') $checked = ' checked="checked"'; else $checked='';
-						$html .= '<INPUT type="checkbox" id="'.$prefix.$field.'" indeterminate="true"'.$readonly.$checked.' />';
+						$auhtml .= '<INPUT type="checkbox" id="'.$prefix.$field.'" indeterminate="true"'.$readonly.$checked.' />';
 					} // rev_enabled
 					if ($field=='rev_number') {
 						$checked = ' value="'.$hdata[$field].'"';
-						$html .= '<INPUT type="number" id="'.$prefix.$field.'" '.$readonly.$checked.' />';
+						$auhtml .= '<INPUT type="number" id="'.$prefix.$field.'" '.$readonly.$checked.' />';
 					}
 					if ($field=='created_by' || $field=='last_update_by') {
 						// TODO: Change these from id fields to name fields
 						$checked = ' value="'.$hdata[$field].'"';
-						$html .= '<INPUT type="number" id="'.$prefix.$field.'" '.$readonly.$checked.' />';
+						$auhtml .= '<INPUT type="number" id="'.$prefix.$field.'" '.$readonly.$checked.' />';
 					}
 					if ($field=='creation_date' || $field=='last_update_date') {
 						$checked = ' value="'.$hdata[$field].'"';
-						$html .= '<INPUT type="datetime-local" id="'.$prefix.$field.'" '.$readonly.$checked.' />';
+						$auhtml .= '<INPUT type="datetime-local" id="'.$prefix.$field.'" '.$readonly.$checked.' />';
 					}
-					$html .= '</DIV>';
+					$auhtml .= '</DIV>';
 				}
 			} // foreach audit field
+			if ($auset > 0) {
+				$html .= '<FIELDSET class="'.$cls.'" id="RecordAudit"><LEGEND onClick="$(this).siblings().toggle();">Audit</LEGEND>'.$auhtml.'</FIELDSET>';
+			}
 		} // Only display audit fields in view mode
 		if (is_string($this->supportsNotes) && !$embedded) {
 			$q = 'SELECT note_id,'.$this->primaryKey.',n.note_type_id,seq,note_text,rev_enabled,rev_number,created_by,creation_date,'.

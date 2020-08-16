@@ -47,13 +47,18 @@ class Customer extends ERPBase {
 		$this->entryFields[] = array('cust_master','parent','Parent','dropdown','cust_master',array('customer_id','customer_name'));
 		$this->entryFields[] = array('cust_master','customer_group','Group','textbox');
 		$this->entryFields[] = array('cust_master','supplier_code','Supplier #','textbox');
-		if (!$this->auto_gl) $this->entryFields[] = array('cust_master','gl_account_id','G/L Account','dropdown','acgl_accounts',array('gl_account_id','gl_account_name'));
- // TODO: Change gl_account_id from simple dropdown to GLAccount, and treat as an embedded field, so new G/L accounts can be created in place.
 		$this->entryFields[] = array('cust_master','default_terms','Default Terms','dropdown','aa_terms',array('terms_id','terms_code'));
 		$this->entryFields[] = array('cust_master','status','Status','function',$this,'statusSelect');
 		$this->entryFields[] = array('cust_master','rev_enabled','Enable Revision Tracking','checkbox','rev_number');
 		$this->entryFields[] = array('cust_master','rev_number','Revision number','integer');
 		$this->entryFields[] = array('cust_master','','','endfieldset');
+		//if (!$this->auto_gl) $this->entryFields[] = array('cust_master','gl_account_id','G/L Account','dropdown','acgl_accounts',array('gl_account_id','gl_account_name'));
+ // TODO: Change gl_account_id from simple dropdown to GLAccount, and treat as an embedded field, so new G/L accounts can be created in place.
+		if (!$this->auto_gl) {
+			$this->entryFields[] = array('cust_master','gl_account_id','G/L Account','embedded');
+			$this->entryFields[] = array('cust_master','gl_account_id','G/L Account','GLAccount');
+			$this->entryFields[] = array('cust_master','','','endembedded');
+		}
 		$this->entryFields[] = array('cust_master','primary_address','Primary Address','embedded');
 		$this->entryFields[] = array('cust_master','primary_address','Primary Address','Address');
 		$this->entryFields[] = array('cust_master','','','endembedded');
@@ -269,7 +274,84 @@ class Customer extends ERPBase {
 		$stmt->close();
 	} // insertHeader()
 	private function updateHeader() {
+		$this->resetHeader();
+		$now = new DateTime();
+		$data=$_POST['data'];
+		$id = $data['customer_id'];
+		if ((!is_integer($id) && !ctype_digit($id)) || $id<1) {
+			echo 'fail|Invalid address id for updating';
+			return;
+		}
+		$this->customer_id = $id;
+		$this->display($id,'update'); // Display already has the logic for loading the record.  TODO: Refactor into separate function.
+		$update = array();
+		// TODO: compare fields
+		if (isset($data['customer_code']) && $data['customer_code']!=$this->customer_code) $update['customer_code'] = array('s',$data['customer_code']);
+		if (isset($data['customer_name']) && $data['customer_name']!=$this->customer_name) $update['customer_name'] = array('s',$data['customer_name']);
+		if (isset($data['cust_type_code']) && $data['cust_type_code']!=$this->cust_type_code) $update['cust_type_code'] = array('s',$data['cust_type_code']);
+		if (isset($data['parent']) && $data['parent']!=$this->parent) $update['parent'] = array('i',$data['parent']);
+		if (isset($data['customer_group']) && $data['customer_group']!=$this->customer_group) $update['customer_group'] = array('s',$data['customer_group']);
+		if (isset($data['supplier_code']) && $data['supplier_code']!=$this->supplier_code) $update['supplier_code'] = array('s',$data['supplier_code']);
+		if (isset($data['gl_account_id']) && $data['gl_account_id']!=$this->gl_account_id) $update['gl_account_id'] = array('i',$data['gl_account_id']);
+		if (isset($data['default_terms']) && $data['default_terms']!=$this->default_terms) $update['default_terms'] = array('i',$data['default_terms']);
+		if (isset($data['status']) && $data['status']!=$this->status) $update['status'] = array('s',$data['status']);
+		if (isset($data['primary_address']) && $data['primary_address']!=$this->primary_address) $update['primary_address'] = array('i',$data['primary_address']);
+		if (isset($data['billing_address']) && $data['billing_address']!=$this->billing_address) $update['billing_address'] = array('i',$data['billing_address']);
+		$rev_enabled = isset($data['rev_enabled'])?$data['rev_enabled']:false;
+		$rev_enabled = ($rev_enabled=='true')?'Y':'N';
+		$rev_number = isset($data['rev_number'])?$data['rev_number']:1;
+		if (isset($data['rev_enabled']) && $rev_enabled!=$this->rev_enabled) $update['rev_enabled'] = array('s',$rev_enabled);
+		if (isset($data['rev_number']) && $rev_number!=$this->rev_number) $update['rev_number'] = array('i',$rev_number);
 	
+		$update['last_update_by'] = array('i',$_SESSION['dbuserid']);
+		$update['last_update_date'] = array('s',$now->format('Y-m-d H:i:s'));
+		// Create UPDATE String
+		
+		if (count($update)==2) {
+			echo 'fail|Nothing to update';
+			return;
+		}
+		$q = 'UPDATE cust_master SET ';
+		$ctr = 0;
+		$bp_types = '';
+		$bp_values = array_fill(0,count($update),null);
+		foreach ($update as $field=>$data) {
+			if ($ctr > 0) $q .= ',';
+			$q .= "$field=?";
+			$bp_types .= $data[0];
+			$bp_values[$ctr] = $data[1];
+			$ctr++;
+		}
+		$q .= ' WHERE customer_id=?';
+		$ctr++;
+		$bp_types .= 'i';
+		$bp_values[$ctr] = $this->id;
+		$stmt = $this->dbconn->prepare($q);
+		if ($stmt===false) {
+			echo 'fail|'.$this->dbconn->error;
+			return;
+		}
+		/* The internet has a lot of material about different ways to pass a variable number of arguments to bind_param.
+		   I feel that using Reflection is the best tool for the job.
+		   Reference: https://www.php.net/manual/en/mysqli-stmt.bind-param.php#107154
+		*/
+		$bp_method = new ReflectionMethod($stmt,'bind_param');
+		$bp_refs = array();
+		foreach ($bp_values as $key=>$value) {
+			$bp_refs[$key] = &$bp_values[$key];
+		}
+		array_unshift($bp_values,$bp_types);
+		$bp_method->invokeArgs($stmt,$bp_values);
+		$stmt->execute();
+		if ($stmt->affected_rows > 0) {
+			echo 'updated|'.$id;
+		} else {
+			if ($this->dbconn->error) {
+				echo 'fail|'.$this->dbconn->error;
+				$this->mb->addError($this->dbconn->error);
+			} else echo 'fail|No rows updated';
+		}
+		$stmt->close();		
 	} // updateHeader()
 	public function insertRecord() {
 		$this->insertHeader();

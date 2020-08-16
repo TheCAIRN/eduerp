@@ -64,6 +64,124 @@ class GLAccounts extends ERPBase {
 			'rev_number'=>$this->rev_number,'created_by'=>$this->created_by,'creation_date'=>$this->creation_date,'last_update_by'=>$this->last_update_by,
 			'last_update_date'=>$this->last_update_date);
 	} // arrayifyHeader()
+	/*
+	 * GL Account fields are linked from many different tables within the ERP system.  As a result, many other modules need to have access to 
+	 * look up, select, and add GL Account records.  The embed method provides that capability without changing $_SESSION['currentScreen'] or
+	 * requiring the user to open a new tab.
+	 *
+	 * $id = The HTML id attribute of the fieldset.
+	 * $mode = ['search' | 'lookup' | 'new' | 'save' | 'display']
+	 * $data = An array of GL Account fields, or other data as appropriate to the mode.
+	 */
+	public function embed($id='glaccount',$mode='search',$data=null) {
+		if ($mode=='search') {
+			return $this->embed_search($id,$data);
+		} elseif ($mode=='lookup') {
+			return $this->embed_lookup($id,$data);
+		} elseif ($mode=='display') {
+			return $this->embed_display($id,$data);
+		} elseif ($mode=='new') {
+			return $this->embed_new($id,$data);
+		} elseif ($mode=='save') {
+			return $this->embed_save($id,$data);
+		} else {
+			$this->mb->addError('JQ Embedded GLAccount does not understand mode, "'.$mode.'".');
+		}
+	} // embed()
+	private function embed_search($id='glaccount',$data=null) {
+		$html = "<INPUT type=\"text\" id=\"$id\" placeholder=\"Type in any part of the account and click Search\" size=\"50\" />
+			<BUTTON onClick=\"embeddedGLAccountSearch('$id');\">Search</BUTTON>
+			<BUTTON onClick=\"embeddedGLAccountList('$id');\">List</BUTTON>
+			<BUTTON onClick=\"embeddedGLAccountNew('$id');\">New</BUTTON>";
+		return $html;
+	} // embed_search()
+	private function embed_lookup($id='glaccount',$data=null) {
+		$q = "SELECT {$this->column_list} FROM acgl_accounts";
+		$html = $this->embed_search($id).'<BR /><SELECT id="'.$id.'-select"><OPTION value="[new]">--Create a new record--</OPTION>';
+		$slevel = 0;
+		if (is_null($data) || $data=='') {
+			$slevel = 1;
+		} elseif (strpos($data,' ')===false && strpos($data,',')===false) {
+			// one word search
+			$q .= ' WHERE gl_account_string LIKE ? OR gl_account_name LIKE ? OR gl_account_id=?';
+			$slevel = 2;
+		} elseif (strpos($data,',')===false) {
+			// spaces, but no commas
+			
+		}
+		$stmt = $this->dbconn->prepare($q);
+		switch ($slevel) {
+			case 2:
+				$stmt->bind_param('ssi',$p1,$p2,$p3);
+				$p1 = $p2 = '%'.$data.'%';
+				$p3 = ctype_digit($data)?$data:-99999;
+				break;
+		}
+		$result = $stmt->execute();
+		if ($result === false) {
+			$this->mb->addError($this->dbconn->error);
+		} else {
+			$stmt->store_result();
+			$stmt->bind_result(
+				$this->gl_account_id,$this->account_number,$this->entity_id,$this->division_id,$this->department_id,$this->sub_account_number,
+				$this->gl_account_string,$this->gl_account_name,$this->gl_account_balance,$this->currency_code,$this->rev_enabled,$this->rev_number);
+			while ($stmt->fetch()) {
+				$html .= '<OPTION value="'.$this->gl_account_id.'">';
+				$html .= $this->gl_account_string.' '.$this->gl_account_name;
+				$html .= '</OPTION>';
+			}
+		}
+		$html .= '</SELECT>';
+		$html .= "<BUTTON onClick=\"embeddedGLAccountSelect('$id');\">Select</BUTTON>";
+		$stmt->close();
+		return $html;
+	} // embed_lookup()
+	private function embed_display($id='glaccount',$data=null,$readonly=true) {
+		if (!($this->isIDValid($data))) {
+			$this->mb->addError("JQ Embedded GLAccount: Selected ID is not valid.");
+			return $this->embed_search($id);
+		}
+		$q = "SELECT {$this->column_list} FROM acgl_accounts WHERE gl_account_id=?";
+		$stmt = $this->dbconn->prepare($q);
+		$stmt->bind_param('i',$data);
+		$return = $stmt->execute();
+		$stmt->bind_result(
+			$this->gl_account_id,$this->account_number,$this->entity_id,$this->division_id,$this->department_id,$this->sub_account_number,
+			$this->gl_account_string,$this->gl_account_name,$this->gl_account_balance,$this->currency_code,$this->rev_enabled,$this->rev_number);
+		$stmt->store_result();
+		if ($return===false || $stmt->num_rows==0) {
+			$this->mb->addError("JQ Embedded GLAccount: Selected ID is not valid.");
+			return $this->embed_search($id);
+		}
+		if ($stmt->fetch()) {
+			$html = '';
+			if ($readonly) $html .= $this->embed_search($id).'<BR />';
+			$html .= '<DIV class="labeldiv"><LABEL for="'.$id.'-gl_account_id">ID:</LABEL><B id="'.$id.'-gl_account_id">'.$this->gl_account_id.'</B></DIV>&nbsp;&nbsp;';
+			if ($readonly) {
+				$html.= $this->gl_account_string.' '.$this->gl_account_name.'<BR />';
+				$html.= 'Entity: '.$this->entity_id.', Division: '.$this->division_id.', Department: '.$this->department_id.'<BR />';
+				$html.= 'Balance: '.$this->gl_account_balance.' '.$this->currency_code.'<BR />';
+				return $html;	
+			}
+		} else {
+			return $this->embed_search($id);
+		}
+		$stmt->close();
+	} // embed_display()
+	public function embed_new($id='glaccount',$data=null) {
+		$html = parent::abstractNewRecord('GLAccounts',$id);
+		$html .= "<BR /><BUTTON onClick=\"embeddedGLAccountSave('$id');\">Save</BUTTON><BR />";
+		$html .= $this->embed_search($id);
+		return $html;
+	} // embed_new()
+	public function embed_save($id='glaccount',$data=null) {
+		$this->insertHeader(true);
+		if ($this->id==0) {
+			return $this->embed_new($id,null);
+		} else {
+			return $this->embed_display($id,$this->id);
+		}
+	} // embed_save()
 	public function glAccountSelect($id=0,$readonly=false) {
 		return parent::abstractSelect($id,$readonly,'acgl_accounts','gl_account_id','gl_account_name','GLAccounts');
 	} // _templateSelect()
@@ -183,7 +301,7 @@ class GLAccounts extends ERPBase {
 	} // editRecord()
 	private function insertHeader() {
 		$q = "INSERT INTO acgl_accounts (account_number,entity_id,division_id,department_id,sub_account_number,gl_account_string,gl_account_name,
-			gl_account_balance,currency_code,	rev_enabled,rev_number,created_by,creation_date,last_update_by,last_update_date) VALUES 
+			gl_account_balance,currency_code,rev_enabled,rev_number,created_by,creation_date,last_update_by,last_update_date) VALUES 
 			(?,?,?,?,?,?,?,?,?,?,?,?,NOW(),?,NOW());";
 		$stmt = $this->dbconn->prepare($q);
 		$stmt->bind_param('iiiiissdssiii',$p1,$p2,$p3,$p4,$p5,$p6,$p7,$p8,$p9,$p10,$p11,$p12,$p14);
@@ -211,7 +329,82 @@ class GLAccounts extends ERPBase {
 		$stmt->close();
 	} // insertHeader()
 	private function updateHeader() {
-	
+		$this->resetHeader();
+		$now = new DateTime();
+		$data=$_POST['data'];
+		$id = $data['gl_account_id'];
+		if ((!is_integer($id) && !ctype_digit($id)) || $id<1) {
+			echo 'fail|Invalid glaccount id for updating';
+			return;
+		}
+		$this->gl_account_id = $id;
+		$this->display($id,'update'); // Display already has the logic for loading the record.  TODO: Refactor into separate function.
+		$update = array();
+		// TODO: Compare fields
+		if (isset($data['account_number']) && $data['account_number']!=$this->account_number) $update[] = array('i',$data['account_number']);
+		if (isset($data['entity_id']) && $data['entity_id']!=$this->entity_id) $update[] = array('i',$data['entity_id']);
+		if (isset($data['division_id']) && $data['division_id']!=$this->division_id) $update[] = array('i',$data['division_id']);
+		if (isset($data['department_id']) && $data['department_id']!=$this->department_id) $update[] = array('i',$data['department_id']);
+		if (isset($data['sub_account_number']) && $data['sub_account_number']!=$this->sub_account_number) $update[] = array('i',$data['sub_account_number']);
+		if (isset($data['gl_account_string']) && $data['gl_account_string']!=$this->gl_account_string) $update[] = array('s',$data['gl_account_string']);
+		if (isset($data['gl_account_name']) && $data['gl_account_name']!=$this->gl_account_name) $update[] = array('s',$data['gl_account_name']);
+		if (isset($data['gl_account_balance']) && $data['gl_account_balance']!=$this->gl_account_balance) $update[] = array('d',$data['gl_account_balance']);
+		if (isset($data['currency_code']) && $data['currency_code']!=$this->currency_code) $update[] = array('s',$data['currency_code']);
+		$rev_enabled = isset($data['rev_enabled'])?$data['rev_enabled']:false;
+		$rev_enabled = ($rev_enabled=='true')?'Y':'N';
+		$rev_number = isset($data['rev_number'])?$data['rev_number']:1;
+		if (isset($data['rev_enabled']) && $rev_enabled!=$this->rev_enabled) $update['rev_enabled'] = array('s',$rev_enabled);
+		if (isset($data['rev_number']) && $rev_number!=$this->rev_number) $update['rev_number'] = array('i',$rev_number);
+		
+		$update['last_update_by'] = array('i',$_SESSION['dbuserid']);
+		$update['last_update_date'] = array('s',$now->format('Y-m-d H:i:s'));
+		// Create UPDATE String
+		
+		if (count($update)==2) {
+			echo 'fail|Nothing to update';
+			return;
+		}
+		$q = 'UPDATE acgl_accounts SET ';
+		$ctr = 0;
+		$bp_types = '';
+		$bp_values = array_fill(0,count($update),null);
+		foreach ($update as $field=>$data) {
+			if ($ctr > 0) $q .= ',';
+			$q .= "$field=?";
+			$bp_types .= $data[0];
+			$bp_values[$ctr] = $data[1];
+			$ctr++;
+		}
+		$q .= ' WHERE gl_account_id=?';
+		$ctr++;
+		$bp_types .= 'i';
+		$bp_values[$ctr] = $this->id;
+		$stmt = $this->dbconn->prepare($q);
+		if ($stmt===false) {
+			echo 'fail|'.$this->dbconn->error;
+			return;
+		}
+		/* The internet has a lot of material about different ways to pass a variable number of arguments to bind_param.
+		   I feel that using Reflection is the best tool for the job.
+		   Reference: https://www.php.net/manual/en/mysqli-stmt.bind-param.php#107154
+		*/
+		$bp_method = new ReflectionMethod($stmt,'bind_param');
+		$bp_refs = array();
+		foreach ($bp_values as $key=>$value) {
+			$bp_refs[$key] = &$bp_values[$key];
+		}
+		array_unshift($bp_values,$bp_types);
+		$bp_method->invokeArgs($stmt,$bp_values);
+		$stmt->execute();
+		if ($stmt->affected_rows > 0) {
+			echo 'updated|'.$id;
+		} else {
+			if ($this->dbconn->error) {
+				echo 'fail|'.$this->dbconn->error;
+				$this->mb->addError($this->dbconn->error);
+			} else echo 'fail|No rows updated';
+		}
+		$stmt->close();		
 	} // updateHeader()
 	public function insertRecord() {
 		// The insert and update functions look a little different in this class, because we need to account for autocreation, which most other classes don't.
@@ -231,11 +424,11 @@ class GLAccounts extends ERPBase {
 		echo $this->insertHeader();
 	} // insertRecord()
 	public function updateRecord() {
-		$this->resetHeader();
 		$this->updateHeader();
 	} // updateRecord()
 	public function saveRecord() {
-	
+		if ($this->gl_account_id > 0) $this->updateRecord();
+		else $tihs->insertRecord();
 	} // saveRecord()
 	public function autoCustomer($prefix,$name) {
 		$this->resetHeader();
