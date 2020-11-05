@@ -1,4 +1,4 @@
-CREATE TABLE sales_import_error_header (
+CREATE TABLE IF NOT EXISTS sales_import_error_header (
 	pkey int not null auto_increment primary key
 	,error_date datetime
 	,customer_id int
@@ -38,7 +38,7 @@ CREATE TABLE sales_import_error_header (
 	,itd_14 int
 	,currency_code char(3)
 ) ENGINE=InnoDB;
-CREATE TABLE sales_import_error_detail (
+CREATE TABLE IF NOT EXISTS sales_import_error_detail (
 	pkey int not null auto_increment primary key
 	,hkey int not null
 	,sales_order_line int
@@ -64,7 +64,7 @@ CREATE TABLE sales_import_error_detail (
 	,retail_low decimal(17,5)
 	,foreign key (hkey) references sales_import_error_header(pkey)
 ) ENGINE=InnoDB;
-CREATE TABLE sales_import_error_address (
+CREATE TABLE IF NOT EXISTS sales_import_error_address (
 	pkey int not null auto_increment primary key
 	,hkey int not null
 	,address_type char(2)
@@ -80,7 +80,7 @@ CREATE TABLE sales_import_error_address (
 	,country varchar(40)
 	,foreign key (hkey) references sales_import_error_header(pkey)
 ) ENGINE=InnoDB;
-CREATE TABLE sales_import_error_sln (
+CREATE TABLE IF NOT EXISTS sales_import_error_sln (
 	pkey int not null auto_increment primary key
 	,dkey int not null
 	,sln_line int
@@ -106,21 +106,21 @@ CREATE TABLE sales_import_error_sln (
 	,retail_low decimal(17,5)
 	,foreign key (dkey) references sales_import_error_header(pkey)
 ) ENGINE=InnoDB;
-CREATE TABLE sales_import_error_header_notes (
+CREATE TABLE IF NOT EXISTS sales_import_error_header_notes (
 	pkey int not null auto_increment primary key
 	,hkey int not null
 	,note_seq int
 	,note_text varchar(4096)
 	,foreign key (hkey) references sales_import_error_header(pkey)
 ) ENGINE=InnoDB;
-CREATE TABLE sales_import_error_detail_notes (
+CREATE TABLE IF NOT EXISTS sales_import_error_detail_notes (
 	pkey int not null auto_increment primary key
 	,dkey int not null
 	,note_seq int
 	,note_text varchar(4096)
 	,foreign key (dkey) references sales_import_error_header(pkey)
 ) ENGINE=InnoDB;
-CREATE TABLE sales_import_error_sln_notes (
+CREATE TABLE IF NOT EXISTS sales_import_error_sln_notes (
 	pkey int not null auto_increment primary key
 	,skey int not null
 	,note_seq int

@@ -194,7 +194,3 @@ CREATE TABLE sales_edi_link (
 	,edi_transaction_code varchar(20)
 	,success char(1)
 ) ENGINE=InnoDB;
-
-CREATE TABLE sales_import_errors (
-
-) ENGINE=InnoDB;
