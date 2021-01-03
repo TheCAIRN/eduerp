@@ -163,7 +163,7 @@ CREATE TABLE aa_options (
 	,description varchar(2048)
 	,option_value varchar(1024)
 	,creation_date datetime not null
-	,last_update_by int not null
+	,last_update_by int unsigned not null
 	,last_update_date datetime not null
 ) ENGINE=InnoDB;
 INSERT INTO aa_options VALUES

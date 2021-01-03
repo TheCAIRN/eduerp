@@ -11,16 +11,16 @@ CREATE TABLE IF NOT EXISTS cust_master (
 	,parent int
 	,customer_group varchar(15)
 	,supplier_code varchar(20)
-	,primary_address int not null
-	,billing_address int not null
+	,primary_address int unsigned not null
+	,billing_address int unsigned not null
 	,gl_account_id int not null
 	,default_terms int 
 	,status char(1) not null DEFAULT 'A'
 	,rev_enabled char(1) not null DEFAULT 'N'
 	,rev_number int not null default 1
-	,created_by int not null
+	,created_by int unsigned not null
 	,creation_date datetime not null
-	,last_update_by int not null
+	,last_update_by int unsigned not null
 	,last_update_date datetime not null
 	,FOREIGN KEY (cust_type_code) REFERENCES cust_types (cust_type_code)
 	,FOREIGN KEY (parent) REFERENCES cust_master (customer_id)
@@ -35,10 +35,10 @@ CREATE TABLE IF NOT EXISTS cust_master (
 
 CREATE TABLE IF NOT EXISTS cust_contacts (
 	customer_id int not null
-	,human_id int not null
-	,created_by int not null
+	,human_id int unsigned not null
+	,created_by int unsigned not null
 	,creation_date datetime not null
-	,last_update_by int not null
+	,last_update_by int unsigned not null
 	,last_update_date datetime not null
 	,FOREIGN KEY (customer_id) REFERENCES cust_master (customer_id)
 	,FOREIGN KEY (human_id) REFERENCES cx_humans (human_id)
@@ -56,9 +56,9 @@ CREATE TABLE IF NOT EXISTS cust_notes (
 	,note_text mediumtext
 	,rev_enabled char(1) not null DEFAULT 'N'
 	,rev_number int not null default 1
-	,created_by int not null
+	,created_by int unsigned not null
 	,creation_date datetime not null
-	,last_update_by int not null
+	,last_update_by int unsigned not null
 	,last_update_date datetime not null
 	,FOREIGN KEY (customer_id) REFERENCES cust_master (customer_id)
 	,FOREIGN KEY (note_type_id) REFERENCES aa_note_types (note_type_id)
@@ -95,9 +95,9 @@ CREATE TABLE IF NOT EXISTS cust_catalog (
 	,status char(1) not null DEFAULT 'A'
 	,rev_enabled char(1) not null DEFAULT 'N'
 	,rev_number int not null default 1
-	,created_by int not null
+	,created_by int unsigned not null
 	,creation_date datetime not null
-	,last_update_by int not null
+	,last_update_by int unsigned not null
 	,last_update_date datetime not null
 	,FOREIGN KEY (customer_id) REFERENCES cust_master (customer_id)
 	,FOREIGN KEY (currency) REFERENCES aa_currency (code)
@@ -111,17 +111,17 @@ CREATE TABLE IF NOT EXISTS cust_dc (
 	,dc_code char(12) not null
 	,dc_edi_code varchar(12)
 	,dc_name varchar(200) not null
-	,dc_address int not null
-	,dc_contact int
+	,dc_address int unsigned not null
+	,dc_contact int unsigned
 	,open_date date
 	,close_date date
 	,lead_time decimal(5,2)
 	,status char(1) not null DEFAULT 'A'
 	,rev_enabled char(1) not null DEFAULT 'N'
 	,rev_number int not null default 1
-	,created_by int not null
+	,created_by int unsigned not null
 	,creation_date datetime not null
-	,last_update_by int not null
+	,last_update_by int unsigned not null
 	,last_update_date datetime not null
 	,PRIMARY KEY (customer_id,dc_code)
 	,FOREIGN KEY (customer_id) REFERENCES cust_master (customer_id)
@@ -142,8 +142,8 @@ CREATE TABLE IF NOT EXISTS cust_stores (
 	,store_type_code char(5) not null
 	,store_edi_code varchar(12)
 	,store_name varchar(200) not null
-	,store_address int not null
-	,store_contact int
+	,store_address int unsigned not null
+	,store_contact int unsigned
 	,dc_code char(12)
 	,next_dc_code char(12)
 	,dc_change_date date
@@ -151,9 +151,9 @@ CREATE TABLE IF NOT EXISTS cust_stores (
 	,status char(1) not null DEFAULT 'A'
 	,rev_enabled char(1) not null DEFAULT 'N'
 	,rev_number int not null default 1
-	,created_by int not null
+	,created_by int unsigned not null
 	,creation_date datetime not null
-	,last_update_by int not null
+	,last_update_by int unsigned not null
 	,last_update_date datetime not null
 	,PRIMARY KEY (customer_id,store_code)
 	,FOREIGN KEY (store_type_code) REFERENCES cust_store_types (store_type_code)
@@ -166,9 +166,9 @@ CREATE TABLE IF NOT EXISTS cust_stores (
 
 CREATE TABLE IF NOT EXISTS cust_consumers (
 	customer_id int not null
-	,consumer_id int not null
-	,billing_address int not null
-	,shipping_address int not null
+	,consumer_id int unsigned not null
+	,billing_address int unsigned not null
+	,shipping_address int unsigned not null
 	,last_update_date datetime not null
 	,PRIMARY KEY (customer_id,consumer_id)
 	,FOREIGN KEY (customer_id) REFERENCES cust_master(customer_id)

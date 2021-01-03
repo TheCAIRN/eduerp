@@ -25,9 +25,9 @@ CREATE TABLE sales_payments (
 	,balance decimal(17,5) 
 	,rev_enabled char(1) not null DEFAULT 'N'
 	,rev_number int not null default 1
-	,created_by int not null
+	,created_by int unsigned not null
 	,creation_date datetime not null
-	,last_update_by int not null
+	,last_update_by int unsigned not null
 	,last_update_date datetime not null
 	,FOREIGN KEY (sales_order_number) REFERENCES sales_header (sales_order_number)
 	,FOREIGN KEY (payment_type_code) REFERENCES sales_payment_types (payment_type_code)

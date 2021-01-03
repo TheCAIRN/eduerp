@@ -10,9 +10,9 @@ CREATE TABLE IF NOT EXISTS bom_steps (
 	,description varchar(4096)
 	,rev_enabled char(1) not null DEFAULT 'N'
 	,rev_number int not null default 1
-	,created_by int not null
+	,created_by int unsigned not null
 	,creation_date datetime not null
-	,last_update_by int not null
+	,last_update_by int unsigned not null
 	,last_update_date datetime not null
 	,FOREIGN KEY (created_by) REFERENCES sec_users (user_id)
 	,FOREIGN KEY (last_update_by) REFERENCES sec_users (user_id)		
@@ -25,9 +25,9 @@ CREATE TABLE IF NOT EXISTS bom_header (
 	,description varchar(4096)
 	,rev_enabled char(1) not null DEFAULT 'N'
 	,rev_number int not null default 1
-	,created_by int not null
+	,created_by int unsigned not null
 	,creation_date datetime not null
-	,last_update_by int not null
+	,last_update_by int unsigned not null
 	,last_update_date datetime not null
 	,FOREIGN KEY (resulting_product_id) REFERENCES item_master (product_id)
 	,FOREIGN KEY (created_by) REFERENCES sec_users (user_id)
@@ -54,9 +54,9 @@ CREATE TABLE IF NOT EXISTS bom_detail (
 	,description varchar(4096)
 	,rev_enabled char(1) not null DEFAULT 'N'
 	,rev_number int not null default 1
-	,created_by int not null
+	,created_by int unsigned not null
 	,creation_date datetime not null
-	,last_update_by int not null
+	,last_update_by int unsigned not null
 	,last_update_date datetime not null
 	,FOREIGN KEY (bom_id) REFERENCES bom_header (bom_id)
 	,FOREIGN KEY (component_product_id) REFERENCES item_master (product_id)

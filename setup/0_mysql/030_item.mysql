@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS item_categories (
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS item_gtin_master (
-	entity_id int not null
+	entity_id int unsigned not null
 	,division_id int not null
 	,department_id int not null
 	,item_type_code char(2)
@@ -30,9 +30,9 @@ CREATE TABLE IF NOT EXISTS item_gtin_master (
 	,visible int(1) not null default 1
 	,rev_enabled char(1) not null DEFAULT 'N'
 	,rev_number int not null default 1
-	,created_by int not null
+	,created_by int unsigned not null
 	,creation_date datetime not null
-	,last_update_by int not null
+	,last_update_by int unsigned not null
 	,last_update_date datetime not null
 	,FOREIGN KEY (entity_id) REFERENCES ent_entities(entity_id)
 	,FOREIGN KEY (item_type_code) REFERENCES item_types(item_type_code)
@@ -49,9 +49,9 @@ CREATE TABLE IF NOT EXISTS item_attribute_group_master (
 	,visible int(1) not null default 1
 	,rev_enabled char(1) not null DEFAULT 'N'
 	,rev_number int not null default 1
-	,created_by int not null
+	,created_by int unsigned not null
 	,creation_date datetime not null
-	,last_update_by int not null
+	,last_update_by int unsigned not null
 	,last_update_date datetime not null
 	,FOREIGN KEY (created_by) REFERENCES sec_users (user_id)
 	,FOREIGN KEY (last_update_by) REFERENCES sec_users (user_id)		
@@ -64,9 +64,9 @@ CREATE TABLE IF NOT EXISTS item_attribute_master (
 	,visible int(1) not null default 1
 	,rev_enabled char(1) not null DEFAULT 'N'
 	,rev_number int not null default 1
-	,created_by int not null
+	,created_by int unsigned not null
 	,creation_date datetime not null
-	,last_update_by int not null
+	,last_update_by int unsigned not null
 	,last_update_date datetime not null
 	,PRIMARY KEY (attribute_group,attribute_code)
 	,FOREIGN KEY (attribute_group) REFERENCES item_attribute_group_master (attribute_group)
@@ -92,9 +92,9 @@ CREATE TABLE IF NOT EXISTS item_tariff_master (
 	,visible int(1) not null default 1
 	,rev_enabled char(1) not null DEFAULT 'Y'
 	,rev_number int not null default 1
-	,created_by int not null
+	,created_by int unsigned not null
 	,creation_date datetime not null
-	,last_update_by int not null
+	,last_update_by int unsigned not null
 	,last_update_date datetime not null
 	,PRIMARY KEY (harmonized_tariff_code,rev_number)
 	,FOREIGN KEY (tariff_uom) REFERENCES aa_uom (uom_code)
@@ -117,7 +117,7 @@ CREATE TABLE IF NOT EXISTS item_tariff_exceptions (
 -- Seasons contain default date values, but should not be used as a restrictive table
 CREATE TABLE IF NOT EXISTS item_seasons (
 	season_id int not null auto_increment PRIMARY KEY
-	,entity_id int not null
+	,entity_id int unsigned not null
 	,season_code varchar(12) not null
 	,season_description varchar(512)
 	,promotion_start_date datetime
@@ -129,9 +129,9 @@ CREATE TABLE IF NOT EXISTS item_seasons (
 	,visible int(1) not null default 1
 	,rev_enabled char(1) not null DEFAULT 'N'
 	,rev_number int not null default 1
-	,created_by int not null
+	,created_by int unsigned not null
 	,creation_date datetime not null
-	,last_update_by int not null
+	,last_update_by int unsigned not null
 	,last_update_date datetime not null
 	,FOREIGN KEY (entity_id) REFERENCES ent_entities(entity_id)
 	,FOREIGN KEY (created_by) REFERENCES sec_users (user_id)
@@ -143,7 +143,7 @@ CREATE TABLE IF NOT EXISTS item_seasons (
 -- as represented by the first digit of the GTIN being 0.  Services may also be represented
 -- as items.
 CREATE TABLE IF NOT EXISTS item_master (
-	entity_id int not null
+	entity_id int unsigned not null
 	,division_id int not null
 	,department_id int not null
 	,item_type_code char(2) not null
@@ -176,9 +176,9 @@ CREATE TABLE IF NOT EXISTS item_master (
 	,visible int(1) not null default 1
 	,rev_enabled char(1) not null DEFAULT 'N'
 	,rev_number int not null default 1
-	,created_by int not null
+	,created_by int unsigned not null
 	,creation_date datetime not null
-	,last_update_by int not null
+	,last_update_by int unsigned not null
 	,last_update_date datetime not null
 	,FOREIGN KEY (entity_id) REFERENCES ent_entities(entity_id)
 	,FOREIGN KEY (division_id) REFERENCES ent_division_master(division_id)
@@ -199,9 +199,9 @@ CREATE TABLE IF NOT EXISTS item_attributes (
 	,attribute_code char(10) not null
 	,rev_enabled char(1) not null DEFAULT 'N'
 	,rev_number int not null default 1
-	,created_by int not null
+	,created_by int unsigned not null
 	,creation_date datetime not null
-	,last_update_by int not null
+	,last_update_by int unsigned not null
 	,last_update_date datetime not null
 	,FOREIGN KEY (product_id) REFERENCES item_master (product_id)
 	,FOREIGN KEY (attribute_group,attribute_code) REFERENCES item_attribute_master (attribute_group,attribute_code)
@@ -218,9 +218,9 @@ CREATE TABLE IF NOT EXISTS item_components (
 	,quantity decimal(17,5)
 	,rev_enabled char(1) not null DEFAULT 'N'
 	,rev_number int not null default 1
-	,created_by int not null
+	,created_by int unsigned not null
 	,creation_date datetime not null
-	,last_update_by int not null
+	,last_update_by int unsigned not null
 	,last_update_date datetime not null
 	,FOREIGN KEY (product_id) REFERENCES item_master (product_id)
 	,FOREIGN KEY (sub_product_id) REFERENCES item_master (product_id)
@@ -238,9 +238,9 @@ CREATE TABLE IF NOT EXISTS item_families (
 	,visible int(1) not null default 1
 	,rev_enabled char(1) not null DEFAULT 'N'
 	,rev_number int not null default 1
-	,created_by int not null
+	,created_by int unsigned not null
 	,creation_date datetime not null
-	,last_update_by int not null
+	,last_update_by int unsigned not null
 	,last_update_date datetime not null
 	,FOREIGN KEY (created_by) REFERENCES sec_users (user_id)
 	,FOREIGN KEY (last_update_by) REFERENCES sec_users (user_id)		
@@ -253,9 +253,9 @@ CREATE TABLE IF NOT EXISTS item_family_components (
 	,product_id int
 	,rev_enabled char(1) not null DEFAULT 'N'
 	,rev_number int not null default 1
-	,created_by int not null
+	,created_by int unsigned not null
 	,creation_date datetime not null
-	,last_update_by int not null
+	,last_update_by int unsigned not null
 	,last_update_date datetime not null
 	,FOREIGN KEY (product_family_id) REFERENCES item_families (product_family_id)
 	,FOREIGN KEY (sub_product_family_id) REFERENCES item_families (product_family_id)
@@ -282,9 +282,9 @@ CREATE TABLE IF NOT EXISTS item_notes (
 	,note_text mediumtext
 	,rev_enabled char(1) not null DEFAULT 'N'
 	,rev_number int not null default 1
-	,created_by int not null
+	,created_by int unsigned not null
 	,creation_date datetime not null
-	,last_update_by int not null
+	,last_update_by int unsigned not null
 	,last_update_date datetime not null
 	,FOREIGN KEY (product_id) REFERENCES item_master (product_id)
 	,FOREIGN KEY (note_type_id) REFERENCES aa_note_types (note_type_id)

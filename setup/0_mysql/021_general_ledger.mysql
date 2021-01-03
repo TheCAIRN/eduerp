@@ -4,17 +4,17 @@
 -- Each entity without 
 -- Period_status is one of A=active,C=closed,F=future 
 CREATE TABLE IF NOT EXISTS acgl_periods (
-	entity_id int not null
+	entity_id int unsigned not null
 	,period_id char(7) not null
 	,period_name varchar(40) not null
 	,period_start datetime not null
 	,period_end datetime not null
 	,period_status char(1) not null default 'F'
 	,period_closed datetime
-	,period_closed_by int
-	,created_by int not null
+	,period_closed_by int unsigned
+	,created_by int unsigned not null
 	,creation_date datetime not null
-	,last_update_by int not null
+	,last_update_by int unsigned not null
 	,last_update_date datetime not null
 	,FOREIGN KEY (entity_id) REFERENCES ent_entities (entity_id)
 	,FOREIGN KEY (created_by) REFERENCES sec_users (user_id)
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS acgl_periods (
 CREATE TABLE IF NOT EXISTS acgl_accounts (
 	gl_account_id int not null auto_increment PRIMARY KEY
 	,account_number int not null
-	,entity_id int not null
+	,entity_id int unsigned not null
 	,division_id int 
 	,department_id int
 	,sub_account_number int not null 
@@ -36,9 +36,9 @@ CREATE TABLE IF NOT EXISTS acgl_accounts (
 	,currency_code char(3) not null
 	,rev_enabled char(1) not null DEFAULT 'N'
 	,rev_number int not null default 1
-	,created_by int not null
+	,created_by int unsigned not null
 	,creation_date datetime not null
-	,last_update_by int not null
+	,last_update_by int unsigned not null
 	,last_update_date datetime not null
 	,FOREIGN KEY (entity_id) REFERENCES ent_entities (entity_id)
 	,FOREIGN KEY (entity_id,division_id) REFERENCES ent_divisions (entity_id,division_id)
@@ -49,16 +49,16 @@ CREATE TABLE IF NOT EXISTS acgl_accounts (
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS acgl_account_balances (
-	entity_id int not null
+	entity_id int unsigned not null
 	,gl_account_id int not null
 	,period_id char(7) not null
 	,starting_balance decimal(24,5)
 	,closing_balance decimal(24,5)
 	,rev_enabled char(1) not null DEFAULT 'N'
 	,rev_number int not null default 1
-	,created_by int not null
+	,created_by int unsigned not null
 	,creation_date datetime not null
-	,last_update_by int not null
+	,last_update_by int unsigned not null
 	,last_update_date datetime not null
 	,FOREIGN KEY (entity_id) REFERENCES ent_entities (entity_id)
 	,FOREIGN KEY (gl_account_id) REFERENCES acgl_accounts (gl_account_id)
@@ -68,7 +68,7 @@ CREATE TABLE IF NOT EXISTS acgl_account_balances (
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS acgl_journal_header (
-	entity_id int not null
+	entity_id int unsigned not null
 	,period_id char(7) not null
 	,journal_entry_id int not null auto_increment PRIMARY KEY
 	,currency_code char(3) not null
@@ -85,15 +85,15 @@ CREATE TABLE IF NOT EXISTS acgl_journal_header (
 	,working_entry_credit decimal(24,5) not null default 0.00
 	,posted char(1) not null default 'N'
 	,posted_date datetime
-	,posted_by int
+	,posted_by int unsigned
 	,voided char(1) not null default 'N'
 	,voided_date datetime
-	,voided_by int
+	,voided_by int unsigned
 	,rev_enabled char(1) not null DEFAULT 'N'
 	,rev_number int not null default 1
-	,created_by int not null
+	,created_by int unsigned not null
 	,creation_date datetime not null
-	,last_update_by int not null
+	,last_update_by int unsigned not null
 	,last_update_date datetime not null
 	,FOREIGN KEY (entity_id) REFERENCES ent_entities (entity_id)
 	,FOREIGN KEY (entity_id,period_id) REFERENCES acgl_periods (entity_id,period_id)
@@ -119,15 +119,15 @@ CREATE TABLE IF NOT EXISTS acgl_journal_detail (
 	,pkey_char varchar(24)
 	,posted char(1) not null default 'N'
 	,posted_date datetime
-	,posted_by int
+	,posted_by int unsigned
 	,voided char(1) not null default 'N'
 	,voided_date datetime
-	,voided_by int
+	,voided_by int unsigned
 	,rev_enabled char(1) not null DEFAULT 'N'
 	,rev_number int not null default 1
-	,created_by int not null
+	,created_by int unsigned not null
 	,creation_date datetime not null
-	,last_update_by int not null
+	,last_update_by int unsigned not null
 	,last_update_date datetime not null
 	,PRIMARY KEY (journal_entry_id,journal_entry_line_number)
 	,FOREIGN KEY (journal_entry_id) REFERENCES acgl_journal_header(journal_entry_id)

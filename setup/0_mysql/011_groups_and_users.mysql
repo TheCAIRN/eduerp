@@ -8,8 +8,8 @@ CREATE TABLE IF NOT EXISTS sec_groups (
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS sec_users (
-	user_id int not null auto_increment PRIMARY KEY
-	,human_id int not null
+	user_id int unsigned not null auto_increment PRIMARY KEY
+	,human_id int unsigned not null
 	,group_id int not null
 	,salt1 varchar(10) not null default ''
 	,salt2 varchar(10) not null default ''
@@ -19,18 +19,20 @@ CREATE TABLE IF NOT EXISTS sec_users (
 	,user_status char(1) not null default 'A'
 	,last_access datetime
 	,access_revoked_date datetime
-	,created_by int not null
+	,created_by int unsigned not null
 	,creation_date datetime not null
-	,last_update_by int not null
+	,last_update_by int unsigned not null
 	,last_update_date datetime not null
 	,FOREIGN KEY (human_id) REFERENCES cx_humans (human_id)
 	,FOREIGN KEY (group_id) REFERENCES sec_groups (group_id)
-	,FOREIGN KEY (created_by) REFERENCES sec_users (user_id)
-	,FOREIGN KEY (last_update_by) REFERENCES sec_users (user_id)
 ) ENGINE=InnoDB;
 
 INSERT INTO sec_groups VALUES (1,'Global Admins');
 INSERT INTO sec_users VALUES (1,1,1,'','','','Y','','A',NULL,NULL,1,NOW(),1,NOW());
+
+ALTER TABLE sec_users
+ADD FOREIGN KEY fk_self_created_by (created_by) REFERENCES sec_users(user_id),
+ADD FOREIGN KEY fk_self_last_update_by (last_update_by) REFERENCES sec_users(user_id);
 
 CREATE VIEW v_sec_users AS
 SELECT sec.user_id,sec.human_id,sec.group_id,gp.group_name,h.title,h.given_name,h.middle,h.middle_2,h.family_name,h.suffix,h.alias,h.degrees,h.sex,CONCAT(h.title,' ',h.given_name,' ',h.middle,' ',h.family_name,' ',h.suffix) AS human_name

@@ -1,4 +1,13 @@
 <?php
+$done = false;
+// https://stackoverflow.com/questions/5106313/redirecting-from-http-to-https-with-php
+if (empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] === "off") {
+    $location = 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+    header('HTTP/1.1 301 Moved Permanently');
+    header('Location: ' . $location);
+        $done = true;
+	exit(); // using if is better, but somewhat too complicated for this application
+}
 session_name('eduerpcfg');
 session_start();
 // From php.net
@@ -75,19 +84,11 @@ var currentScreen = 0;
 <DIV id="content">
 <DIV id="leftnav">Project Roadmap<BR /><?php /*$navbar->render(); */?>
 <UL>
-<LI>&#x2714; Create new purchase order</LI>
-<LI>&#x2714; Create new bill of materials</LI>
-<LI>&#x2714; Update inventory table</LI>
-<LI>&#x2714; Search inventory and transactions</LI>
-<LI>&#x2714; Create new production</LI>
 <LI>Add functionality to Entities: <UL><LI>production capacity</LI><LI>create new entity</LI><LI>Modify entity</LI></UL></LI>
-<LI>&#x2714; Lookup customers</LI>
-<LI>&#x2714; Create sales orders</LI>
 <LI>Modify vendors</LI>
 <LI>Update sales orders for shipping</LI>
 <LI>Create shipment</LI>
 <LI>Create invoice</LI>
-<LI>&#x2714; Update purchase order with tracking and receiving</LI>
 <LI>Manage freight vendors</LI>
 <LI>Dashboards</LI>
 <LI>Reports</LI>
@@ -95,7 +96,7 @@ var currentScreen = 0;
 </DIV>
 <DIV id="core"><?php $workspace->render(); ?></DIV>
 </DIV>
-<DIV id="footerbar">&copy; 2020. Cairn University School of Business.  Apache License 2.0<?php /*$footerbar->render();*/ ?>. Modules not provided in the open source project are separately licensed.</DIV>
+<DIV id="footerbar">&copy; 2021. Cairn University School of Business.  Apache License 2.0<?php /*$footerbar->render();*/ ?>. Modules not provided in the open source project are separately licensed.</DIV>
 </BODY>
 </HTML>
 <?php

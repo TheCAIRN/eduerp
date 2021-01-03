@@ -11,7 +11,7 @@
  */
  
 CREATE TABLE IF NOT EXISTS cx_humans (
-	human_id int not null auto_increment PRIMARY KEY
+	human_id int unsigned not null auto_increment PRIMARY KEY
 	,title varchar(7) default ''
 	,given_name varchar(100) default ''
 	,middle varchar(100) default ''
@@ -22,10 +22,10 @@ CREATE TABLE IF NOT EXISTS cx_humans (
 	,degrees varchar(100) default ''
 	,sex char(1)
 	,birthdate datetime
-	,home_address int
-	,mother int
-	,father int
-	,spouse int
+	,home_address int unsigned
+	,mother int unsigned
+	,father int unsigned
+	,spouse int unsigned
 	,unique_id varchar(40)
 	,FOREIGN KEY (home_address) REFERENCES cx_addresses (address_id)
 	,FOREIGN KEY (mother) REFERENCES cx_humans (human_id)
@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS cx_humans (
 INSERT INTO cx_humans (human_id,family_name) VALUES (1,'Root');
 
 CREATE TABLE IF NOT EXISTS cx_email_associations (
-	human_id int not null
+	human_id int unsigned not null
 	,email_id int not null
 	,priority int default 1
 	,FOREIGN KEY (human_id) REFERENCES cx_humans(human_id)
@@ -44,8 +44,8 @@ CREATE TABLE IF NOT EXISTS cx_email_associations (
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS cx_address_associations (
-	human_id int not null
-	,address_id int not null
+	human_id int unsigned not null
+	,address_id int unsigned not null
 	,priority int default 1
 	,description varchar(256)
 	,FOREIGN KEY (human_id) REFERENCES cx_humans(human_id)
@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS cx_address_associations (
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS cx_phone_associations (
-	human_id int not null
+	human_id int unsigned not null
 	,phone_id int not null
 	,priority int default 1
 	,description varchar(256)

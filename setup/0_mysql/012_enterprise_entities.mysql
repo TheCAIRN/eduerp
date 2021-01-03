@@ -35,17 +35,22 @@ CREATE TABLE IF NOT EXISTS ent_entities (
 	,parent_entity int unsigned
 	,rev_enabled char(1) not null DEFAULT 'N'
 	,rev_number int not null default 1
-	,created_by int nsigned not null
+	,created_by int unsigned not null
 	,creation_date datetime not null
 	,last_update_by int unsigned not null
 	,last_update_date datetime not null
-	,FOREIGN KEY (entity_type) REFERENCES ent_entity_types (entity_type)
-	,FOREIGN KEY (entity_class_id) REFERENCES ent_classes (entity_class_id)
-	,FOREIGN KEY (parent_entity) REFERENCES ent_entities (entity_id)
-	,FOREIGN KEY (primary_address) REFERENCES cx_addresses (address_id)
-	,FOREIGN KEY (created_by) REFERENCES sec_users (user_id)
-	,FOREIGN KEY (last_update_by) REFERENCES sec_users (user_id)	
 ) ENGINE=InnoDB;
+ALTER TABLE ent_entities
+ADD FOREIGN KEY fk_entity_type(entity_type) REFERENCES ent_entity_types(entity_type),
+ADD FOREIGN KEY fk_self_parent_entity(parent_entity) REFERENCES ent_entities(entity_id);
+
+ALTER TABLE ent_entities
+ADD FOREIGN KEY fk_entity_class(entity_class_id) REFERENCES ent_classes(entity_class_id),
+ADD FOREIGN KEY fk_address_primary(primary_address) REFERENCES cx_addresses(address_id);
+
+ALTER TABLE ent_entities
+ADD FOREIGN KEY fk_created_by(created_by) REFERENCES sec_users(user_id),
+ADD FOREIGN KEY fk_last_update_by(last_update_by) REFERENCES sec_users(user_id);
 
 CREATE TABLE IF NOT EXISTS sec_entities (
 	user_id int unsigned not null

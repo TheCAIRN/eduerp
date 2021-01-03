@@ -28,7 +28,7 @@ else echo '<BODY>';
 	} // commonHeader
 	private function commonFooter() {
 ?>
-<DIV id="footerbar">&copy; 2020. Cairn University School of Business.  Apache License 2.0<?php /*$footerbar->render();*/ ?>. Modules not provided in the open source project are separately licensed.</DIV>
+<DIV id="footerbar">&copy; 2021. Cairn University School of Business.  Apache License 2.0<?php /*$footerbar->render();*/ ?>. Modules not provided in the open source project are separately licensed.</DIV>
 </BODY>
 </HTML>
 <?php		
@@ -177,7 +177,7 @@ If you are installing eduERP with a hosting provider using cPanel, you must crea
 					$filearray[] = $entry;
 				}
 			}
-			
+			sort($filearray);	
 			/* Create Javascript and HTML to load files and update progress bar */
 ?>
 <SCRIPT type="text/javascript">
@@ -194,14 +194,14 @@ function processFile(fname) {
 	var w = Math.floor(100*(processing/filecount));
 	$("#pbarline").progressbar({value:w});
 	$.post('index.php',{installerpage:3,filename:fname},function(data) {
-		if (data!="success") $("#errors").html($("#errors").html()+data);
+		if (data!="success") $("#errors").html($("#errors").html()+'<B>'+fname+'</B><BR />'+data+'<BR />');
 		processing++;
 		// We must wait for one file to finish before proceeding to the next.
 		if (processing < filecount) processFile(files[processing]);
 		else {
 			$("#errors").html($("#errors").html()+'<BR /><B>Processing is complete.  Click "OK" to continue. '+ 
 				'The username is "admin" and there is no password.  Change this as your first priority</B><BR />'+
-				"<BUTTON onClick=\"window.location('.');\">OK</BUTTON>");
+				"<BUTTON onClick=\"window.location = '.';\">OK</BUTTON>");
 		}
 	});
 } // processFile()
@@ -239,23 +239,32 @@ function start() {
 		}
 		$buffer = '';
 		$success = true;
+		$incomment = false;
 		while ($line=fgets($fp)) {
+			if (strpos($line,'--')!==false) $line = substr($line,0,strpos($line,'--'));
+			if (strpos($line,'/*')!==false && !$incomment) {
+				$line = substr($line,0,strpos($line,'/*'));
+				$incomment = true;
+			} elseif ($incomment && strpos($line,'*/')!==false) {
+				$line = substr($line,strpos($line,'*/')+2);
+				$incomment = false;
+			} elseif ($incomment) $line = ''; // Only do this if $incomment wasn't set during this fgets.
 			$buffer .= $line;
 			if (strpos($buffer,';')!==false) {
 				$result = $link->query($buffer);
 				$buffer = '';
 				if ($result===false) {
 					$success = false;
-					echo $link->error;
+					echo $link->error.'<BR />';
 				}
 			}
 		}
-		if (strlen($buffer)>0) {
+		if (strlen(trim($buffer))>0) {
 			$result = $link->query($buffer);
 			$buffer = '';
 			if ($result===false) {
 				$success = false;
-				echo $link->error;
+				echo $link->error.'<BR />';
 			}
 		}
 		$link->close();

@@ -29,9 +29,9 @@ CREATE TABLE fv_shipments (
 	,status char(1) not null DEFAULT 'A'
 	,rev_enabled char(1) not null DEFAULT 'N'
 	,rev_number int not null default 1
-	,created_by int not null
+	,created_by int unsigned not null
 	,creation_date datetime not null
-	,last_update_by int not null
+	,last_update_by int unsigned not null
 	,last_update_date datetime not null
 	,FOREIGN KEY (fv_ship_mode) REFERENCES fv_ship_modes (ship_mode_id)
 	,FOREIGN KEY (fv_vendor_id) REFERENCES fv_freight_vendors (fv_vendor_id)
@@ -59,7 +59,7 @@ CREATE TABLE fv_containers (
 	,weight decimal(13,5)
 	,weight_uom char(5)
 	,fill_rate decimal(6,3)
-	,final_destination int
+	,final_destination int unsigned
 	,purchase_date datetime
 	,sealed_date datetime
 	,loaded_date datetime
@@ -73,9 +73,9 @@ CREATE TABLE fv_containers (
 	,returned_date datetime
 	,rev_enabled char(1) not null DEFAULT 'N'
 	,rev_number int not null default 1
-	,created_by int not null
+	,created_by int unsigned not null
 	,creation_date datetime not null
-	,last_update_by int not null
+	,last_update_by int unsigned not null
 	,last_update_date datetime not null
 	,FOREIGN KEY (fv_shipment_id) REFERENCES fv_shipments (fv_shipment_id)
 	,FOREIGN KEY (lwh_uom) REFERENCES aa_uom(uom_code)
