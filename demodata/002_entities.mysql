@@ -42,6 +42,8 @@ INSERT INTO cx_addresses VALUES
 ,(28,'770','Sugar Ave.','','','','','','Ontario','OR','97914','US','',NULL,NULL,NULL,NULL,NOW())
 ,(29,'10200','Smith Rd.','','','','','','Denver','CO','80239','US','',NULL,NULL,NULL,NULL,NOW())
 ,(37,'2321','E 71st St.','','','','','','Chicago','IL','60649','US','',NULL,NULL,NULL,NULL,NOW())
+,(38,'30','W 48th Street','','','','','','New York','NY','10036','US','',NULL,NULL,NULL,NULL,NOW())
+,(39,'161','Elmwood Avenue','','','','','','Buffalo','NY','14201','US','',NULL,NULL,NULL,NULL,NOW())
 ;
 /*
 ,(2,38,'F001','Styer Orchard','215-702-9633','','http://styerorchard.com/home.html','97 Styers Lane, Langhorne, PA','USA','19047',0,'enabled','enabled',0,0,NOW(),0,NOW())
@@ -126,8 +128,8 @@ VALUES
 ,(35,'BUS',5,'Eden Produce Sicily 1',NULL,'A','1913-01-01',NULL,NULL,'N',1,1,NOW(),1,NOW())
 ,(36,'BUS',5,'Eden Produce Lima 1',NULL,'A','1913-01-01',NULL,NULL,'N',1,1,NOW(),1,NOW())
 ,(37,'BUS',6,'Eden''s Bistro - Chicago',37,'A','1913-01-01',NULL,NULL,'N',1,1,NOW(),1,NOW())
-,(38,'BUS',6,'Eden''s Bistro - Manhattan',NULL,'A','1913-01-01',NULL,NULL,'N',1,1,NOW(),1,NOW())
-,(39,'BUS',6,'Eden''s Bistro - Buffalo',NULL,'A','1913-01-01',NULL,NULL,'N',1,1,NOW(),1,NOW())
+,(38,'BUS',6,'Eden''s Bistro - Manhattan',38,'A','1913-01-01',NULL,NULL,'N',1,1,NOW(),1,NOW())
+,(39,'BUS',6,'Eden''s Bistro - Buffalo',39,'A','1913-01-01',NULL,NULL,'N',1,1,NOW(),1,NOW())
 ,(40,'BUS',7,'Eden''s Bistro - Atlanta',NULL,'A','1913-01-01',NULL,NULL,'N',1,1,NOW(),1,NOW())
 ,(41,'BUS',7,'Eden''s Bistro - Sacramento',NULL,'A','1913-01-01',NULL,NULL,'N',1,1,NOW(),1,NOW())
 ,(42,'BUS',7,'Eden''s Bistro - Seattle',NULL,'A','1913-01-01',NULL,NULL,'N',1,1,NOW(),1,NOW())
